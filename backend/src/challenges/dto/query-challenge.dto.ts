@@ -1,47 +1,47 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsBoolean, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsBoolean, IsString, IsIn, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaginationDto } from '../../common/dtos/pagination.dto';
 
 export class QueryChallengeDto extends PaginationDto {
   @ApiProperty({
     required: false,
-    description: 'Filter by category',
-    enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+    description: 'Filter by grade',
+    enum: ['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'])
-  category?: string;
+  @IsIn(['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'])
+  grade?: string;
 
   @ApiProperty({
     required: false,
-    description: 'Filter by level',
-    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+    description: 'Filter by type',
+    enum: ['regular', 'bilingual'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
-  level?: string;
+  @IsIn(['regular', 'bilingual'])
+  type?: string;
 
   @ApiProperty({
     required: false,
-    description: 'Filter by difficulty',
-    enum: ['easy', 'medium', 'hard'],
+    description: 'Filter by stage',
+    enum: ['Regional', 'State', 'National'],
   })
   @IsOptional()
   @IsString()
-  @IsIn(['easy', 'medium', 'hard'])
-  difficulty?: string;
+  @IsIn(['Regional', 'State', 'National'])
+  stage?: string;
 
   @ApiProperty({
     required: false,
-    description: 'Filter by published status',
+    description: 'Filter by demo status',
   })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
-  isPublished?: boolean;
+  isDemo?: boolean;
 
   @ApiProperty({
     required: false,
@@ -54,7 +54,24 @@ export class QueryChallengeDto extends PaginationDto {
 
   @ApiProperty({
     required: false,
-    description: 'Search by title, slug, or description',
+    description: 'Filter by year',
+  })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  year?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Filter by exact date (ISO 8601 format)',
+  })
+  @IsOptional()
+  @IsString()
+  exactDate?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Search by name',
   })
   @IsOptional()
   @IsString()
@@ -62,18 +79,10 @@ export class QueryChallengeDto extends PaginationDto {
 
   @ApiProperty({
     required: false,
-    description: 'Filter by title',
+    description: 'Filter by name',
   })
   @IsOptional()
   @IsString()
-  title?: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Filter by slug',
-  })
-  @IsOptional()
-  @IsString()
-  slug?: string;
+  name?: string;
 }
 

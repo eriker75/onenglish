@@ -18,30 +18,63 @@ export class ChallengesService {
 
   async create(dto: CreateChallengeDto): Promise<Challenge> {
     try {
-      // Check if slug already exists
-      const existingChallenge = await this.prisma.challenge.findUnique({
-        where: { slug: dto.slug },
-      });
+      // Calculate year from exactDate if provided
+      const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+      const year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
 
-      if (existingChallenge) {
-        throw new ConflictException(
-          `Challenge with slug ${dto.slug} already exists`,
-        );
-      }
+      // Generate challenge name automatically
+      // Format: {year} - {grade_formatted} - {type} {- Demo if isDemo}
+      const gradeFormatted = dto.grade
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      const typeFormatted = dto.type.charAt(0).toUpperCase() + dto.type.slice(1);
+      const demoSuffix = dto.isDemo ? ' - Demo' : '';
+      const name = `${year} - ${gradeFormatted} - ${typeFormatted}${demoSuffix}`;
 
       const challenge = await this.prisma.challenge.create({
-        data: dto,
+        data: {
+          name,
+          grade: dto.grade,
+          type: dto.type,
+          isDemo: dto.isDemo ?? false,
+          year,
+          exactDate,
+          stage: dto.stage,
+          isActive: dto.isActive ?? true,
+        },
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
+        },
       });
 
-      return challenge;
+      return this.addComputedFields(challenge);
     } catch (error) {
-      if (error instanceof ConflictException) {
-        throw error;
-      }
       throw new BadRequestException(
         `Failed to create challenge: ${error.message}`,
       );
     }
+  }
+
+  private addComputedFields(challenge: any): Challenge {
+    const totalQuestions = challenge.questions?.length ?? 0;
+    const totalTime =
+      challenge.questions?.reduce(
+        (sum: number, q: any) => sum + (q.timeLimit ?? 0),
+        0,
+      ) ?? 0;
+
+    return {
+      ...challenge,
+      totalQuestions,
+      totalTime,
+    };
   }
 
   async findAll(): Promise<Challenge[]> {
@@ -50,9 +83,17 @@ export class ChallengesService {
         orderBy: {
           createdAt: 'desc',
         },
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
+        },
       });
 
-      return challenges;
+      return challenges.map((challenge) => this.addComputedFields(challenge));
     } catch (error) {
       throw new BadRequestException(
         `Failed to fetch challenges: ${error.message}`,
@@ -68,58 +109,59 @@ export class ChallengesService {
         limit = 10,
         offset = 0,
         search,
-        category,
-        level,
-        difficulty,
-        isPublished,
+        grade,
+        type,
+        stage,
+        isDemo,
         isActive,
-        title,
-        slug,
+        year,
+        exactDate,
+        name,
       } = query;
 
       // Build where clause
       const where: Prisma.ChallengeWhereInput = {};
 
-      if (category) {
-        where.category = category;
+      if (grade) {
+        where.grade = grade;
       }
 
-      if (level) {
-        where.level = level;
+      if (type) {
+        where.type = type;
       }
 
-      if (difficulty) {
-        where.difficulty = difficulty;
+      if (stage) {
+        where.stage = stage;
       }
 
-      if (isPublished !== undefined) {
-        where.isPublished = isPublished;
+      if (isDemo !== undefined) {
+        where.isDemo = isDemo;
       }
 
       if (isActive !== undefined) {
         where.isActive = isActive;
       }
 
+      if (year !== undefined) {
+        where.year = year;
+      }
+
+      if (exactDate) {
+        where.exactDate = new Date(exactDate);
+      }
+
       // Build search conditions
       const searchConditions: Prisma.ChallengeWhereInput[] = [];
 
       if (search) {
-        searchConditions.push(
-          { title: { contains: search, mode: 'insensitive' } },
-          { slug: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        );
-      }
-
-      if (title) {
         searchConditions.push({
-          title: { contains: title, mode: 'insensitive' },
+          name: { contains: search, mode: 'insensitive' },
         });
       }
 
-      if (slug) {
+      if (name) {
         searchConditions.push({
-          slug: { contains: slug, mode: 'insensitive' },
+          name: { contains: name, mode: 'insensitive' },
         });
       }
 
@@ -138,9 +180,26 @@ export class ChallengesService {
         },
         take: limit,
         skip: offset,
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
+        },
       });
 
-      return new PaginatedResponseDto(challenges, total, limit, offset);
+      const challengesWithComputed = challenges.map((challenge) =>
+        this.addComputedFields(challenge),
+      );
+
+      return new PaginatedResponseDto(
+        challengesWithComputed,
+        total,
+        limit,
+        offset,
+      );
     } catch (error) {
       throw new BadRequestException(
         `Failed to fetch paginated challenges: ${error.message}`,
@@ -158,6 +217,12 @@ export class ChallengesService {
               school: true,
             },
           },
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
           _count: {
             select: {
               schoolChallenges: true,
@@ -171,7 +236,7 @@ export class ChallengesService {
         throw new NotFoundException(`Challenge with ID ${id} not found`);
       }
 
-      return challenge;
+      return this.addComputedFields(challenge);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -185,32 +250,82 @@ export class ChallengesService {
   async update(id: string, dto: UpdateChallengeDto): Promise<Challenge> {
     try {
       // Check if challenge exists
-      await this.findOne(id);
+      const existingChallenge = await this.findOne(id);
 
-      // Check if slug is being changed and if it already exists
-      if (dto.slug) {
-        const existingChallenge = await this.prisma.challenge.findUnique({
-          where: { slug: dto.slug },
-        });
+      const updateData: Prisma.ChallengeUpdateInput = {};
 
-        if (existingChallenge && existingChallenge.id !== id) {
-          throw new ConflictException(
-            `Challenge with slug ${dto.slug} already exists`,
-          );
+      // Update grade if provided
+      if (dto.grade !== undefined) {
+        updateData.grade = dto.grade;
+      }
+
+      // Update type if provided
+      if (dto.type !== undefined) {
+        updateData.type = dto.type;
+      }
+
+      // Update isDemo if provided
+      if (dto.isDemo !== undefined) {
+        updateData.isDemo = dto.isDemo;
+      }
+
+      // Update exactDate and recalculate year if exactDate is provided
+      if (dto.exactDate !== undefined) {
+        const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+        updateData.exactDate = exactDate;
+        updateData.year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
+      }
+
+      // Update stage if provided
+      if (dto.stage !== undefined) {
+        updateData.stage = dto.stage;
+      }
+
+      // Update isActive if provided
+      if (dto.isActive !== undefined) {
+        updateData.isActive = dto.isActive;
+      }
+
+      // Regenerate name if any relevant field changed
+      if (dto.grade !== undefined || dto.type !== undefined || dto.isDemo !== undefined || dto.exactDate !== undefined) {
+        const grade = dto.grade ?? existingChallenge.grade;
+        const type = dto.type ?? existingChallenge.type;
+        const isDemo = dto.isDemo ?? existingChallenge.isDemo;
+
+        let year: number;
+        if (dto.exactDate !== undefined) {
+          const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+          year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
+        } else {
+          year = existingChallenge.year ?? new Date().getFullYear();
         }
+
+        const gradeFormatted = grade
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+
+        const typeFormatted = type.charAt(0).toUpperCase() + type.slice(1);
+        const demoSuffix = isDemo ? ' - Demo' : '';
+        updateData.name = `${year} - ${gradeFormatted} - ${typeFormatted}${demoSuffix}`;
       }
 
       const challenge = await this.prisma.challenge.update({
         where: { id },
-        data: dto,
+        data: updateData,
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
+        },
       });
 
-      return challenge;
+      return this.addComputedFields(challenge);
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
+      if (error instanceof NotFoundException) {
         throw error;
       }
       throw new BadRequestException(
@@ -266,56 +381,79 @@ export class ChallengesService {
     }
   }
 
-  async findByCategory(category: string): Promise<Challenge[]> {
+  async findByGrade(grade: string): Promise<Challenge[]> {
     try {
       const challenges = await this.prisma.challenge.findMany({
-        where: { category },
+        where: { grade },
         orderBy: {
-          title: 'asc',
+          name: 'asc',
+        },
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
         },
       });
 
-      return challenges;
+      return challenges.map((challenge) => this.addComputedFields(challenge));
     } catch (error) {
       throw new BadRequestException(
-        `Failed to fetch challenges by category: ${error.message}`,
+        `Failed to fetch challenges by grade: ${error.message}`,
       );
     }
   }
 
-  async findByLevel(level: string): Promise<Challenge[]> {
+  async findByType(type: string): Promise<Challenge[]> {
     try {
       const challenges = await this.prisma.challenge.findMany({
-        where: { level },
+        where: { type },
         orderBy: {
-          title: 'asc',
+          name: 'asc',
+        },
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
         },
       });
 
-      return challenges;
+      return challenges.map((challenge) => this.addComputedFields(challenge));
     } catch (error) {
       throw new BadRequestException(
-        `Failed to fetch challenges by level: ${error.message}`,
+        `Failed to fetch challenges by type: ${error.message}`,
       );
     }
   }
 
-  async findPublished(): Promise<Challenge[]> {
+  async findActive(): Promise<Challenge[]> {
     try {
       const challenges = await this.prisma.challenge.findMany({
         where: {
-          isPublished: true,
           isActive: true,
         },
         orderBy: {
           createdAt: 'desc',
         },
+        include: {
+          questions: {
+            select: {
+              id: true,
+              timeLimit: true,
+            },
+          },
+        },
       });
 
-      return challenges;
+      return challenges.map((challenge) => this.addComputedFields(challenge));
     } catch (error) {
       throw new BadRequestException(
-        `Failed to fetch published challenges: ${error.message}`,
+        `Failed to fetch active challenges: ${error.message}`,
       );
     }
   }

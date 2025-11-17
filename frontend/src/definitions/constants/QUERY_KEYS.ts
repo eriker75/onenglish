@@ -1,4 +1,4 @@
-import { QuestionStage } from "../types/QuestionStage";
+import { QuestionStage } from "../types/Question";
 
 export const QUERY_KEYS = {
   STUDENTS: "students" as const,

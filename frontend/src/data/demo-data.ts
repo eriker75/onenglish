@@ -808,7 +808,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '1',
           name: 'Challenge 5th Grade - Regular',
-          grade: '5th grade',
+          grade: '5th_grade',
           type: 'regular',
           totalQuestions: 28,
           totalTime: 120,
@@ -820,7 +820,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '2',
           name: 'Challenge 6th Grade - Regular',
-          grade: '6th grade',
+          grade: '6th_grade',
           type: 'regular',
           totalQuestions: 35,
           totalTime: 150,
@@ -832,7 +832,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '3',
           name: 'Challenge 1st Year - Regular',
-          grade: '1st year',
+          grade: '1st_year',
           type: 'regular',
           totalQuestions: 44,
           totalTime: 180,
@@ -844,7 +844,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '4',
           name: 'Challenge 5th Grade - Bilingual',
-          grade: '5th grade',
+          grade: '5th_grade',
           type: 'bilingual',
           totalQuestions: 44,
           totalTime: 180,
@@ -856,7 +856,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '5',
           name: 'Challenge 6th Grade - Bilingual',
-          grade: '6th grade',
+          grade: '6th_grade',
           type: 'bilingual',
           totalQuestions: 54,
           totalTime: 210,
@@ -868,7 +868,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '6',
           name: 'Challenge 2nd Year - Regular',
-          grade: '2nd year',
+          grade: '2nd_year',
           type: 'regular',
           totalQuestions: 50,
           totalTime: 195,
@@ -880,7 +880,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '7',
           name: 'Challenge 3rd Year - Bilingual',
-          grade: '3rd year',
+          grade: '3rd_year',
           type: 'bilingual',
           totalQuestions: 58,
           totalTime: 225,
@@ -892,7 +892,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '8',
           name: 'Challenge 4th Year - Regular',
-          grade: '4th year',
+          grade: '4th_year',
           type: 'regular',
           totalQuestions: 52,
           totalTime: 200,
@@ -904,7 +904,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '9',
           name: 'Challenge 5th Year - Bilingual',
-          grade: '5th year',
+          grade: '5th_year',
           type: 'bilingual',
           totalQuestions: 60,
           totalTime: 240,
@@ -916,7 +916,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '10',
           name: 'Challenge 2nd Year - Bilingual',
-          grade: '2nd year',
+          grade: '2nd_year',
           type: 'bilingual',
           totalQuestions: 55,
           totalTime: 210,
@@ -928,7 +928,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '11',
           name: 'Challenge 3rd Year - Regular',
-          grade: '3rd year',
+          grade: '3rd_year',
           type: 'regular',
           totalQuestions: 48,
           totalTime: 190,
@@ -940,7 +940,7 @@ export async function getDemoChallenges(): Promise<DemoChallenge[]> {
         {
           id: '12',
           name: 'Challenge 4th Year - Bilingual',
-          grade: '4th year',
+          grade: '4th_year',
           type: 'bilingual',
           totalQuestions: 62,
           totalTime: 250,

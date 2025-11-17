@@ -8,3 +8,4 @@ export * from './coordinators';
 export * from './schools';
 export * from './admins';
 export * from './challenges';
+export * from './questions';

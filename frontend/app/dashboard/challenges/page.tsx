@@ -16,14 +16,7 @@ import { getDemoChallenges } from "@/src/data/demo-data";
 import { cn } from "@/lib/utils";
 import { useGenericModal } from "@/src/contexts/GenericModalContext";
 import AddChallengeModal from "./components/AddChallengeModal";
-
-interface ChallengeFormData {
-  grade: string;
-  type: 'regular' | 'bilingual';
-  isDemo: boolean;
-  exactDate: string;
-  stage: string;
-}
+import { formatGrade } from "@/src/utils/formatters";
 
 const ChallengesPage = () => {
   const router = useRouter();
@@ -41,7 +34,7 @@ const ChallengesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const grades = ["5th grade", "6th grade", "1st year", "2nd year", "3rd year", "4th year", "5th year"];
+  const grades = ["5th_grade", "6th_grade", "1st_year", "2nd_year", "3rd_year", "4th_year", "5th_year"];
   const stages = ["Regional", "State", "National"];
 
   const handleOpenAddChallengeModal = () => {
@@ -50,47 +43,13 @@ const ChallengesPage = () => {
       size: "2xl",
       content: (
         <AddChallengeModal
-          onSubmit={handleAddChallenge}
+          onSuccess={(challengeId) => {
+            // Navigate to the challenge detail page after creation
+            router.push(`/dashboard/challenges/${challengeId}`);
+          }}
         />
       ),
     });
-  };
-
-  const handleAddChallenge = (data: ChallengeFormData) => {
-    // Extract year from exactDate
-    const year = new Date(data.exactDate).getFullYear();
-    
-    // Generate a UUID for the challenge
-    const uuid = crypto.randomUUID();
-    
-    // Generate a name for the challenge
-    const challengeName = `Challenge ${data.grade} - ${data.type === 'bilingual' ? 'Bilingual' : 'Regular'}`;
-    
-    // Create new challenge object
-    const newChallenge = {
-      id: uuid,
-      name: challengeName,
-      grade: data.grade,
-      type: data.type,
-      totalQuestions: 0, // Will be set when questions are added
-      totalTime: 0, // Will be calculated based on questions
-      isDemo: data.isDemo,
-      year: year,
-      exactDate: data.exactDate,
-      stage: data.stage,
-    };
-
-    // Save to localStorage so it can be loaded in the edit page
-    localStorage.setItem(`challenge-${uuid}`, JSON.stringify(newChallenge));
-
-    // Add to challenges list
-    setChallenges([...challenges, newChallenge]);
-    
-    // You can add API call here to persist the challenge
-    console.log("Creating challenge:", newChallenge);
-    
-    // Redirect to the challenge edit page
-    router.push(`/dashboard/challenges/${uuid}`);
   };
 
   useEffect(() => {
@@ -276,7 +235,7 @@ const ChallengesPage = () => {
                 <option value="all">All Grades</option>
                   {grades.map((grade) => (
                   <option key={grade} value={grade}>
-                      {grade}
+                      {formatGrade(grade)}
                   </option>
                 ))}
               </select>
@@ -438,7 +397,7 @@ const ChallengesPage = () => {
                         {challenge.stage || "N/A"}
                     </td>
                       <td className="px-4 py-3 text-gray-600 text-sm">
-                        {challenge.grade}
+                        {formatGrade(challenge.grade)}
                     </td>
                       <td className="px-4 py-3">
                         <span

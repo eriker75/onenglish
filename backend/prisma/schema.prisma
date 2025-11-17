@@ -159,14 +159,13 @@ model UserPermission {
 
 model Challenge {
   id                String             @id @default(uuid())
-  title             String
-  slug              String             @unique
-  description       String?
-  category          String // listening, speaking, grammar, vocabulary, mixed
-  level             String // A1, A2, B1, B2, C1, C2
-  difficulty        String // easy, medium, hard
-  totalPoints       Int                @default(0)
-  isPublished       Boolean            @default(false)
+  name              String
+  grade             String // 5th_grade, 6th_grade, 1st_year, 2nd_year, 3rd_year, 4th_year, 5th_year
+  type              String // regular, bilingual
+  isDemo            Boolean            @default(false)
+  year              Int?
+  exactDate         DateTime?
+  stage             String? // Regional, State, National
   isActive          Boolean            @default(true)
   schoolChallenges  SchoolChallenge[]
   studentChallenges StudentChallenge[]
@@ -175,11 +174,12 @@ model Challenge {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  @@index([slug])
-  @@index([category])
-  @@index([level])
-  @@index([difficulty])
-  @@index([isPublished])
+  @@index([grade])
+  @@index([type])
+  @@index([year])
+  @@index([stage])
+  @@index([isDemo])
+  @@index([isActive])
   @@map("challenges")
 }
 

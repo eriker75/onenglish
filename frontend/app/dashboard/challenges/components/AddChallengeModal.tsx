@@ -3,39 +3,63 @@
 import { useState } from "react";
 import { useGenericModal } from "@/src/contexts/GenericModalContext";
 import { cn } from "@/lib/utils";
-
-interface ChallengeFormData {
-  grade: string;
-  type: 'regular' | 'bilingual';
-  isDemo: boolean;
-  exactDate: string;
-  stage: string;
-}
+import { useCreateChallenge } from "@/src/services/challenges";
+import { CreateChallengeDto } from "@/src/definitions/dtos/requests/challenges";
+import { formatGrade } from "@/src/utils/formatters";
+import { useRouter } from "next/navigation";
 
 interface AddChallengeModalProps {
-  onSubmit: (data: ChallengeFormData) => void;
+  // Optional callback for custom handling after creation
+  onSuccess?: (challengeId: string) => void;
 }
 
-const AddChallengeModal = ({ onSubmit }: AddChallengeModalProps) => {
+const AddChallengeModal = ({ onSuccess }: AddChallengeModalProps) => {
+  const router = useRouter();
   const { closeModal } = useGenericModal();
-  const [formData, setFormData] = useState<ChallengeFormData>({
-    grade: "",
+  const createChallengeMutation = useCreateChallenge();
+
+  const [formData, setFormData] = useState<CreateChallengeDto>({
+    grade: "5th_grade",
     type: "regular",
     isDemo: false,
     exactDate: "",
-    stage: ""
+    stage: undefined,
+    isActive: true,
   });
 
-  const grades = ["5th grade", "6th grade", "1st year", "2nd year", "3rd year", "4th year", "5th year"];
-  const stages = ["Regional", "State", "National"];
+  const grades: CreateChallengeDto["grade"][] = [
+    "5th_grade",
+    "6th_grade",
+    "1st_year",
+    "2nd_year",
+    "3rd_year",
+    "4th_year",
+    "5th_year",
+  ];
+  const stages = ["Regional", "State", "National"] as const;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.grade || !formData.exactDate || !formData.stage) {
       return;
     }
-    onSubmit(formData);
-    closeModal();
+
+    try {
+      const result = await createChallengeMutation.mutateAsync(formData);
+
+      // Close modal first
+      closeModal();
+
+      // Navigate to the new challenge's detail page or call custom callback
+      if (onSuccess) {
+        onSuccess(result.id);
+      } else {
+        router.push(`/dashboard/challenges/${result.id}`);
+      }
+    } catch (error) {
+      console.error("Error creating challenge:", error);
+      // You could add toast notification here
+    }
   };
 
   const handleChange = (
@@ -89,7 +113,7 @@ const AddChallengeModal = ({ onSubmit }: AddChallengeModalProps) => {
             <option value="">Select grade</option>
             {grades.map((grade) => (
               <option key={grade} value={grade}>
-                {grade}
+                {formatGrade(grade)}
               </option>
             ))}
           </select>
@@ -208,15 +232,27 @@ const AddChallengeModal = ({ onSubmit }: AddChallengeModalProps) => {
           <button
             type="button"
             onClick={closeModal}
-            className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+            disabled={createChallengeMutation.isPending}
+            className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="flex-1 bg-[#33CC00] hover:bg-[#33CC00]/90 text-white py-3 rounded-lg font-semibold transition-all"
+            disabled={createChallengeMutation.isPending}
+            className="flex-1 bg-[#33CC00] hover:bg-[#33CC00]/90 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            Create Challenge
+            {createChallengeMutation.isPending ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating...
+              </>
+            ) : (
+              "Create Challenge"
+            )}
           </button>
         </div>
       </form>

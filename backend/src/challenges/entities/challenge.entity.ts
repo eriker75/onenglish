@@ -1,42 +1,56 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Challenge as PrismaChallenge } from '@prisma/client';
 
-export class Challenge implements PrismaChallenge {
+export class Challenge {
   @ApiProperty({ description: 'Challenge ID' })
   id: string;
 
-  @ApiProperty({ description: 'Challenge title' })
-  title: string;
-
-  @ApiProperty({ description: 'Challenge slug (unique)' })
-  slug: string;
-
-  @ApiProperty({ description: 'Challenge description', required: false, nullable: true })
-  description: string | null;
+  @ApiProperty({ description: 'Challenge name' })
+  name: string;
 
   @ApiProperty({
-    description: 'Challenge category',
-    enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+    description: 'Grade level',
+    enum: [
+      '5th_grade',
+      '6th_grade',
+      '1st_year',
+      '2nd_year',
+      '3rd_year',
+      '4th_year',
+      '5th_year',
+    ],
   })
-  category: string;
+  grade: string;
 
   @ApiProperty({
-    description: 'Challenge level',
-    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+    description: 'Challenge type',
+    enum: ['regular', 'bilingual'],
   })
-  level: string;
+  type: string;
+
+  @ApiProperty({ description: 'Whether the challenge is a demo' })
+  isDemo: boolean;
 
   @ApiProperty({
-    description: 'Challenge difficulty',
-    enum: ['easy', 'medium', 'hard'],
+    description: 'Year of the challenge',
+    required: false,
+    nullable: true,
   })
-  difficulty: string;
+  year: number | null;
 
-  @ApiProperty({ description: 'Total points for the challenge' })
-  totalPoints: number;
+  @ApiProperty({
+    description: 'Exact date of the challenge',
+    required: false,
+    nullable: true,
+  })
+  exactDate: Date | null;
 
-  @ApiProperty({ description: 'Whether the challenge is published' })
-  isPublished: boolean;
+  @ApiProperty({
+    description: 'Challenge stage',
+    enum: ['Regional', 'State', 'National'],
+    required: false,
+    nullable: true,
+  })
+  stage: string | null;
 
   @ApiProperty({ description: 'Whether the challenge is active' })
   isActive: boolean;
@@ -46,4 +60,11 @@ export class Challenge implements PrismaChallenge {
 
   @ApiProperty({ description: 'Last update date' })
   updatedAt: Date;
+
+  // Computed fields (not in database)
+  @ApiProperty({ description: 'Total number of questions (computed)' })
+  totalQuestions?: number;
+
+  @ApiProperty({ description: 'Total time in minutes (computed)' })
+  totalTime?: number;
 }

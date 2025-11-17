@@ -32,16 +32,18 @@ import { PaginatedResponseDto } from '../common/dtos/pagination.dto';
 export class ChallengesController {
   constructor(private readonly challengesService: ChallengesService) {}
 
-  @Post()
+  /*   @Post()
   @Auth(ValidRole.ADMIN, ValidRole.COORDINATOR)
-  @ApiBearerAuth()
+  @ApiBearerAuth() */
+  @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Create a new challenge (Admin or Coordinator only)',
+    summary: 'Create a new challenge',
+    description: 'Creates a new challenge. The name and year are automatically generated. Name format: "{year} - {Grade} - {Type} - Demo (if applicable)"',
   })
   @ApiResponse({
     status: 201,
-    description: 'Challenge successfully created',
+    description: 'Challenge successfully created. Name and year are auto-generated.',
     type: Challenge,
   })
   @ApiResponse({
@@ -55,10 +57,6 @@ export class ChallengesController {
   @ApiResponse({
     status: 403,
     description: 'Forbidden - User does not have required role',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - Challenge with same slug already exists',
   })
   create(@Body() createChallengeDto: CreateChallengeDto): Promise<Challenge> {
     return this.challengesService.create(createChallengeDto);
@@ -82,52 +80,52 @@ export class ChallengesController {
     return this.challengesService.findAllPaginated(query);
   }
 
-  @Get('published')
+  @Get('active')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get all published and active challenges' })
+  @ApiOperation({ summary: 'Get all active challenges' })
   @ApiResponse({
     status: 200,
-    description: 'List of published challenges retrieved successfully',
+    description: 'List of active challenges retrieved successfully',
     type: [Challenge],
   })
   @ApiResponse({
     status: 400,
     description: 'Bad request',
   })
-  findPublished(): Promise<Challenge[]> {
-    return this.challengesService.findPublished();
+  findActive(): Promise<Challenge[]> {
+    return this.challengesService.findActive();
   }
 
-  @Get('category/:category')
+  @Get('grade/:grade')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get challenges by category' })
+  @ApiOperation({ summary: 'Get challenges by grade' })
   @ApiResponse({
     status: 200,
-    description: 'List of challenges by category retrieved successfully',
+    description: 'List of challenges by grade retrieved successfully',
     type: [Challenge],
   })
   @ApiResponse({
     status: 400,
     description: 'Bad request',
   })
-  findByCategory(@Param('category') category: string): Promise<Challenge[]> {
-    return this.challengesService.findByCategory(category);
+  findByGrade(@Param('grade') grade: string): Promise<Challenge[]> {
+    return this.challengesService.findByGrade(grade);
   }
 
-  @Get('level/:level')
+  @Get('type/:type')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get challenges by level' })
+  @ApiOperation({ summary: 'Get challenges by type' })
   @ApiResponse({
     status: 200,
-    description: 'List of challenges by level retrieved successfully',
+    description: 'List of challenges by type retrieved successfully',
     type: [Challenge],
   })
   @ApiResponse({
     status: 400,
     description: 'Bad request',
   })
-  findByLevel(@Param('level') level: string): Promise<Challenge[]> {
-    return this.challengesService.findByLevel(level);
+  findByType(@Param('type') type: string): Promise<Challenge[]> {
+    return this.challengesService.findByType(type);
   }
 
   @Get(':id')
@@ -154,10 +152,13 @@ export class ChallengesController {
   @Auth(ValidRole.ADMIN, ValidRole.COORDINATOR)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update challenge (Admin or Coordinator only)' })
+  @ApiOperation({
+    summary: 'Update challenge',
+    description: 'Updates a challenge. If any of grade, type, isDemo, or exactDate are modified, the name will be automatically regenerated. Year is recalculated from exactDate if provided.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Challenge successfully updated',
+    description: 'Challenge successfully updated. Name and year may be auto-regenerated based on changes.',
     type: Challenge,
   })
   @ApiResponse({
@@ -175,10 +176,6 @@ export class ChallengesController {
   @ApiResponse({
     status: 404,
     description: 'Challenge not found',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - Challenge with same slug already exists',
   })
   update(
     @Param('id', ParseUUIDPipe) id: string,

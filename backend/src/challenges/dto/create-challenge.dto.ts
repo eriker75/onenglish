@@ -3,67 +3,67 @@ import {
   IsString,
   IsNotEmpty,
   IsOptional,
-  IsInt,
   IsBoolean,
   IsIn,
-  Min,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateChallengeDto {
-  @ApiProperty({ description: 'Challenge title' })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty({ description: 'Challenge slug (unique identifier)' })
-  @IsString()
-  @IsNotEmpty()
-  slug: string;
-
-  @ApiProperty({ description: 'Challenge description', required: false })
-  @IsString()
-  @IsOptional()
-  description?: string;
-
   @ApiProperty({
-    description: 'Challenge category',
-    enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+    description: 'Grade level',
+    enum: ['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'],
+    example: '5th_grade',
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'])
-  category: string;
+  @IsIn(['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'])
+  grade: string;
 
   @ApiProperty({
-    description: 'Challenge level',
-    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+    description: 'Challenge type',
+    enum: ['regular', 'bilingual'],
+    example: 'bilingual',
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
-  level: string;
+  @IsIn(['regular', 'bilingual'])
+  type: string;
 
   @ApiProperty({
-    description: 'Challenge difficulty',
-    enum: ['easy', 'medium', 'hard'],
+    description: 'Whether the challenge is a demo',
+    default: false,
+    example: true,
   })
-  @IsString()
-  @IsNotEmpty()
-  @IsIn(['easy', 'medium', 'hard'])
-  difficulty: string;
-
-  @ApiProperty({ description: 'Total points for the challenge', default: 0 })
-  @IsInt()
-  @Min(0)
-  @IsOptional()
-  totalPoints?: number;
-
-  @ApiProperty({ description: 'Whether the challenge is published', default: false })
   @IsBoolean()
   @IsOptional()
-  isPublished?: boolean;
+  isDemo?: boolean;
 
-  @ApiProperty({ description: 'Whether the challenge is active', default: true })
+  @ApiProperty({
+    description: 'Exact date of the challenge in ISO 8601 format (YYYY-MM-DD)',
+    required: false,
+    example: '2024-06-15',
+    type: String,
+  })
+  @IsDateString()
+  @IsOptional()
+  exactDate?: string;
+
+  @ApiProperty({
+    description: 'Challenge stage',
+    enum: ['Regional', 'State', 'National'],
+    required: false,
+    example: 'National',
+  })
+  @IsString()
+  @IsOptional()
+  @IsIn(['Regional', 'State', 'National'])
+  stage?: string;
+
+  @ApiProperty({
+    description: 'Whether the challenge is active',
+    default: true,
+    example: true,
+  })
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
