@@ -1,0 +1,58 @@
+import { Teacher } from "../definitions/interfaces/teachers";
+
+export const teachers: Teacher[] = [
+  {
+    id: 1,
+    fullName: "Prof. Carmen Rodriguez",
+    email: "carmen.rodriguez@school.edu.ve",
+    phone: "+58 412-1234567",
+    birthDate: "1978-05-15",
+    school: "School Bolivariano Andrés Bello",
+    liceoType: "Bilingüe",
+  },
+  {
+    id: 2,
+    fullName: "Prof. Jose Martinez",
+    email: "jose.martinez@school.edu.ve",
+    phone: "+58 414-2345678",
+    birthDate: "1990-03-22",
+    school: "U.E. Juan XXIII",
+    liceoType: "Regular",
+  },
+  {
+    id: 3,
+    fullName: "Prof. Sofia Herrera",
+    email: "sofia.herrera@school.edu.ve",
+    phone: "+58 416-3456789",
+    birthDate: "1985-09-10",
+    school: "Colegio Emmanuel",
+    liceoType: "Bilingüe",
+  },
+  {
+    id: 4,
+    fullName: "Prof. Roberto Gutierrez",
+    email: "roberto.gutierrez@school.edu.ve",
+    phone: "+58 412-4567890",
+    birthDate: "1972-11-28",
+    school: "School Bolivariano Andrés Bello",
+    liceoType: "Bilingüe",
+  },
+  {
+    id: 5,
+    fullName: "Prof. Laura Perez",
+    email: "laura.perez@school.edu.ve",
+    phone: "+58 414-5678901",
+    birthDate: "1995-07-04",
+    school: "Colegio Emmanuel",
+    liceoType: "Bilingüe",
+  },
+  {
+    id: 6,
+    fullName: "Prof. Miguel Torres",
+    email: "miguel.torres@school.edu.ve",
+    phone: "+58 416-6789012",
+    birthDate: "1988-12-17",
+    school: "U.E. Juan XXIII",
+    liceoType: "Regular",
+  },
+];

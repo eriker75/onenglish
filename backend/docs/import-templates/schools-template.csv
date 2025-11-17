@@ -1,0 +1,4 @@
+name,email,phone,city,state,type,website,address,postalCode,description,isActive
+U.E. Colegio Los Arcos,contacto@losarcos.edu.ve,+58424-1234567,Caracas,Distrito Capital,public,https://www.losarcos.edu.ve,Av. Principal de Los Ruices,1071,Institución educativa de excelencia,true
+Colegio San Agustín,info@sanagustin.edu.ve,+58424-7654321,Valencia,Carabobo,private,https://www.sanagustin.edu.ve,Calle 100 Centro,2001,Educación integral de calidad,true
+

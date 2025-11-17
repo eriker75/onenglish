@@ -1,0 +1,548 @@
+// PostgreSQL Schema - For structured data
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// USER MANAGEMENT MODELS
+// ========================================
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  username        String?          @unique
+  password        String?
+  firstName       String
+  lastName        String
+  phone           String?
+  avatar          String?
+  bio             String?
+  isOnline        Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  isVerified      Boolean          @default(false)
+  lastLoginAt     DateTime?
+  emailVerifiedAt DateTime?
+  coordinator     Coordinator?
+  teacher         Teacher?
+  student         Student?
+  admin           Admin?
+  roles           UserRole[]
+  permissions     UserPermission[]
+  settings        UserSetting?
+  activities      UserActivity[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+model UserSetting {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme              String   @default("light") // light, dark, auto
+  language           String   @default("en") // en, es, fr, etc
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  soundEffects       Boolean  @default(true)
+  weeklyReport       Boolean  @default(true)
+  timezone           String   @default("UTC")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model UserActivity {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String // login, logout, start_challenge, complete_phase, etc
+  resource   String? // challenge, phase, question
+  resourceId String? // ID of the resource
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json? // Additional data about the activity
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("user_activities")
+}
+
+// ========================================
+// ROLE & PERMISSION MODELS
+// ========================================
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  isActive    Boolean          @default(true)
+  users       UserRole[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([name])
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  resource    String
+  action      String
+  description String?
+  roles       RolePermission[]
+  users       UserPermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([resource, action])
+  @@map("permissions")
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String
+  permissionId String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, permissionId])
+  @@index([userId])
+  @@index([permissionId])
+  @@map("user_permissions")
+}
+
+// ========================================
+// CHALLENGE SYSTEM MODELS
+// ========================================
+
+model Challenge {
+  id                String             @id @default(uuid())
+  title             String
+  slug              String             @unique
+  description       String?
+  category          String // listening, speaking, grammar, vocabulary, mixed
+  level             String // A1, A2, B1, B2, C1, C2
+  difficulty        String // easy, medium, hard
+  totalPoints       Int                @default(0)
+  isPublished       Boolean            @default(false)
+  isActive          Boolean            @default(true)
+  schoolChallenges  SchoolChallenge[]
+  studentChallenges StudentChallenge[]
+  questions         Question[]
+  studentAnswers    StudentAnswer[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([level])
+  @@index([difficulty])
+  @@index([isPublished])
+  @@map("challenges")
+}
+
+// ========================================
+// USER ROLES MODELS
+// ========================================
+
+model Teacher {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  bio       String?
+  avatar    String?
+  isActive  Boolean  @default(true)
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  user      User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([schoolId])
+  @@map("teachers")
+}
+
+model Coordinator {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  bio       String?
+  avatar    String?
+  isActive  Boolean  @default(true)
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  user      User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([schoolId])
+  @@map("coordinators")
+}
+
+model Student {
+  id                String             @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String             @unique
+  phone             String?
+  bio               String?
+  avatar            String?
+  isActive          Boolean            @default(true)
+  schoolId          String?
+  school            School?            @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  user              User               @relation(fields: [id], references: [id], onDelete: Cascade)
+  userId            String
+  studentChallenges StudentChallenge[]
+  answers           StudentAnswer[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([email])
+  @@index([schoolId])
+  @@map("students")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?
+  bio       String?
+  avatar    String?
+  isActive  Boolean  @default(true)
+  user      User     @relation(fields: [id], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("admins")
+}
+
+// ========================================
+// SCHOOL CHALLENGE MODELS
+// ========================================
+
+model SchoolChallenge {
+  id          String    @id @default(uuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([schoolId, challengeId])
+  @@index([schoolId])
+  @@index([challengeId])
+  @@index([isActive])
+  @@map("school_challenges")
+}
+
+// ========================================
+// STUDENT CHALLENGE MODELS
+// ========================================
+
+model StudentChallenge {
+  id             String    @id @default(uuid())
+  studentId      String
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  challengeId    String
+  challenge      Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  assignedAt     DateTime  @default(now())
+  dueDate        DateTime? // Optional deadline
+  // Progress tracking fields (merged from UserProgress)
+  currentPhase   Int       @default(1) // Current phase student is on (1-5)
+  totalScore     Int       @default(0)
+  totalTimeSpent Int       @default(0) // Total time in seconds
+  isCompleted    Boolean   @default(false)
+  completedAt    DateTime?
+  startedAt      DateTime  @default(now())
+  lastActivityAt DateTime  @default(now())
+  notes          String? // Notes from teacher
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([studentId, challengeId])
+  @@index([studentId])
+  @@index([challengeId])
+  @@index([isCompleted])
+  @@index([currentPhase])
+  @@index([dueDate])
+  @@map("student_challenges")
+}
+
+// ========================================
+// SCHOOL MODELS
+// ========================================
+
+model School {
+  id               String                @id @default(uuid())
+  schoolId         Int                   @unique @default(autoincrement()) // Friendly sequential ID
+  name             String
+  code             String                @unique // Auto-generated school code (SCH0001, SCH0002, ..., SCH9999, SCH00001)
+  type             String // School type (public, private, etc.)
+  email            String
+  phone            String
+  city             String
+  state            String
+  country          String                @default("Venezuela")
+  address          String?
+  postalCode       String?
+  website          String?
+  description      String?
+  isActive         Boolean               @default(true)
+  coordinators     Coordinator[]
+  teachers         Teacher[]
+  students         Student[]
+  schoolChallenges SchoolChallenge[]
+  questionStats    QuestionSchoolStats[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([name])
+  @@index([code])
+  @@index([schoolId])
+  @@index([isActive])
+  @@map("schools")
+}
+
+// ========================================
+// AUDIT & SYSTEM MODELS
+// ========================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String? // User who performed the action
+  action    String // create, update, delete, login, etc
+  entity    String // User, Challenge, Phase, etc
+  entityId  String? // ID of affected entity
+  changes   Json? // Changes made (before/after)
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entity])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model ErrorLog {
+  id         String    @id @default(uuid())
+  userId     String?
+  errorType  String
+  message    String
+  stack      String?
+  context    Json? // Request, params, body, etc
+  severity   String    @default("error") // error, warning, critical
+  isResolved Boolean   @default(false)
+  resolvedAt DateTime?
+  timestamp  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([errorType])
+  @@index([severity])
+  @@index([timestamp])
+  @@index([isResolved])
+  @@map("error_logs")
+}
+
+// ========================================
+// QUESTIONS SYSTEM MODELS
+// ========================================
+
+enum QuestionStage {
+  VOCABULARY
+  GRAMMAR
+  LISTENING
+  WRITING
+  SPEAKING
+}
+
+enum ValidationMethod {
+  AUTO
+  IA
+}
+
+model Question {
+  id               String                    @id @default(uuid())
+  challengeId      String
+  challenge        Challenge                 @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  stage            QuestionStage
+  phase            String
+  position         Int
+  type             String
+  points           Int
+  timeLimit        Int
+  maxAttempts      Int
+  text             String
+  instructions     String
+  validationMethod ValidationMethod
+  content          Json?
+  options          Json?
+  answer           Json?
+  parentQuestionId String?
+  parentQuestion   Question?                 @relation("QuestionHierarchy", fields: [parentQuestionId], references: [id], onDelete: Cascade)
+  subQuestions     Question[]                @relation("QuestionHierarchy")
+  questionMedia    QuestionMedia[]
+  configurations   QuestionConfiguration[]
+  studentAnswers   StudentAnswer[]
+  questionStats    QuestionSchoolStats[]
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  @@index([challengeId, stage, phase])
+  @@index([parentQuestionId])
+  @@index([type])
+  @@map("questions")
+}
+
+// Pivot table: Question-Student (student answers)
+model StudentAnswer {
+  id              String    @id @default(uuid())
+  studentId       String
+  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  challengeId     String
+  challenge       Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  userAnswer      Json
+  isCorrect       Boolean
+  attemptNumber   Int       @default(1)
+  timeSpent       Int       @default(0)
+  pointsEarned    Int       @default(0)
+  feedbackEnglish String?
+  feedbackSpanish String?
+  audioUrl        String?
+  answeredAt      DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([studentId, questionId, attemptNumber])
+  @@index([studentId])
+  @@index([questionId])
+  @@index([challengeId])
+  @@index([isCorrect])
+  @@index([answeredAt])
+  @@map("student_answers")
+}
+
+// Pivot table: Question-School (for aggregated metrics)
+model QuestionSchoolStats {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  schoolId   String
+  school     School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([questionId, schoolId])
+  @@index([questionId])
+  @@index([schoolId])
+  @@map("question_school_stats")
+}
+
+model MediaFile {
+  id            String          @id @default(uuid())
+  type          String
+  filename      String
+  pathName      String
+  url           String
+  size          Int
+  mimeType      String
+  metadata      Json?
+  questionMedia QuestionMedia[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("media_files")
+}
+
+// ========================================
+// QUESTION MEDIA & CONFIGURATIONS
+// ========================================
+
+model QuestionMedia {
+  id          String    @id @default(uuid())
+  questionId  String
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  mediaFileId String
+  mediaFile   MediaFile @relation(fields: [mediaFileId], references: [id], onDelete: Cascade)
+  position    Int       @default(0)
+  context     String?   @default("main")
+  createdAt   DateTime  @default(now())
+
+  @@unique([questionId, mediaFileId])
+  @@index([questionId])
+  @@index([mediaFileId])
+  @@map("question_media")
+}
+
+model QuestionConfiguration {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  metaKey    String
+  metaValue  String
+  createdAt  DateTime @default(now())
+
+  @@index([questionId])
+  @@index([metaKey])
+  @@map("question_configurations")
+}

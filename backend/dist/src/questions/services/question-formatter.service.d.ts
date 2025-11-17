@@ -1,0 +1,27 @@
+import { EnrichedQuestion, FormattedQuestion } from './types';
+export declare class QuestionFormatterService {
+    formatQuestion(question: EnrichedQuestion): FormattedQuestion | null;
+    formatQuestions(questions: EnrichedQuestion[]): FormattedQuestion[];
+    private formatImageToMultipleChoices;
+    private formatSpelling;
+    private formatWordMatch;
+    private formatWordbox;
+    private formatWordAssociations;
+    private formatUnscramble;
+    private formatFillInTheBlank;
+    private formatVerbConjugation;
+    private formatGossip;
+    private formatTopicBasedAudio;
+    private formatLyricsTraining;
+    private formatSentenceMaker;
+    private formatTales;
+    private formatTagIt;
+    private formatReadIt;
+    private formatTellMeAboutIt;
+    private formatReportIt;
+    private formatDebate;
+    private formatFastTest;
+    private formatSuperbrain;
+    private formatTenses;
+    private formatDefault;
+}

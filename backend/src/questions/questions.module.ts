@@ -1,0 +1,50 @@
+import { Module } from '@nestjs/common';
+import { NestjsFormDataModule } from 'nestjs-form-data';
+import { DatabaseModule } from '../database/database.module';
+import { FilesModule } from '../files/files.module';
+import { AiModule } from '../ai/ai.module';
+// Services
+import { QuestionsService } from './services/questions.service';
+import { QuestionMediaService, QuestionFormatterService } from './services';
+import { QuestionValidationService } from './services/question-validation.service';
+import { QuestionUpdateService } from './services/question-update.service';
+// Controllers
+import { QuestionsCreationController } from './controllers/questions-creation.controller';
+import { QuestionsQueryController } from './controllers/questions-query.controller';
+import { QuestionsAnswerController } from './controllers/questions-answer.controller';
+import { QuestionsUpdateController } from './controllers/questions-update.controller';
+
+@Module({
+  imports: [
+    DatabaseModule,
+    FilesModule,
+    AiModule.forFeature('QUESTIONS_AI', {
+      provider: 'google_genai',
+      apiKey: process.env.GOOGLE_API_KEY || '',
+      model: 'gemini-2.0-flash-exp',
+      temperature: 0.2,
+    }),
+    NestjsFormDataModule,
+  ],
+  controllers: [
+    QuestionsCreationController,
+    QuestionsQueryController,
+    QuestionsAnswerController,
+    QuestionsUpdateController,
+  ],
+  providers: [
+    QuestionsService,
+    QuestionMediaService,
+    QuestionFormatterService,
+    QuestionValidationService,
+    QuestionUpdateService,
+  ],
+  exports: [
+    QuestionsService,
+    QuestionMediaService,
+    QuestionFormatterService,
+    QuestionValidationService,
+    QuestionUpdateService,
+  ],
+})
+export class QuestionsModule {}

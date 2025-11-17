@@ -1,0 +1,4 @@
+firstName,lastName,email,username,password,phone,avatar,bio,schoolId,isActive
+Pedro,Martinez,pedro.martinez@example.com,pedromartinez,CoordPass123,+1234567894,https://example.com/avatar.jpg,Academic coordinator with extensive experience,550e8400-e29b-41d4-a716-446655440000,true
+Ana,Lopez,ana.lopez@example.com,analopez,CoordPass456,+1234567895,,15 years coordinating academic programs,550e8400-e29b-41d4-a716-446655440000,true
+

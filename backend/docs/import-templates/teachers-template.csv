@@ -1,0 +1,4 @@
+firstName,lastName,email,username,password,phone,avatar,bio,schoolId,isActive
+Maria,Garcia,maria.garcia@example.com,mariagarcia,TeacherPass123,+1234567892,https://example.com/avatar.jpg,Experienced English teacher with 10 years of experience,550e8400-e29b-41d4-a716-446655440000,true
+Carlos,Rodriguez,carlos.rodriguez@example.com,carlosrodriguez,TeacherPass456,+1234567893,,Passionate educator,550e8400-e29b-41d4-a716-446655440000,true
+
