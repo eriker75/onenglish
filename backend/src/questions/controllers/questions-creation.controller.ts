@@ -335,10 +335,12 @@ export class QuestionsCreationController {
   // ==================== SPEAKING ENDPOINTS ====================
 
   @Post('superbrain')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a superbrain question',
     description:
-      'Creates a speaking question where students respond to a prompt with a single audio response. Default validation method: IA.',
+      'Creates a speaking question where students respond to a prompt with a single audio response. Optionally includes a decorative reference image. Default validation method: IA.',
   })
   @ApiResponse({
     status: 201,

@@ -144,8 +144,6 @@ export interface FormattedSentenceMakerQuestion extends BaseQuestionFields {
 
 export interface FormattedTalesQuestion extends BaseQuestionFields {
   images: MediaFile[];
-  prompt: string;
-  minWords: number;
 }
 
 export interface FormattedTagItQuestion extends BaseQuestionFields {

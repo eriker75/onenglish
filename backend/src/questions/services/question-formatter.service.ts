@@ -443,12 +443,7 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Media handling
       images: question.media?.filter((m) => m.type === 'image') || [],
-      // Story prompt
-      prompt: question.content,
-      // Minimum words required
-      minWords: parseInt(question.configurations?.minWords || '50'),
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

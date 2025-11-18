@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, ArrayMinSize } from 'class-validator';
 import { BaseCreateQuestionDto } from './base-question.dto';
-import { FileSystemStoredFile, HasMimeType, IsFile, MaxFileSize } from 'nestjs-form-data';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
 export class CreateTalesDto extends BaseCreateQuestionDto {
   @IsFile({ each: true })
@@ -16,4 +21,3 @@ export class CreateTalesDto extends BaseCreateQuestionDto {
   @ArrayMinSize(1)
   media: FileSystemStoredFile[];
 }
-
