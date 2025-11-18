@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -10,10 +10,12 @@ import { FormDataRequest } from 'nestjs-form-data';
 import { QuestionsService } from '../services/questions.service';
 import * as QuestionDtos from '../dto';
 import { Question } from '../entities';
+import { FormDataLoggingInterceptor } from 'src/common/interceptors/form-data-logging.interceptor';
 
 @ApiTags('Questions - Creation')
 @ApiBearerAuth()
 @Controller('questions/create')
+@UseInterceptors(FormDataLoggingInterceptor)
 export class QuestionsCreationController {
   constructor(private readonly questionsService: QuestionsService) {}
 
