@@ -353,10 +353,12 @@ export class QuestionsCreationController {
   }
 
   @Post('tell_me_about_it')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a tell me about it question',
     description:
-      'Creates a speaking question where students create an audio story based on a prompt. Default validation method: IA.',
+      'Creates a speaking question where students create an audio story based on a prompt. Optionally accepts a reference image. Default validation method: IA.',
   })
   @ApiResponse({
     status: 201,

@@ -687,7 +687,11 @@ let QuestionsService = class QuestionsService {
         }
         const questionType = 'tell_me_about_it';
         const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
-        return this.prisma.question.create({
+        let uploadedFile = null;
+        if (dto.media) {
+            uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
+        }
+        const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
@@ -703,6 +707,12 @@ let QuestionsService = class QuestionsService {
                 content: dto.content,
             },
         });
+        if (uploadedFile) {
+            await this.questionMediaService.attachMediaFiles(question.id, [
+                { id: uploadedFile.id, context: 'main', position: 0 },
+            ]);
+        }
+        return this.findOne(question.id);
     }
     async createDebate(dto) {
         await this.validateChallenge(dto.challengeId);

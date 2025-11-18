@@ -215,26 +215,7 @@ export declare class QuestionsController {
         answer: import("@prisma/client/runtime/library").JsonValue | null;
         parentQuestionId: string | null;
     }>;
-    createTellMeAboutIt(dto: QuestionDtos.CreateTellMeAboutItDto): Promise<{
-        id: string;
-        type: string;
-        createdAt: Date;
-        updatedAt: Date;
-        stage: import("@prisma/client").$Enums.QuestionStage;
-        challengeId: string;
-        phase: string;
-        position: number;
-        points: number;
-        timeLimit: number;
-        maxAttempts: number;
-        text: string;
-        instructions: string;
-        validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
-    }>;
+    createTellMeAboutIt(dto: QuestionDtos.CreateTellMeAboutItDto): Promise<import("../services").FormattedQuestion | null>;
     createDebate(dto: QuestionDtos.CreateDebateDto): Promise<import("../services").FormattedQuestion | null>;
     findAll(challengeId?: string, stage?: QuestionStage, phase?: string): Promise<import("../services").FormattedQuestion[]>;
     findOne(id: string): Promise<import("../services").FormattedQuestion | null>;
