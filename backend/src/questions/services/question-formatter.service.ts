@@ -384,15 +384,13 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
+      // Media handling (audio or video)
       audio: question.media?.find((m) => m.type === 'audio') || null,
-      // Sub-questions for lyrics
-      subQuestions:
-        question.subQuestions
-          ?.map((sq) => this.formatQuestion(sq))
-          .filter((q): q is FormattedQuestion => q !== null) || [],
+      video: question.media?.find((m) => m.type === 'video') || null,
+      // Word options and answer
+      options: question.options || [],
+      answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

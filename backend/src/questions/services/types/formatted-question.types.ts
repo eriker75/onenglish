@@ -130,8 +130,9 @@ export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
-  audio: MediaFile | null;
-  subQuestions: FormattedQuestion[];
+  media: MediaFile | null;
+  options: string[];
+  answer: string;
 }
 
 // ==================== WRITING FORMATTED QUESTIONS ====================

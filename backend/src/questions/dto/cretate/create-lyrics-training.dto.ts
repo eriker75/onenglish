@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsArray, ArrayMinSize } from 'class-validator';
 import { BaseCreateQuestionDto } from './base-question.dto';
-import { FileSystemStoredFile, HasMimeType, IsFile, MaxFileSize } from 'nestjs-form-data';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
 export class CreateLyricsTrainingDto extends BaseCreateQuestionDto {
   @IsFile()
@@ -31,4 +36,3 @@ export class CreateLyricsTrainingDto extends BaseCreateQuestionDto {
   @IsString({ each: true })
   options: string[];
 }
-
