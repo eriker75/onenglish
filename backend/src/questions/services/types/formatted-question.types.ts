@@ -137,9 +137,7 @@ export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
 // ==================== WRITING FORMATTED QUESTIONS ====================
 
 export interface FormattedSentenceMakerQuestion extends BaseQuestionFields {
-  image: MediaFile | null;
-  prompt: string;
-  hints: string | null;
+  images: MediaFile[];
 }
 
 export interface FormattedTalesQuestion extends BaseQuestionFields {

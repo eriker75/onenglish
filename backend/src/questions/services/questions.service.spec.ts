@@ -228,7 +228,10 @@ describe('QuestionsService', () => {
     });
 
     it('should use provided validation method when specified', async () => {
-      const dtoWithValidation = { ...mockDto, validationMethod: ValidationMethod.IA };
+      const dtoWithValidation = {
+        ...mockDto,
+        validationMethod: ValidationMethod.IA,
+      };
 
       await service.createImageToMultipleChoices(dtoWithValidation);
 
@@ -244,7 +247,9 @@ describe('QuestionsService', () => {
     it('should upload media file', async () => {
       await service.createImageToMultipleChoices(mockDto);
 
-      expect(mockMediaService.uploadSingleFile).toHaveBeenCalledWith(mockDto.media);
+      expect(mockMediaService.uploadSingleFile).toHaveBeenCalledWith(
+        mockDto.media,
+      );
     });
 
     it('should attach media to question', async () => {
@@ -411,7 +416,10 @@ describe('QuestionsService', () => {
     });
 
     it('should allow overriding validation method', async () => {
-      const dtoWithValidation = { ...mockDto, validationMethod: ValidationMethod.IA };
+      const dtoWithValidation = {
+        ...mockDto,
+        validationMethod: ValidationMethod.IA,
+      };
 
       await service.createUnscramble(dtoWithValidation);
 
@@ -576,7 +584,9 @@ describe('QuestionsService', () => {
     it('should upload audio file', async () => {
       await service.createTopicBasedAudio(mockDto);
 
-      expect(mockMediaService.uploadSingleFile).toHaveBeenCalledWith(mockDto.media);
+      expect(mockMediaService.uploadSingleFile).toHaveBeenCalledWith(
+        mockDto.media,
+      );
     });
 
     it('should validate subQuestions are provided', async () => {
@@ -594,12 +604,12 @@ describe('QuestionsService', () => {
       };
       mockPrismaService.question.findUnique.mockResolvedValueOnce(null);
 
-      await expect(service.createTopicBasedAudio(dtoWithInvalidParent)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.createTopicBasedAudio(dtoWithInvalidParent)).rejects.toThrow(
-        'Parent question with ID non-existent-id not found',
-      );
+      await expect(
+        service.createTopicBasedAudio(dtoWithInvalidParent),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createTopicBasedAudio(dtoWithInvalidParent),
+      ).rejects.toThrow('Parent question with ID non-existent-id not found');
     });
 
     it('should allow creation when parentQuestionId exists', async () => {
@@ -631,10 +641,7 @@ describe('QuestionsService', () => {
       maxAttempts: 2,
       text: 'Test question',
       instructions: 'Test instructions',
-      media: [
-        { path: 'test1.png' } as any,
-        { path: 'test2.png' } as any,
-      ],
+      media: [{ path: 'test1.png' } as any, { path: 'test2.png' } as any],
     };
 
     beforeEach(() => {
@@ -759,4 +766,3 @@ describe('QuestionsService', () => {
     });
   });
 });
-

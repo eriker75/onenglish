@@ -416,13 +416,8 @@ export class QuestionFormatterService {
       instructions: question.instructions,
       validationMethod: question.validationMethod,
       // Media handling
-      image: question.media?.[0] || null,
-      // Prompt or context
-      prompt: question.content,
-      // Example or hints
-      hints: question.configurations?.hints || null,
+      images: question.media?.filter((m) => m.type === 'image') || [],
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
