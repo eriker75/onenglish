@@ -185,8 +185,8 @@ export interface FormattedFastTestQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
-  subQuestions: FormattedQuestion[];
-  totalQuestions: number;
+  content: string;
+  image: MediaFile | null;
 }
 
 export interface FormattedTensesQuestion extends BaseQuestionFields {

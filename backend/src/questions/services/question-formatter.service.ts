@@ -622,14 +622,11 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Mixed type questions
-      subQuestions:
-        question.subQuestions
-          ?.map((sq) => this.formatQuestion(sq))
-          .filter((q): q is FormattedQuestion => q !== null) || [],
-      // Configuration
-      totalQuestions: question.subQuestions?.length || 0,
-      configurations: question.configurations || {},
+      // Question prompt
+      content: question.content,
+      // Optional decorative image
+      image: question.media?.find((m) => m.type === 'image') || null,
+      // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
