@@ -578,12 +578,11 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Debate topic
       topic: question.content,
-      // Stance options
-      stanceOptions: question.configurations?.stanceOptions?.split(',') || [],
       // Speaking duration
       minDuration: parseInt(question.configurations?.minDuration || '90'),
+      // Stance - from answer field
+      stance: question.answer,
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

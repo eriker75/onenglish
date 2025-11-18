@@ -1,15 +1,15 @@
-import { Challenge as PrismaChallenge } from '@prisma/client';
-export declare class Challenge implements PrismaChallenge {
+export declare class Challenge {
     id: string;
-    title: string;
-    slug: string;
-    description: string | null;
-    category: string;
-    level: string;
-    difficulty: string;
-    totalPoints: number;
-    isPublished: boolean;
+    name: string;
+    grade: string;
+    type: string;
+    isDemo: boolean;
+    year: number | null;
+    exactDate: Date | null;
+    stage: string | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
+    totalQuestions?: number;
+    totalTime?: number;
 }

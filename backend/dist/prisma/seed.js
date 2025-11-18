@@ -674,49 +674,39 @@ async function seedPostgreSQL() {
         },
     });
     console.log('✅ Created 4 student profiles (2 Lincoln, 1 Jefferson, 1 Washington)');
-    const challengeCategories = [
-        'listening',
-        'speaking',
-        'grammar',
-        'vocabulary',
-        'mixed',
-    ];
     const beginnerChallenge = await prisma.challenge.create({
         data: {
-            title: 'English Olympic Challenge - Beginner',
-            slug: 'olympic-beginner',
-            description: `${faker_1.faker.lorem.sentence()} Complete 5 Olympic phases to master basic English skills including listening, speaking, reading, and writing.`,
-            category: faker_1.faker.helpers.arrayElement(challengeCategories),
-            level: 'A1',
-            difficulty: 'easy',
-            totalPoints: faker_1.faker.number.int({ min: 400, max: 600 }),
-            isPublished: true,
+            name: 'English Olympic Challenge - 5th Grade',
+            grade: '5th_grade',
+            type: 'regular',
+            isDemo: true,
+            year: 2024,
+            exactDate: new Date('2024-05-15'),
+            stage: 'Regional',
             isActive: true,
         },
     });
     const intermediateChallenge = await prisma.challenge.create({
         data: {
-            title: 'English Olympic Challenge - Intermediate',
-            slug: 'olympic-intermediate',
-            description: `${faker_1.faker.lorem.sentence()} Advanced Olympic challenge for intermediate learners focusing on practical communication and comprehension.`,
-            category: faker_1.faker.helpers.arrayElement(challengeCategories),
-            level: 'A2+',
-            difficulty: 'medium',
-            totalPoints: faker_1.faker.number.int({ min: 900, max: 1100 }),
-            isPublished: true,
+            name: 'English Olympic Challenge - 1st Year',
+            grade: '1st_year',
+            type: 'bilingual',
+            isDemo: true,
+            year: 2024,
+            exactDate: new Date('2024-06-20'),
+            stage: 'State',
             isActive: true,
         },
     });
     const advancedChallenge = await prisma.challenge.create({
         data: {
-            title: 'English Olympic Challenge - Advanced',
-            slug: 'olympic-advanced',
-            description: `${faker_1.faker.lorem.sentence()} Expert level Olympic challenge designed for advanced learners preparing for professional or academic excellence.`,
-            category: faker_1.faker.helpers.arrayElement(challengeCategories),
-            level: 'B1+',
-            difficulty: 'hard',
-            totalPoints: faker_1.faker.number.int({ min: 1400, max: 1600 }),
-            isPublished: true,
+            name: 'English Olympic Challenge - 3rd Year',
+            grade: '3rd_year',
+            type: 'bilingual',
+            isDemo: true,
+            year: 2024,
+            exactDate: new Date('2024-07-10'),
+            stage: 'National',
             isActive: true,
         },
     });
@@ -884,7 +874,6 @@ async function seedPostgreSQL() {
     console.log(`✅ Created ${userActivities.length} user activities with realistic data`);
     console.log('\n📝 Creating questions for challenges...');
     const allQuestions = [];
-    const questionStages = ['VOCABULARY', 'GRAMMAR', 'LISTENING', 'WRITING', 'SPEAKING'];
     const questionTypes = {
         VOCABULARY: ['image_to_multiple_choices', 'wordbox', 'spelling', 'word_associations'],
         GRAMMAR: ['unscramble', 'tenses', 'tag_it', 'report_it', 'read_it'],

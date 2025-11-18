@@ -34,14 +34,14 @@ let ChallengesController = class ChallengesController {
     findAll(query) {
         return this.challengesService.findAllPaginated(query);
     }
-    findPublished() {
-        return this.challengesService.findPublished();
+    findActive() {
+        return this.challengesService.findActive();
     }
-    findByCategory(category) {
-        return this.challengesService.findByCategory(category);
+    findByGrade(grade) {
+        return this.challengesService.findByGrade(grade);
     }
-    findByLevel(level) {
-        return this.challengesService.findByLevel(level);
+    findByType(type) {
+        return this.challengesService.findByType(type);
     }
     findOne(id) {
         return this.challengesService.findOne(id);
@@ -56,15 +56,14 @@ let ChallengesController = class ChallengesController {
 exports.ChallengesController = ChallengesController;
 __decorate([
     (0, common_1.Post)(),
-    (0, auth_decorator_1.Auth)(enums_1.ValidRole.ADMIN, enums_1.ValidRole.COORDINATOR),
-    (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, swagger_1.ApiOperation)({
-        summary: 'Create a new challenge (Admin or Coordinator only)',
+        summary: 'Create a new challenge',
+        description: 'Creates a new challenge. The name and year are automatically generated. Name format: "{year} - {Grade} - {Type} - Demo (if applicable)"',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,
-        description: 'Challenge successfully created',
+        description: 'Challenge successfully created. Name and year are auto-generated.',
         type: challenge_entity_1.Challenge,
     }),
     (0, swagger_1.ApiResponse)({
@@ -78,10 +77,6 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 403,
         description: 'Forbidden - User does not have required role',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 409,
-        description: 'Conflict - Challenge with same slug already exists',
     }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -107,12 +102,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ChallengesController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)('published'),
+    (0, common_1.Get)('active'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all published and active challenges' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all active challenges' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'List of published challenges retrieved successfully',
+        description: 'List of active challenges retrieved successfully',
         type: [challenge_entity_1.Challenge],
     }),
     (0, swagger_1.ApiResponse)({
@@ -122,43 +117,43 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], ChallengesController.prototype, "findPublished", null);
+], ChallengesController.prototype, "findActive", null);
 __decorate([
-    (0, common_1.Get)('category/:category'),
+    (0, common_1.Get)('grade/:grade'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Get challenges by category' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get challenges by grade' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'List of challenges by category retrieved successfully',
+        description: 'List of challenges by grade retrieved successfully',
         type: [challenge_entity_1.Challenge],
     }),
     (0, swagger_1.ApiResponse)({
         status: 400,
         description: 'Bad request',
     }),
-    __param(0, (0, common_1.Param)('category')),
+    __param(0, (0, common_1.Param)('grade')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], ChallengesController.prototype, "findByCategory", null);
+], ChallengesController.prototype, "findByGrade", null);
 __decorate([
-    (0, common_1.Get)('level/:level'),
+    (0, common_1.Get)('type/:type'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Get challenges by level' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get challenges by type' }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'List of challenges by level retrieved successfully',
+        description: 'List of challenges by type retrieved successfully',
         type: [challenge_entity_1.Challenge],
     }),
     (0, swagger_1.ApiResponse)({
         status: 400,
         description: 'Bad request',
     }),
-    __param(0, (0, common_1.Param)('level')),
+    __param(0, (0, common_1.Param)('type')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], ChallengesController.prototype, "findByLevel", null);
+], ChallengesController.prototype, "findByType", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
@@ -186,10 +181,13 @@ __decorate([
     (0, auth_decorator_1.Auth)(enums_1.ValidRole.ADMIN, enums_1.ValidRole.COORDINATOR),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    (0, swagger_1.ApiOperation)({ summary: 'Update challenge (Admin or Coordinator only)' }),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update challenge',
+        description: 'Updates a challenge. If any of grade, type, isDemo, or exactDate are modified, the name will be automatically regenerated. Year is recalculated from exactDate if provided.',
+    }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'Challenge successfully updated',
+        description: 'Challenge successfully updated. Name and year may be auto-regenerated based on changes.',
         type: challenge_entity_1.Challenge,
     }),
     (0, swagger_1.ApiResponse)({
@@ -207,10 +205,6 @@ __decorate([
     (0, swagger_1.ApiResponse)({
         status: 404,
         description: 'Challenge not found',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 409,
-        description: 'Conflict - Challenge with same slug already exists',
     }),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),

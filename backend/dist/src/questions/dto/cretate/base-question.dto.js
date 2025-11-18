@@ -35,7 +35,7 @@ __decorate([
 ], BaseCreateQuestionDto.prototype, "challengeId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        enum: client_1.QuestionStage,
+        enum: [],
         example: 'VOCABULARY',
         description: 'Question stage/category',
     }),

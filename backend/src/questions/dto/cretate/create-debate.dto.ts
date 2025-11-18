@@ -5,6 +5,7 @@ import { BaseCreateQuestionDto } from './base-question.dto';
 export enum DebateStance {
   SUPPORT = 'support',
   OPPOSE = 'oppose',
+  RANDOM = 'random',
 }
 
 export class CreateDebateDto extends BaseCreateQuestionDto {

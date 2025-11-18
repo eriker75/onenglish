@@ -374,11 +374,51 @@ export class QuestionsCreationController {
   @ApiOperation({
     summary: 'Create a debate question',
     description:
-      'Creates a speaking question where students defend or oppose a provided statement with an audio argument. Default validation method: IA.',
+      'Creates a speaking question where students defend or oppose a provided statement with an audio argument. Default validation method: IA. The response includes the debate topic, minimum duration (90 seconds), and the assigned stance.',
   })
   @ApiResponse({
     status: 201,
     description: 'Question created successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', example: 'ee6d6331-e681-4a50-a607-19f9b7ffbdd1' },
+        type: { type: 'string', example: 'debate' },
+        stage: { type: 'string', example: 'SPEAKING' },
+        phase: { type: 'string', example: 'phase_3' },
+        position: { type: 'number', example: 1 },
+        points: { type: 'number', example: 20 },
+        timeLimit: { type: 'number', example: 240 },
+        maxAttempts: { type: 'number', example: 1 },
+        text: {
+          type: 'string',
+          example: 'Defend or oppose the provided statement.',
+        },
+        instructions: {
+          type: 'string',
+          example:
+            'Record an audio argument supporting or opposing the viewpoint.',
+        },
+        validationMethod: { type: 'string', example: 'IA' },
+        topic: { type: 'string', example: 'Bubble gum' },
+        minDuration: { type: 'number', example: 90 },
+        stance: {
+          type: 'string',
+          example: 'support',
+          enum: ['support', 'oppose'],
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-18T17:06:42.875Z',
+        },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-11-18T17:06:42.875Z',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,

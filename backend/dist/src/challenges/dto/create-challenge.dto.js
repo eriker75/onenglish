@@ -13,80 +13,75 @@ exports.CreateChallengeDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class CreateChallengeDto {
-    title;
-    slug;
-    description;
-    category;
-    level;
-    difficulty;
-    totalPoints;
-    isPublished;
+    grade;
+    type;
+    isDemo;
+    exactDate;
+    stage;
     isActive;
 }
 exports.CreateChallengeDto = CreateChallengeDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge title' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateChallengeDto.prototype, "title", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge slug (unique identifier)' }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateChallengeDto.prototype, "slug", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge description', required: false }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateChallengeDto.prototype, "description", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Challenge category',
-        enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+        description: 'Grade level',
+        enum: ['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'],
+        example: '5th_grade',
     }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsIn)(['listening', 'speaking', 'grammar', 'vocabulary', 'mixed']),
+    (0, class_validator_1.IsIn)(['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year']),
     __metadata("design:type", String)
-], CreateChallengeDto.prototype, "category", void 0);
+], CreateChallengeDto.prototype, "grade", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Challenge level',
-        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        description: 'Challenge type',
+        enum: ['regular', 'bilingual'],
+        example: 'bilingual',
     }),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsIn)(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+    (0, class_validator_1.IsIn)(['regular', 'bilingual']),
     __metadata("design:type", String)
-], CreateChallengeDto.prototype, "level", void 0);
+], CreateChallengeDto.prototype, "type", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Challenge difficulty',
-        enum: ['easy', 'medium', 'hard'],
+        description: 'Whether the challenge is a demo',
+        default: false,
+        example: true,
     }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsIn)(['easy', 'medium', 'hard']),
-    __metadata("design:type", String)
-], CreateChallengeDto.prototype, "difficulty", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Total points for the challenge', default: 0 }),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(0),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Number)
-], CreateChallengeDto.prototype, "totalPoints", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Whether the challenge is published', default: false }),
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
-], CreateChallengeDto.prototype, "isPublished", void 0);
+], CreateChallengeDto.prototype, "isDemo", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Whether the challenge is active', default: true }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Exact date of the challenge in ISO 8601 format (YYYY-MM-DD)',
+        required: false,
+        example: '2024-06-15',
+        type: String,
+    }),
+    (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateChallengeDto.prototype, "exactDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Challenge stage',
+        enum: ['Regional', 'State', 'National'],
+        required: false,
+        example: 'National',
+    }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(['Regional', 'State', 'National']),
+    __metadata("design:type", String)
+], CreateChallengeDto.prototype, "stage", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Whether the challenge is active',
+        default: true,
+        example: true,
+    }),
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)

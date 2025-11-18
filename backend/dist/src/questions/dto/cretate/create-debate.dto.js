@@ -17,6 +17,7 @@ var DebateStance;
 (function (DebateStance) {
     DebateStance["SUPPORT"] = "support";
     DebateStance["OPPOSE"] = "oppose";
+    DebateStance["RANDOM"] = "random";
 })(DebateStance || (exports.DebateStance = DebateStance = {}));
 class CreateDebateDto extends base_question_dto_1.BaseCreateQuestionDto {
     content;

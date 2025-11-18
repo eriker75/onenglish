@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsInt, IsEnum, IsOptional, Min } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
-import { QuestionStage, ValidationMethod } from '@prisma/client';
+import { Type } from 'class-transformer';
+import { QuestionStage } from '@prisma/client';
 
 export class BaseCreateQuestionDto {
   @ApiProperty({
@@ -12,7 +12,7 @@ export class BaseCreateQuestionDto {
   challengeId: string;
 
   @ApiProperty({
-    enum: QuestionStage,
+    enum: [],
     example: 'VOCABULARY',
     description: 'Question stage/category',
   })

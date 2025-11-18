@@ -20,23 +20,49 @@ let ChallengesService = class ChallengesService {
     }
     async create(dto) {
         try {
-            const existingChallenge = await this.prisma.challenge.findUnique({
-                where: { slug: dto.slug },
-            });
-            if (existingChallenge) {
-                throw new common_1.ConflictException(`Challenge with slug ${dto.slug} already exists`);
-            }
+            const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+            const year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
+            const gradeFormatted = dto.grade
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+            const typeFormatted = dto.type.charAt(0).toUpperCase() + dto.type.slice(1);
+            const demoSuffix = dto.isDemo ? ' - Demo' : '';
+            const name = `${year} - ${gradeFormatted} - ${typeFormatted}${demoSuffix}`;
             const challenge = await this.prisma.challenge.create({
-                data: dto,
+                data: {
+                    name,
+                    grade: dto.grade,
+                    type: dto.type,
+                    isDemo: dto.isDemo ?? false,
+                    year,
+                    exactDate,
+                    stage: dto.stage,
+                    isActive: dto.isActive ?? true,
+                },
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
+                },
             });
-            return challenge;
+            return this.addComputedFields(challenge);
         }
         catch (error) {
-            if (error instanceof common_1.ConflictException) {
-                throw error;
-            }
             throw new common_1.BadRequestException(`Failed to create challenge: ${error.message}`);
         }
+    }
+    addComputedFields(challenge) {
+        const totalQuestions = challenge.questions?.length ?? 0;
+        const totalTime = challenge.questions?.reduce((sum, q) => sum + (q.timeLimit ?? 0), 0) ?? 0;
+        return {
+            ...challenge,
+            totalQuestions,
+            totalTime,
+        };
     }
     async findAll() {
         try {
@@ -44,8 +70,16 @@ let ChallengesService = class ChallengesService {
                 orderBy: {
                     createdAt: 'desc',
                 },
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
+                },
             });
-            return challenges;
+            return challenges.map((challenge) => this.addComputedFields(challenge));
         }
         catch (error) {
             throw new common_1.BadRequestException(`Failed to fetch challenges: ${error.message}`);
@@ -53,35 +87,38 @@ let ChallengesService = class ChallengesService {
     }
     async findAllPaginated(query) {
         try {
-            const { limit = 10, offset = 0, search, category, level, difficulty, isPublished, isActive, title, slug, } = query;
+            const { limit = 10, offset = 0, search, grade, type, stage, isDemo, isActive, year, exactDate, name, } = query;
             const where = {};
-            if (category) {
-                where.category = category;
+            if (grade) {
+                where.grade = grade;
             }
-            if (level) {
-                where.level = level;
+            if (type) {
+                where.type = type;
             }
-            if (difficulty) {
-                where.difficulty = difficulty;
+            if (stage) {
+                where.stage = stage;
             }
-            if (isPublished !== undefined) {
-                where.isPublished = isPublished;
+            if (isDemo !== undefined) {
+                where.isDemo = isDemo;
             }
             if (isActive !== undefined) {
                 where.isActive = isActive;
             }
+            if (year !== undefined) {
+                where.year = year;
+            }
+            if (exactDate) {
+                where.exactDate = new Date(exactDate);
+            }
             const searchConditions = [];
             if (search) {
-                searchConditions.push({ title: { contains: search, mode: 'insensitive' } }, { slug: { contains: search, mode: 'insensitive' } }, { description: { contains: search, mode: 'insensitive' } });
-            }
-            if (title) {
                 searchConditions.push({
-                    title: { contains: title, mode: 'insensitive' },
+                    name: { contains: search, mode: 'insensitive' },
                 });
             }
-            if (slug) {
+            if (name) {
                 searchConditions.push({
-                    slug: { contains: slug, mode: 'insensitive' },
+                    name: { contains: name, mode: 'insensitive' },
                 });
             }
             if (searchConditions.length > 0) {
@@ -95,8 +132,17 @@ let ChallengesService = class ChallengesService {
                 },
                 take: limit,
                 skip: offset,
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
+                },
             });
-            return new pagination_dto_1.PaginatedResponseDto(challenges, total, limit, offset);
+            const challengesWithComputed = challenges.map((challenge) => this.addComputedFields(challenge));
+            return new pagination_dto_1.PaginatedResponseDto(challengesWithComputed, total, limit, offset);
         }
         catch (error) {
             throw new common_1.BadRequestException(`Failed to fetch paginated challenges: ${error.message}`);
@@ -112,6 +158,12 @@ let ChallengesService = class ChallengesService {
                             school: true,
                         },
                     },
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
                     _count: {
                         select: {
                             schoolChallenges: true,
@@ -123,7 +175,7 @@ let ChallengesService = class ChallengesService {
             if (!challenge) {
                 throw new common_1.NotFoundException(`Challenge with ID ${id} not found`);
             }
-            return challenge;
+            return this.addComputedFields(challenge);
         }
         catch (error) {
             if (error instanceof common_1.NotFoundException) {
@@ -134,24 +186,64 @@ let ChallengesService = class ChallengesService {
     }
     async update(id, dto) {
         try {
-            await this.findOne(id);
-            if (dto.slug) {
-                const existingChallenge = await this.prisma.challenge.findUnique({
-                    where: { slug: dto.slug },
-                });
-                if (existingChallenge && existingChallenge.id !== id) {
-                    throw new common_1.ConflictException(`Challenge with slug ${dto.slug} already exists`);
+            const existingChallenge = await this.findOne(id);
+            const updateData = {};
+            if (dto.grade !== undefined) {
+                updateData.grade = dto.grade;
+            }
+            if (dto.type !== undefined) {
+                updateData.type = dto.type;
+            }
+            if (dto.isDemo !== undefined) {
+                updateData.isDemo = dto.isDemo;
+            }
+            if (dto.exactDate !== undefined) {
+                const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+                updateData.exactDate = exactDate;
+                updateData.year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
+            }
+            if (dto.stage !== undefined) {
+                updateData.stage = dto.stage;
+            }
+            if (dto.isActive !== undefined) {
+                updateData.isActive = dto.isActive;
+            }
+            if (dto.grade !== undefined || dto.type !== undefined || dto.isDemo !== undefined || dto.exactDate !== undefined) {
+                const grade = dto.grade ?? existingChallenge.grade;
+                const type = dto.type ?? existingChallenge.type;
+                const isDemo = dto.isDemo ?? existingChallenge.isDemo;
+                let year;
+                if (dto.exactDate !== undefined) {
+                    const exactDate = dto.exactDate ? new Date(dto.exactDate) : null;
+                    year = exactDate ? exactDate.getFullYear() : new Date().getFullYear();
                 }
+                else {
+                    year = existingChallenge.year ?? new Date().getFullYear();
+                }
+                const gradeFormatted = grade
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                const typeFormatted = type.charAt(0).toUpperCase() + type.slice(1);
+                const demoSuffix = isDemo ? ' - Demo' : '';
+                updateData.name = `${year} - ${gradeFormatted} - ${typeFormatted}${demoSuffix}`;
             }
             const challenge = await this.prisma.challenge.update({
                 where: { id },
-                data: dto,
+                data: updateData,
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
+                },
             });
-            return challenge;
+            return this.addComputedFields(challenge);
         }
         catch (error) {
-            if (error instanceof common_1.NotFoundException ||
-                error instanceof common_1.ConflictException) {
+            if (error instanceof common_1.NotFoundException) {
                 throw error;
             }
             throw new common_1.BadRequestException(`Failed to update challenge: ${error.message}`);
@@ -191,49 +283,72 @@ let ChallengesService = class ChallengesService {
             throw new common_1.BadRequestException(`Failed to delete challenge: ${error.message}`);
         }
     }
-    async findByCategory(category) {
+    async findByGrade(grade) {
         try {
             const challenges = await this.prisma.challenge.findMany({
-                where: { category },
+                where: { grade },
                 orderBy: {
-                    title: 'asc',
+                    name: 'asc',
+                },
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
                 },
             });
-            return challenges;
+            return challenges.map((challenge) => this.addComputedFields(challenge));
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to fetch challenges by category: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to fetch challenges by grade: ${error.message}`);
         }
     }
-    async findByLevel(level) {
+    async findByType(type) {
         try {
             const challenges = await this.prisma.challenge.findMany({
-                where: { level },
+                where: { type },
                 orderBy: {
-                    title: 'asc',
+                    name: 'asc',
+                },
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
                 },
             });
-            return challenges;
+            return challenges.map((challenge) => this.addComputedFields(challenge));
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to fetch challenges by level: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to fetch challenges by type: ${error.message}`);
         }
     }
-    async findPublished() {
+    async findActive() {
         try {
             const challenges = await this.prisma.challenge.findMany({
                 where: {
-                    isPublished: true,
                     isActive: true,
                 },
                 orderBy: {
                     createdAt: 'desc',
                 },
+                include: {
+                    questions: {
+                        select: {
+                            id: true,
+                            timeLimit: true,
+                        },
+                    },
+                },
             });
-            return challenges;
+            return challenges.map((challenge) => this.addComputedFields(challenge));
         }
         catch (error) {
-            throw new common_1.BadRequestException(`Failed to fetch published challenges: ${error.message}`);
+            throw new common_1.BadRequestException(`Failed to fetch active challenges: ${error.message}`);
         }
     }
 };

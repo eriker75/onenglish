@@ -9,9 +9,9 @@ export declare class ChallengesController {
     constructor(challengesService: ChallengesService);
     create(createChallengeDto: CreateChallengeDto): Promise<Challenge>;
     findAll(query: QueryChallengeDto): Promise<PaginatedResponseDto<Challenge>>;
-    findPublished(): Promise<Challenge[]>;
-    findByCategory(category: string): Promise<Challenge[]>;
-    findByLevel(level: string): Promise<Challenge[]>;
+    findActive(): Promise<Challenge[]>;
+    findByGrade(grade: string): Promise<Challenge[]>;
+    findByType(type: string): Promise<Challenge[]>;
     findOne(id: string): Promise<Challenge>;
     update(id: string, updateChallengeDto: UpdateChallengeDto): Promise<Challenge>;
     remove(id: string): Promise<Challenge>;

@@ -13,17 +13,18 @@ exports.Challenge = void 0;
 const swagger_1 = require("@nestjs/swagger");
 class Challenge {
     id;
-    title;
-    slug;
-    description;
-    category;
-    level;
-    difficulty;
-    totalPoints;
-    isPublished;
+    name;
+    grade;
+    type;
+    isDemo;
+    year;
+    exactDate;
+    stage;
     isActive;
     createdAt;
     updatedAt;
+    totalQuestions;
+    totalTime;
 }
 exports.Challenge = Challenge;
 __decorate([
@@ -31,46 +32,60 @@ __decorate([
     __metadata("design:type", String)
 ], Challenge.prototype, "id", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge title' }),
+    (0, swagger_1.ApiProperty)({ description: 'Challenge name' }),
     __metadata("design:type", String)
-], Challenge.prototype, "title", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge slug (unique)' }),
-    __metadata("design:type", String)
-], Challenge.prototype, "slug", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Challenge description', required: false, nullable: true }),
-    __metadata("design:type", Object)
-], Challenge.prototype, "description", void 0);
+], Challenge.prototype, "name", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Challenge category',
-        enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+        description: 'Grade level',
+        enum: [
+            '5th_grade',
+            '6th_grade',
+            '1st_year',
+            '2nd_year',
+            '3rd_year',
+            '4th_year',
+            '5th_year',
+        ],
     }),
     __metadata("design:type", String)
-], Challenge.prototype, "category", void 0);
+], Challenge.prototype, "grade", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Challenge level',
-        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        description: 'Challenge type',
+        enum: ['regular', 'bilingual'],
     }),
     __metadata("design:type", String)
-], Challenge.prototype, "level", void 0);
+], Challenge.prototype, "type", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Challenge difficulty',
-        enum: ['easy', 'medium', 'hard'],
-    }),
-    __metadata("design:type", String)
-], Challenge.prototype, "difficulty", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Total points for the challenge' }),
-    __metadata("design:type", Number)
-], Challenge.prototype, "totalPoints", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Whether the challenge is published' }),
+    (0, swagger_1.ApiProperty)({ description: 'Whether the challenge is a demo' }),
     __metadata("design:type", Boolean)
-], Challenge.prototype, "isPublished", void 0);
+], Challenge.prototype, "isDemo", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Year of the challenge',
+        required: false,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], Challenge.prototype, "year", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Exact date of the challenge',
+        required: false,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], Challenge.prototype, "exactDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Challenge stage',
+        enum: ['Regional', 'State', 'National'],
+        required: false,
+        nullable: true,
+    }),
+    __metadata("design:type", Object)
+], Challenge.prototype, "stage", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Whether the challenge is active' }),
     __metadata("design:type", Boolean)
@@ -83,4 +98,12 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Last update date' }),
     __metadata("design:type", Date)
 ], Challenge.prototype, "updatedAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Total number of questions (computed)' }),
+    __metadata("design:type", Number)
+], Challenge.prototype, "totalQuestions", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Total time in minutes (computed)' }),
+    __metadata("design:type", Number)
+], Challenge.prototype, "totalTime", void 0);
 //# sourceMappingURL=challenge.entity.js.map

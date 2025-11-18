@@ -15,59 +15,60 @@ const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const pagination_dto_1 = require("../../common/dtos/pagination.dto");
 class QueryChallengeDto extends pagination_dto_1.PaginationDto {
-    category;
-    level;
-    difficulty;
-    isPublished;
+    grade;
+    type;
+    stage;
+    isDemo;
     isActive;
+    year;
+    exactDate;
     search;
-    title;
-    slug;
+    name;
 }
 exports.QueryChallengeDto = QueryChallengeDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Filter by category',
-        enum: ['listening', 'speaking', 'grammar', 'vocabulary', 'mixed'],
+        description: 'Filter by grade',
+        enum: ['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year'],
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['listening', 'speaking', 'grammar', 'vocabulary', 'mixed']),
+    (0, class_validator_1.IsIn)(['5th_grade', '6th_grade', '1st_year', '2nd_year', '3rd_year', '4th_year', '5th_year']),
     __metadata("design:type", String)
-], QueryChallengeDto.prototype, "category", void 0);
+], QueryChallengeDto.prototype, "grade", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Filter by level',
-        enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+        description: 'Filter by type',
+        enum: ['regular', 'bilingual'],
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+    (0, class_validator_1.IsIn)(['regular', 'bilingual']),
     __metadata("design:type", String)
-], QueryChallengeDto.prototype, "level", void 0);
+], QueryChallengeDto.prototype, "type", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Filter by difficulty',
-        enum: ['easy', 'medium', 'hard'],
+        description: 'Filter by stage',
+        enum: ['Regional', 'State', 'National'],
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsIn)(['easy', 'medium', 'hard']),
+    (0, class_validator_1.IsIn)(['Regional', 'State', 'National']),
     __metadata("design:type", String)
-], QueryChallengeDto.prototype, "difficulty", void 0);
+], QueryChallengeDto.prototype, "stage", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Filter by published status',
+        description: 'Filter by demo status',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),
     (0, class_transformer_1.Type)(() => Boolean),
     __metadata("design:type", Boolean)
-], QueryChallengeDto.prototype, "isPublished", void 0);
+], QueryChallengeDto.prototype, "isDemo", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
@@ -81,7 +82,26 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Search by title, slug, or description',
+        description: 'Filter by year',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_transformer_1.Type)(() => Number),
+    __metadata("design:type", Number)
+], QueryChallengeDto.prototype, "year", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        required: false,
+        description: 'Filter by exact date (ISO 8601 format)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], QueryChallengeDto.prototype, "exactDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        required: false,
+        description: 'Search by name',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -90,19 +110,10 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         required: false,
-        description: 'Filter by title',
+        description: 'Filter by name',
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], QueryChallengeDto.prototype, "title", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        required: false,
-        description: 'Filter by slug',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], QueryChallengeDto.prototype, "slug", void 0);
+], QueryChallengeDto.prototype, "name", void 0);
 //# sourceMappingURL=query-challenge.dto.js.map

@@ -727,17 +727,19 @@ let QuestionsService = class QuestionsService {
                 content: dto.content,
             },
         });
-        await this.attachConfigurations(question.id, [
-            {
-                metaKey: 'stance',
-                metaValue: dto.stance,
+        const updatedQuestion = await this.prisma.question.update({
+            where: { id: question.id },
+            data: {
+                answer: dto.stance,
             },
+        });
+        await this.attachConfigurations(updatedQuestion.id, [
             {
-                metaKey: 'stanceOptions',
-                metaValue: JSON.stringify(['support', 'oppose']),
+                metaKey: 'minDuration',
+                metaValue: '90',
             },
         ]);
-        return this.findOne(question.id);
+        return this.findOne(updatedQuestion.id);
     }
     async findAll(filters) {
         const questions = await this.prisma.question.findMany({

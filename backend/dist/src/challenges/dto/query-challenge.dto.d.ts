@@ -1,11 +1,12 @@
 import { PaginationDto } from '../../common/dtos/pagination.dto';
 export declare class QueryChallengeDto extends PaginationDto {
-    category?: string;
-    level?: string;
-    difficulty?: string;
-    isPublished?: boolean;
+    grade?: string;
+    type?: string;
+    stage?: string;
+    isDemo?: boolean;
     isActive?: boolean;
+    year?: number;
+    exactDate?: string;
     search?: string;
-    title?: string;
-    slug?: string;
+    name?: string;
 }

@@ -1098,19 +1098,23 @@ export class QuestionsService {
       },
     });
 
-    // Store stance configuration in QuestionConfiguration table
-    await this.attachConfigurations(question.id, [
-      {
-        metaKey: 'stance',
-        metaValue: dto.stance,
+    // Store stance directly on the question record
+    const updatedQuestion = await this.prisma.question.update({
+      where: { id: question.id },
+      data: {
+        answer: dto.stance, // Store stance in answer field
       },
+    });
+
+    // Attach minDuration configuration
+    await this.attachConfigurations(updatedQuestion.id, [
       {
-        metaKey: 'stanceOptions',
-        metaValue: JSON.stringify(['support', 'oppose']),
+        metaKey: 'minDuration',
+        metaValue: '90',
       },
     ]);
 
-    return this.findOne(question.id);
+    return this.findOne(updatedQuestion.id);
   }
 
   // ==================== QUERY METHODS ====================

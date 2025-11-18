@@ -36,7 +36,7 @@ export interface BaseQuestionFields {
   text: string;
   instructions: string;
   validationMethod: ValidationMethod;
-  configurations: QuestionConfigurations;
+  configurations?: QuestionConfigurations;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -176,8 +176,8 @@ export interface FormattedReportItQuestion extends BaseQuestionFields {
 
 export interface FormattedDebateQuestion extends BaseQuestionFields {
   topic: string;
-  stanceOptions: string[];
   minDuration: number;
+  stance: string;
 }
 
 // ==================== SPECIAL FORMATTED QUESTIONS ====================

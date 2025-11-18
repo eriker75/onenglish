@@ -419,9 +419,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             topic: question.content,
-            stanceOptions: question.configurations?.stanceOptions?.split(',') || [],
             minDuration: parseInt(question.configurations?.minDuration || '90'),
-            configurations: question.configurations || {},
+            stance: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

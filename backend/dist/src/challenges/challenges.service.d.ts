@@ -8,12 +8,13 @@ export declare class ChallengesService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(dto: CreateChallengeDto): Promise<Challenge>;
+    private addComputedFields;
     findAll(): Promise<Challenge[]>;
     findAllPaginated(query: QueryChallengeDto): Promise<PaginatedResponseDto<Challenge>>;
     findOne(id: string): Promise<Challenge>;
     update(id: string, dto: UpdateChallengeDto): Promise<Challenge>;
     remove(id: string): Promise<Challenge>;
-    findByCategory(category: string): Promise<Challenge[]>;
-    findByLevel(level: string): Promise<Challenge[]>;
-    findPublished(): Promise<Challenge[]>;
+    findByGrade(grade: string): Promise<Challenge[]>;
+    findByType(type: string): Promise<Challenge[]>;
+    findActive(): Promise<Challenge[]>;
 }
