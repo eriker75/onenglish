@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
@@ -8,10 +12,7 @@ export class QuestionUpdateService {
   /**
    * Update a question and recalculate parent points if it's a sub-question
    */
-  async updateQuestion(
-    questionId: string,
-    updateData: any,
-  ): Promise<any> {
+  async updateQuestion(questionId: string, updateData: any): Promise<any> {
     const question = await this.prisma.question.findUnique({
       where: { id: questionId },
       include: { parentQuestion: true },
@@ -55,8 +56,51 @@ export class QuestionUpdateService {
   /**
    * Calculate total points when creating a parent question with sub-questions
    */
-  async calculatePointsFromSubQuestions(subQuestions: any[]): Promise<number> {
+  calculatePointsFromSubQuestions(subQuestions: any[]): number {
     return subQuestions.reduce((sum, sq) => sum + (sq.points || 0), 0);
+  }
+
+  /**
+   * Update a topic_based_audio_subquestion
+   */
+  async updateTopicBasedAudioSubquestion(
+    id: string,
+    updateData: any,
+  ): Promise<any> {
+    const question = await this.prisma.question.findUnique({
+      where: { id },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Subquestion not found');
+    }
+
+    if (question.type !== 'topic_based_audio_subquestion') {
+      throw new BadRequestException(
+        'Question must be of type topic_based_audio_subquestion',
+      );
+    }
+
+    // Validate answer is in options if both are being updated
+    const finalOptions = updateData.options || question.options;
+    const finalAnswer = updateData.answer || question.answer;
+
+    if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
+      throw new BadRequestException('Answer must be one of the options');
+    }
+
+    // Update the subquestion
+    const updatedQuestion = await this.prisma.question.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // If points were updated, recalculate parent points
+    if (question.parentQuestionId && updateData.points !== undefined) {
+      await this.recalculateParentPoints(question.parentQuestionId);
+    }
+
+    return updatedQuestion;
   }
 
   /**
@@ -69,14 +113,20 @@ export class QuestionUpdateService {
   /**
    * Update question instructions
    */
-  async updateQuestionInstructions(questionId: string, instructions: string): Promise<any> {
+  async updateQuestionInstructions(
+    questionId: string,
+    instructions: string,
+  ): Promise<any> {
     return this.updateQuestion(questionId, { instructions });
   }
 
   /**
    * Update question time limit
    */
-  async updateQuestionTimeLimit(questionId: string, timeLimit: number): Promise<any> {
+  async updateQuestionTimeLimit(
+    questionId: string,
+    timeLimit: number,
+  ): Promise<any> {
     if (timeLimit < 1) {
       throw new BadRequestException('Time limit must be at least 1 second');
     }
@@ -86,7 +136,10 @@ export class QuestionUpdateService {
   /**
    * Update question max attempts
    */
-  async updateQuestionMaxAttempts(questionId: string, maxAttempts: number): Promise<any> {
+  async updateQuestionMaxAttempts(
+    questionId: string,
+    maxAttempts: number,
+  ): Promise<any> {
     if (maxAttempts < 1) {
       throw new BadRequestException('Max attempts must be at least 1');
     }
@@ -127,7 +180,10 @@ export class QuestionUpdateService {
   /**
    * Update question position within phase
    */
-  async updateQuestionPosition(questionId: string, position: number): Promise<any> {
+  async updateQuestionPosition(
+    questionId: string,
+    position: number,
+  ): Promise<any> {
     if (position < 1) {
       throw new BadRequestException('Position must be at least 1');
     }
@@ -141,7 +197,9 @@ export class QuestionUpdateService {
     // Validate phase format (should be "phase_1", "phase_2", etc.)
     const phaseRegex = /^phase_\d+$/;
     if (!phaseRegex.test(phase)) {
-      throw new BadRequestException('Phase must follow format: phase_1, phase_2, etc.');
+      throw new BadRequestException(
+        'Phase must follow format: phase_1, phase_2, etc.',
+      );
     }
     return this.updateQuestion(questionId, { phase });
   }
@@ -149,7 +207,9 @@ export class QuestionUpdateService {
   /**
    * Bulk update multiple questions
    */
-  async bulkUpdateQuestions(updates: { questionId: string; data: any }[]): Promise<any[]> {
+  async bulkUpdateQuestions(
+    updates: { questionId: string; data: any }[],
+  ): Promise<any[]> {
     const results: any[] = [];
 
     for (const update of updates) {

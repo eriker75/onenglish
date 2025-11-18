@@ -712,12 +712,44 @@ export class QuestionsService {
   async createTopicBasedAudio(dto: QuestionDtos.CreateTopicBasedAudioDto) {
     await this.validateChallenge(dto.challengeId);
 
-    if (!Array.isArray(dto.subQuestions) || dto.subQuestions.length === 0) {
+    // Parse subQuestions from JSON string
+    let parsedSubQuestions: any[];
+    try {
+      parsedSubQuestions = JSON.parse(dto.subQuestions);
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        'subQuestions must be a valid JSON string array',
+      );
+    }
+
+    // Validate that it's an array
+    if (!Array.isArray(parsedSubQuestions) || parsedSubQuestions.length === 0) {
       throw new BadRequestException('Must provide at least one sub-question');
     }
 
-    // Validate each sub-question
-    dto.subQuestions.forEach((sub, index) => {
+    // Validate each sub-question structure
+    parsedSubQuestions.forEach((sub, index) => {
+      if (!sub.text || typeof sub.text !== 'string') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: text is required and must be a string`,
+        );
+      }
+      if (!sub.points || typeof sub.points !== 'number') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: points is required and must be a number`,
+        );
+      }
+      if (!Array.isArray(sub.options) || sub.options.length < 2) {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: must provide at least 2 options`,
+        );
+      }
+      if (!sub.answer || typeof sub.answer !== 'string') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: answer is required and must be a string`,
+        );
+      }
       if (!sub.options.includes(sub.answer)) {
         throw new BadRequestException(
           `Sub-question ${index + 1}: answer must match one of the provided options`,
@@ -753,7 +785,7 @@ export class QuestionsService {
 
     return this.prisma.$transaction(async (tx) => {
       // Calculate total points from sub-questions
-      const totalPoints = dto.subQuestions.reduce(
+      const totalPoints = parsedSubQuestions.reduce(
         (sum, sub) => sum + sub.points,
         0,
       );
@@ -787,16 +819,17 @@ export class QuestionsService {
       });
 
       await tx.question.createMany({
-        data: dto.subQuestions.map((sub, index) => ({
+        data: parsedSubQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
           stage: dto.stage,
           phase: dto.phase,
           position: index + 1,
-          type: 'multiple_choice',
+          type: 'topic_based_audio_subquestion',
           points: sub.points,
           timeLimit: 0,
           maxAttempts: 0,
-          text: sub.text,
+          text: 'Sub-question',
+          content: sub.text,
           instructions: 'Select the correct option',
           validationMethod: 'AUTO' as ValidationMethod,
           options: JSON.parse(JSON.stringify(sub.options)),
@@ -810,6 +843,141 @@ export class QuestionsService {
         include: { subQuestions: true },
       });
     });
+  }
+
+  async createTopicBasedAudioSubquestion(
+    dto: QuestionDtos.CreateTopicBasedAudioSubquestionDto,
+  ) {
+    await this.validateChallenge(dto.challengeId);
+
+    // Validate parent question exists and is of type topic_based_audio
+    const parentQuestion = await this.prisma.question.findUnique({
+      where: { id: dto.parentQuestionId },
+    });
+
+    if (!parentQuestion) {
+      throw new NotFoundException(
+        `Parent question with ID ${dto.parentQuestionId} not found`,
+      );
+    }
+
+    if (parentQuestion.type !== 'topic_based_audio') {
+      throw new BadRequestException(
+        'Parent question must be of type topic_based_audio',
+      );
+    }
+
+    // Validate answer is in options
+    if (!dto.options.includes(dto.answer)) {
+      throw new BadRequestException('Answer must be one of the options');
+    }
+
+    const questionType = 'topic_based_audio_subquestion';
+
+    // Get next position for this parent's subquestions
+    const lastSubQuestion = await this.prisma.question.findFirst({
+      where: {
+        parentQuestionId: dto.parentQuestionId,
+      },
+      orderBy: { position: 'desc' },
+    });
+
+    const position = lastSubQuestion ? lastSubQuestion.position + 1 : 1;
+
+    // Create the subquestion
+    const question = await this.prisma.question.create({
+      data: {
+        challengeId: dto.challengeId,
+        stage: dto.stage,
+        phase: dto.phase,
+        position,
+        type: questionType,
+        points: dto.points,
+        timeLimit: dto.timeLimit || 0,
+        maxAttempts: dto.maxAttempts || 0,
+        text: dto.text || 'Sub-question',
+        content: dto.content,
+        instructions: dto.instructions || 'Select the correct option',
+        validationMethod: this.getDefaultValidationMethod(questionType),
+        options: dto.options,
+        answer: dto.answer,
+        parentQuestionId: dto.parentQuestionId,
+      },
+    });
+
+    // Recalculate parent points after adding new subquestion
+    await this.recalculateParentPoints(dto.parentQuestionId);
+
+    // Return enriched question
+    return this.findOne(question.id);
+  }
+
+  /**
+   * Recalculate parent question points based on sum of sub-questions
+   */
+  private async recalculateParentPoints(
+    parentQuestionId: string,
+  ): Promise<void> {
+    const subQuestions = await this.prisma.question.findMany({
+      where: { parentQuestionId },
+      select: { points: true },
+    });
+
+    const totalPoints = subQuestions.reduce((sum, sq) => sum + sq.points, 0);
+
+    await this.prisma.question.update({
+      where: { id: parentQuestionId },
+      data: { points: totalPoints },
+    });
+  }
+
+  async updateTopicBasedAudioSubquestion(
+    id: string,
+    dto: QuestionDtos.UpdateTopicBasedAudioSubquestionDto,
+  ) {
+    const existingQuestion = await this.prisma.question.findUnique({
+      where: { id },
+    });
+
+    if (!existingQuestion) {
+      throw new NotFoundException(`Question with ID ${id} not found`);
+    }
+
+    if (existingQuestion.type !== 'topic_based_audio_subquestion') {
+      throw new BadRequestException(
+        'Question must be of type topic_based_audio_subquestion',
+      );
+    }
+
+    // If updating options and answer, validate answer is in options
+    const finalOptions = dto.options || existingQuestion.options;
+    const finalAnswer = dto.answer || existingQuestion.answer;
+
+    if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
+      throw new BadRequestException('Answer must be one of the options');
+    }
+
+    const updateData: any = {};
+
+    if (dto.content !== undefined) updateData.content = dto.content;
+    if (dto.points !== undefined) updateData.points = dto.points;
+    if (dto.options !== undefined) updateData.options = dto.options;
+    if (dto.answer !== undefined) updateData.answer = dto.answer;
+    if (dto.text !== undefined) updateData.text = dto.text;
+    if (dto.instructions !== undefined)
+      updateData.instructions = dto.instructions;
+
+    await this.prisma.question.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // Recalculate parent points if points were updated
+    if (existingQuestion.parentQuestionId && dto.points !== undefined) {
+      await this.recalculateParentPoints(existingQuestion.parentQuestionId);
+    }
+
+    return this.findOne(id);
   }
 
   async createLyricsTraining(dto: QuestionDtos.CreateLyricsTrainingDto) {

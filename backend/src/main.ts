@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -7,12 +6,11 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
-import { join } from 'path';
 
 const APP_PORT = process.env.PORT;
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Bootstrap');
 
@@ -62,16 +60,6 @@ async function bootstrap() {
     // Origin not allowed
     callback(new Error('Not allowed by CORS'));
   };
-
-  // Serve uploaded files from the uploads directory
-  // Using process.cwd() to get the project root, consistent with FileService
-  const uploadRoot = join(process.cwd(), 'uploads');
-  app.useStaticAssets(uploadRoot, {
-    prefix: '/uploads',
-    setHeaders: (res) => {
-      res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
-    },
-  });
 
   app.enableCors({
     origin: corsOriginCallback,

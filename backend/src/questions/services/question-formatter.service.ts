@@ -12,6 +12,7 @@ import {
   FormattedVerbConjugationQuestion,
   FormattedGossipQuestion,
   FormattedTopicBasedAudioQuestion,
+  FormattedTopicBasedAudioSubquestion,
   FormattedLyricsTrainingQuestion,
   FormattedSentenceMakerQuestion,
   FormattedTalesQuestion,
@@ -54,6 +55,8 @@ export class QuestionFormatterService {
       // LISTENING
       gossip: this.formatGossip.bind(this),
       topic_based_audio: this.formatTopicBasedAudio.bind(this),
+      topic_based_audio_subquestion:
+        this.formatTopicBasedAudioSubquestion.bind(this),
       lyrics_training: this.formatLyricsTraining.bind(this),
 
       // WRITING
@@ -369,6 +372,35 @@ export class QuestionFormatterService {
     };
   }
 
+  private formatTopicBasedAudioSubquestion(
+    question: EnrichedQuestion,
+  ): FormattedTopicBasedAudioSubquestion {
+    return {
+      id: question.id,
+      type: question.type,
+      stage: question.stage,
+      phase: question.phase,
+      position: question.position,
+      points: question.points,
+      timeLimit: question.timeLimit,
+      maxAttempts: question.maxAttempts,
+      text: question.text,
+      instructions: question.instructions,
+      validationMethod: question.validationMethod,
+      // Content is the question text
+      content: question.content || '',
+      // Answer options
+      options: question.options || [],
+      // Correct answer
+      answer: question.answer,
+      // Parent question ID
+      parentQuestionId: question.parentQuestion?.id,
+      // Metadata
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    };
+  }
+
   private formatLyricsTraining(
     question: EnrichedQuestion,
   ): FormattedLyricsTrainingQuestion {
@@ -384,9 +416,10 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling (audio or video)
-      audio: question.media?.find((m) => m.type === 'audio') || null,
-      video: question.media?.find((m) => m.type === 'video') || null,
+      // Media handling (audio or video, return whichever exists)
+      media:
+        question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+        null,
       // Word options and answer
       options: question.options || [],
       answer: question.answer,

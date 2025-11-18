@@ -1,21 +1,25 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import {
   IsString,
-  ValidateNested,
+  IsOptional,
   IsArray,
   ArrayMinSize,
   IsInt,
   Min,
-  IsOptional,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { BaseCreateQuestionDto } from './base-question.dto';
-import { FileSystemStoredFile, HasMimeType, IsFile, MaxFileSize } from 'nestjs-form-data';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
 export class AudioSubQuestionDto {
   @ApiProperty({
     example: 'What is the main topic discussed in the audio?',
-    description: 'Sub-question text'
+    description: 'Sub-question text',
   })
   @IsString()
   text: string;
@@ -23,7 +27,7 @@ export class AudioSubQuestionDto {
   @ApiProperty({
     example: 8,
     minimum: 0,
-    description: 'Points for this sub-question'
+    description: 'Points for this sub-question',
   })
   @IsInt()
   @Min(0)
@@ -32,7 +36,24 @@ export class AudioSubQuestionDto {
   @ApiProperty({
     type: [String],
     description: 'Answer options for this sub-question',
-    example: ['Travel plans', 'Business meeting', 'Weather forecast', 'Sports event']
+    example: [
+      'Travel plans',
+      'Business meeting',
+      'Weather forecast',
+      'Sports event',
+    ],
+  })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        // Try parsing as JSON array first
+        return JSON.parse(value);
+      } catch {
+        // Fall back to comma-separated string
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return value;
   })
   @IsArray()
   @ArrayMinSize(2)
@@ -41,13 +62,27 @@ export class AudioSubQuestionDto {
 
   @ApiProperty({
     example: 'Business meeting',
-    description: 'Correct answer (must match one of the options)'
+    description: 'Correct answer (must match one of the options)',
   })
   @IsString()
   answer: string;
 }
 
-export class CreateTopicBasedAudioDto extends BaseCreateQuestionDto {
+export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionDto, [
+  'points',
+] as const) {
+  @ApiPropertyOptional({
+    description:
+      'Points value - Auto-calculated from sub-questions sum. If provided, it will be overwritten.',
+    example: 0,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  points?: number;
+
   @IsFile()
   @MaxFileSize(10e6) // 10MB
   @HasMimeType(['audio/mpeg', 'audio/wav', 'audio/ogg'])
@@ -59,38 +94,35 @@ export class CreateTopicBasedAudioDto extends BaseCreateQuestionDto {
   media: FileSystemStoredFile;
 
   @ApiProperty({
-    type: [AudioSubQuestionDto],
-    description: 'Multiple choice questions about the audio',
-    example: [
+    type: String,
+    description: 'JSON string array of sub-questions',
+    example: JSON.stringify([
       {
         text: 'What is the main topic discussed in the audio?',
         points: 8,
-        options: ['Travel plans', 'Business meeting', 'Weather forecast', 'Sports event'],
+        options: [
+          'Travel plans',
+          'Business meeting',
+          'Weather forecast',
+          'Sports event',
+        ],
         answer: 'Business meeting',
       },
       {
         text: 'When will the meeting take place?',
         points: 8,
-        options: ['Monday morning', 'Tuesday afternoon', 'Wednesday evening', 'Thursday night'],
+        options: [
+          'Monday morning',
+          'Tuesday afternoon',
+          'Wednesday evening',
+          'Thursday night',
+        ],
         answer: 'Monday morning',
       },
-    ],
+    ]),
   })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return value;
-      }
-    }
-    return value;
-  })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => AudioSubQuestionDto)
-  subQuestions: AudioSubQuestionDto[];
+  @IsString()
+  subQuestions: string;
 
   @ApiPropertyOptional({
     description: 'Parent question ID for sub-questions',
@@ -106,4 +138,3 @@ export class CreateTopicBasedAudioDto extends BaseCreateQuestionDto {
   })
   parentQuestionId?: string;
 }
-

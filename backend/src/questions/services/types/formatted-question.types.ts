@@ -129,6 +129,13 @@ export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
   subQuestions: FormattedQuestion[];
 }
 
+export interface FormattedTopicBasedAudioSubquestion extends BaseQuestionFields {
+  content: string;
+  options: string[];
+  answer: string;
+  parentQuestionId?: string;
+}
+
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
   media: MediaFile | null;
   options: string[];
@@ -221,6 +228,7 @@ export type FormattedQuestion =
   // Listening
   | FormattedGossipQuestion
   | FormattedTopicBasedAudioQuestion
+  | FormattedTopicBasedAudioSubquestion
   | FormattedLyricsTrainingQuestion
   // Writing
   | FormattedSentenceMakerQuestion

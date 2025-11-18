@@ -31,6 +31,7 @@ import {
   UpdateWordMatchDto,
   UpdateGossipDto,
   UpdateTopicBasedAudioDto,
+  UpdateTopicBasedAudioSubquestionDto,
   UpdateLyricsTrainingDto,
   UpdateSentenceMakerDto,
   UpdateFastTestDto,
@@ -219,6 +220,26 @@ export class QuestionsUpdateController {
     @Body() dto: UpdateTopicBasedAudioDto,
   ) {
     return this.updateService.updateQuestion(id, dto);
+  }
+
+  @Patch('topic_based_audio_subquestion/:id')
+  @ApiOperation({
+    summary: 'Update topic_based_audio_subquestion',
+    description:
+      'Update a topic-based audio subquestion. This endpoint updates a single subquestion of a topic_based_audio question.',
+  })
+  @ApiParam({ name: 'id', description: 'Subquestion ID' })
+  @ApiResponse({ status: 200, description: 'Subquestion updated successfully' })
+  @ApiResponse({ status: 404, description: 'Subquestion not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid question type or validation failed',
+  })
+  updateTopicBasedAudioSubquestion(
+    @Param('id') id: string,
+    @Body() dto: UpdateTopicBasedAudioSubquestionDto,
+  ) {
+    return this.updateService.updateTopicBasedAudioSubquestion(id, dto);
   }
 
   @Patch('lyrics_training/:id')

@@ -11,6 +11,7 @@ export * from './update-read-it.dto';
 export * from './update-word-match.dto';
 export * from './update-gossip.dto';
 export * from './update-topic-based-audio.dto';
+export * from './update-topic-based-audio-subquestion.dto';
 export * from './update-lyrics-training.dto';
 export * from './update-sentence-maker.dto';
 export * from './update-fast-test.dto';

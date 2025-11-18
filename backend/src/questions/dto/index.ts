@@ -11,6 +11,7 @@ export * from './cretate/create-read-it.dto';
 export * from './cretate/create-word-match.dto';
 export * from './cretate/create-gossip.dto';
 export * from './cretate/create-topic-based-audio.dto';
+export * from './cretate/create-topic-based-audio-subquestion.dto';
 export * from './cretate/create-lyrics-training.dto';
 export * from './cretate/create-sentence-maker.dto';
 export * from './cretate/create-fast-test.dto';
@@ -19,3 +20,4 @@ export * from './cretate/create-superbrain.dto';
 export * from './cretate/create-tell-me-about-it.dto';
 export * from './cretate/create-debate.dto';
 
+export * from './update/update-topic-based-audio-subquestion.dto';

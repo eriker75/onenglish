@@ -42,6 +42,18 @@ import { join } from 'path';
         index: 'index.html',
       },
     }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+      serveStaticOptions: {
+        setHeaders: (res) => {
+          res.setHeader(
+            'Access-Control-Allow-Origin',
+            process.env.FRONTEND_URL,
+          );
+        },
+      },
+    }),
     AiModule.forFeatureAsync('GEMINI_AI', {
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
