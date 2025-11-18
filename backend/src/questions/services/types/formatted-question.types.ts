@@ -179,8 +179,9 @@ export interface FormattedDebateQuestion extends BaseQuestionFields {
 // ==================== SPECIAL FORMATTED QUESTIONS ====================
 
 export interface FormattedFastTestQuestion extends BaseQuestionFields {
-  subQuestions: FormattedQuestion[];
-  totalQuestions: number;
+  content: string[];
+  options: string[];
+  answer: string;
 }
 
 export interface FormattedSuperbrainQuestion extends BaseQuestionFields {

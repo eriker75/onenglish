@@ -595,14 +595,13 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Sub-questions for fast test
-      subQuestions:
-        question.subQuestions
-          ?.map((sq) => this.formatQuestion(sq))
-          .filter((q): q is FormattedQuestion => q !== null) || [],
-      // Test configuration
-      totalQuestions: question.subQuestions?.length || 0,
-      configurations: question.configurations || {},
+      // Sentence parts with gap
+      content: question.content || [],
+      // Answer options
+      options: question.options || [],
+      // Correct answer
+      answer: question.answer,
+      // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
