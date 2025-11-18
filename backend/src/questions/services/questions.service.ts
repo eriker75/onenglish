@@ -184,9 +184,9 @@ export class QuestionsService {
       dto.phase,
     );
 
-    // Upload the file
-    const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+    // Upload all files
+    const uploadedFiles = await Promise.all(
+      dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)),
     );
 
     // Create the question
@@ -209,10 +209,15 @@ export class QuestionsService {
       },
     });
 
-    // Attach media file
-    await this.questionMediaService.attachMediaFiles(question.id, [
-      { id: uploadedFile.id, context: 'main', position: 0 },
-    ]);
+    // Attach media files
+    await this.questionMediaService.attachMediaFiles(
+      question.id,
+      uploadedFiles.map((file, index) => ({
+        id: file.id,
+        context: 'main',
+        position: index,
+      })),
+    );
 
     // Return enriched question
     return this.findOne(question.id);

@@ -1,24 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, ArrayMinSize, IsNotEmpty } from 'class-validator';
+import { IsArray, IsString, ArrayMinSize } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { BaseCreateQuestionDto } from './base-question.dto';
-import { FileSystemStoredFile } from 'nestjs-form-data';
+import {
+  FileSystemStoredFile,
+  IsFile,
+  MaxFileSize,
+  HasMimeType,
+} from 'nestjs-form-data';
 
 export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
-  @Transform(({ value }) => {
-    // Si viene como array, tomar el primer elemento
-    if (Array.isArray(value) && value.length > 0) {
-      return value[0];
-    }
-    return value;
-  })
-  @IsNotEmpty({ message: 'Media file is required' })
+  @IsFile({ each: true })
+  @MaxFileSize(5e6, { each: true }) // 5MB per file
+  @HasMimeType(['image/jpeg', 'image/png', 'image/webp'], { each: true })
+  @IsArray()
+  @ArrayMinSize(1, { message: 'At least one image file is required' })
   @ApiProperty({
-    type: 'string',
-    format: 'binary',
-    description: 'Image file to upload (PNG, JPEG, or WebP, max 5MB)',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    description: 'Image files to upload (PNG, JPEG, or WebP, max 5MB each)',
   })
-  media: FileSystemStoredFile;
+  media: FileSystemStoredFile[];
 
   @ApiProperty({
     type: [String],
