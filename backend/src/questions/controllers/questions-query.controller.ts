@@ -51,6 +51,40 @@ export class QuestionsQueryController {
     return this.questionsService.findAll({ challengeId, stage, phase });
   }
 
+  @Get('challenge/:challengeId')
+  @ApiOperation({
+    summary: 'Get all questions for a specific challenge',
+    description:
+      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+  })
+  @ApiQuery({
+    name: 'stage',
+    required: false,
+    enum: QuestionStage,
+    description: 'Filter by question stage (optional)',
+  })
+  @ApiQuery({
+    name: 'phase',
+    required: false,
+    description: 'Filter by phase identifier (optional)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns formatted questions with sub-questions included',
+    type: [Question],
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - challenge not found',
+  })
+  findByChallengeId(
+    @Param('challengeId') challengeId: string,
+    @Query('stage') stage?: QuestionStage,
+    @Query('phase') phase?: string,
+  ) {
+    return this.questionsService.findByChallengeId(challengeId, { stage, phase });
+  }
+
   @Get('schools/:schoolId/stats')
   @ApiOperation({
     summary: 'Get question statistics for a school',

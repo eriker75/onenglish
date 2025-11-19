@@ -22,6 +22,9 @@ export declare class QuestionsCreationController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
         challengeId: string;
@@ -42,6 +45,9 @@ export declare class QuestionsCreationController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
         challengeId: string;
@@ -65,6 +71,9 @@ export declare class QuestionsCreationController {
             content: import("@prisma/client/runtime/library").JsonValue | null;
             options: import("@prisma/client/runtime/library").JsonValue | null;
             answer: import("@prisma/client/runtime/library").JsonValue | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            version: number;
             createdAt: Date;
             updatedAt: Date;
             challengeId: string;
@@ -85,6 +94,9 @@ export declare class QuestionsCreationController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
         challengeId: string;
@@ -108,6 +120,9 @@ export declare class QuestionsCreationController {
             content: import("@prisma/client/runtime/library").JsonValue | null;
             options: import("@prisma/client/runtime/library").JsonValue | null;
             answer: import("@prisma/client/runtime/library").JsonValue | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            version: number;
             createdAt: Date;
             updatedAt: Date;
             challengeId: string;
@@ -128,6 +143,9 @@ export declare class QuestionsCreationController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
         challengeId: string;
@@ -151,6 +169,9 @@ export declare class QuestionsCreationController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
         challengeId: string;

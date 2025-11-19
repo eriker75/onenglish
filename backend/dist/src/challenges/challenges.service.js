@@ -58,8 +58,9 @@ let ChallengesService = class ChallengesService {
     addComputedFields(challenge) {
         const totalQuestions = challenge.questions?.length ?? 0;
         const totalTime = challenge.questions?.reduce((sum, q) => sum + (q.timeLimit ?? 0), 0) ?? 0;
+        const { questions, ...challengeWithoutQuestions } = challenge;
         return {
-            ...challenge,
+            ...challengeWithoutQuestions,
             totalQuestions,
             totalTime,
         };

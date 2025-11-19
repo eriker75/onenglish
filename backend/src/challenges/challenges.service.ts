@@ -70,8 +70,11 @@ export class ChallengesService {
         0,
       ) ?? 0;
 
+    // Exclude questions from the response, only keep computed fields
+    const { questions, ...challengeWithoutQuestions } = challenge;
+
     return {
-      ...challenge,
+      ...challengeWithoutQuestions,
       totalQuestions,
       totalTime,
     };

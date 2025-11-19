@@ -118,11 +118,14 @@ let QuestionsController = class QuestionsController {
     findAll(challengeId, stage, phase) {
         return this.questionsService.findAll({ challengeId, stage, phase });
     }
-    findOne(id) {
-        return this.questionsService.findOne(id);
+    findByChallengeId(challengeId, stage, phase) {
+        return this.questionsService.findByChallengeId(challengeId, { stage, phase });
     }
     getSchoolStats(schoolId, questionId) {
         return this.questionsService.getSchoolStats(schoolId, questionId);
+    }
+    findOne(id) {
+        return this.questionsService.findOne(id);
     }
 };
 exports.QuestionsController = QuestionsController;
@@ -543,25 +546,38 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], QuestionsController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
+    (0, common_1.Get)('challenge/:challengeId'),
     (0, swagger_1.ApiOperation)({
-        summary: 'Get a question by ID',
-        description: 'Retrieves a single question with all related data including sub-questions, parent question, and challenge.',
+        summary: 'Get all questions for a specific challenge',
+        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'stage',
+        required: false,
+        enum: client_1.QuestionStage,
+        description: 'Filter by question stage (optional)',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'phase',
+        required: false,
+        description: 'Filter by phase identifier (optional)',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
-        description: 'Returns the question with full details',
-        type: entities_1.Question,
+        description: 'Returns formatted questions with sub-questions included',
+        type: [entities_1.Question],
     }),
     (0, swagger_1.ApiResponse)({
-        status: 404,
-        description: 'Question not found',
+        status: 400,
+        description: 'Bad request - challenge not found',
     }),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Param)('challengeId')),
+    __param(1, (0, common_1.Query)('stage')),
+    __param(2, (0, common_1.Query)('phase')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
-], QuestionsController.prototype, "findOne", null);
+], QuestionsController.prototype, "findByChallengeId", null);
 __decorate([
     (0, common_1.Get)('schools/:schoolId/stats'),
     (0, swagger_1.ApiOperation)({
@@ -608,6 +624,26 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], QuestionsController.prototype, "getSchoolStats", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get a question by ID',
+        description: 'Retrieves a single question with all related data including sub-questions, parent question, and challenge.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Returns the question with full details',
+        type: entities_1.Question,
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 404,
+        description: 'Question not found',
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], QuestionsController.prototype, "findOne", null);
 exports.QuestionsController = QuestionsController = __decorate([
     (0, swagger_1.ApiTags)('Questions'),
     (0, swagger_1.ApiBearerAuth)(),

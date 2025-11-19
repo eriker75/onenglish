@@ -33,6 +33,8 @@ export class QuestionsService {
         challengeId,
         stage,
         phase,
+        parentQuestionId: null, // Only count root questions, not sub-questions
+        deletedAt: null, // Exclude deleted questions
       },
       orderBy: {
         position: 'desc',
@@ -1289,6 +1291,61 @@ export class QuestionsService {
         challenge: true,
       },
       orderBy: [{ stage: 'asc' }, { phase: 'asc' }, { position: 'asc' }],
+    });
+
+    // Enrich all questions with media and configurations (including subQuestions recursively)
+    const enrichedQuestions = questions.map((question) =>
+      this.questionMediaService.enrichQuestionWithMedia(question),
+    );
+
+    // Format each question based on its type
+    return this.questionFormatterService.formatQuestions(enrichedQuestions);
+  }
+
+  async findByChallengeId(
+    challengeId: string,
+    filters?: {
+      stage?: QuestionStage;
+      phase?: string;
+    },
+  ) {
+    // Validate challenge exists
+    await this.validateChallenge(challengeId);
+
+    const questions = await this.prisma.question.findMany({
+      where: {
+        challengeId,
+        stage: filters?.stage,
+        phase: filters?.phase,
+        parentQuestionId: null,
+        deletedAt: null,
+      },
+      include: {
+        questionMedia: {
+          include: {
+            mediaFile: true,
+          },
+          orderBy: {
+            position: 'asc',
+          },
+        },
+        configurations: true,
+        subQuestions: {
+          include: {
+            questionMedia: {
+              include: {
+                mediaFile: true,
+              },
+            },
+            configurations: true,
+          },
+          orderBy: {
+            position: 'asc',
+          },
+        },
+        challenge: true,
+      },
+      orderBy: { position: 'asc' }, // Order by position from 0 to n
     });
 
     // Enrich all questions with media and configurations (including subQuestions recursively)

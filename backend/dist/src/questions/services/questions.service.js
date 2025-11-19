@@ -29,6 +29,8 @@ let QuestionsService = class QuestionsService {
                 challengeId,
                 stage,
                 phase,
+                parentQuestionId: null,
+                deletedAt: null,
             },
             orderBy: {
                 position: 'desc',
@@ -849,6 +851,46 @@ let QuestionsService = class QuestionsService {
                 challenge: true,
             },
             orderBy: [{ stage: 'asc' }, { phase: 'asc' }, { position: 'asc' }],
+        });
+        const enrichedQuestions = questions.map((question) => this.questionMediaService.enrichQuestionWithMedia(question));
+        return this.questionFormatterService.formatQuestions(enrichedQuestions);
+    }
+    async findByChallengeId(challengeId, filters) {
+        await this.validateChallenge(challengeId);
+        const questions = await this.prisma.question.findMany({
+            where: {
+                challengeId,
+                stage: filters?.stage,
+                phase: filters?.phase,
+                parentQuestionId: null,
+                deletedAt: null,
+            },
+            include: {
+                questionMedia: {
+                    include: {
+                        mediaFile: true,
+                    },
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+                configurations: true,
+                subQuestions: {
+                    include: {
+                        questionMedia: {
+                            include: {
+                                mediaFile: true,
+                            },
+                        },
+                        configurations: true,
+                    },
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+                challenge: true,
+            },
+            orderBy: { position: 'asc' },
         });
         const enrichedQuestions = questions.map((question) => this.questionMediaService.enrichQuestionWithMedia(question));
         return this.questionFormatterService.formatQuestions(enrichedQuestions);

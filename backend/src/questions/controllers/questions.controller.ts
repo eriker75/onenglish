@@ -431,23 +431,38 @@ export class QuestionsController {
     return this.questionsService.findAll({ challengeId, stage, phase });
   }
 
-  @Get(':id')
+  @Get('challenge/:challengeId')
   @ApiOperation({
-    summary: 'Get a question by ID',
+    summary: 'Get all questions for a specific challenge',
     description:
-      'Retrieves a single question with all related data including sub-questions, parent question, and challenge.',
+      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+  })
+  @ApiQuery({
+    name: 'stage',
+    required: false,
+    enum: QuestionStage,
+    description: 'Filter by question stage (optional)',
+  })
+  @ApiQuery({
+    name: 'phase',
+    required: false,
+    description: 'Filter by phase identifier (optional)',
   })
   @ApiResponse({
     status: 200,
-    description: 'Returns the question with full details',
-    type: Question,
+    description: 'Returns formatted questions with sub-questions included',
+    type: [Question],
   })
   @ApiResponse({
-    status: 404,
-    description: 'Question not found',
+    status: 400,
+    description: 'Bad request - challenge not found',
   })
-  findOne(@Param('id') id: string) {
-    return this.questionsService.findOne(id);
+  findByChallengeId(
+    @Param('challengeId') challengeId: string,
+    @Query('stage') stage?: QuestionStage,
+    @Query('phase') phase?: string,
+  ) {
+    return this.questionsService.findByChallengeId(challengeId, { stage, phase });
   }
 
   @Get('schools/:schoolId/stats')
@@ -495,5 +510,24 @@ export class QuestionsController {
     @Query('questionId') questionId?: string,
   ) {
     return this.questionsService.getSchoolStats(schoolId, questionId);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get a question by ID',
+    description:
+      'Retrieves a single question with all related data including sub-questions, parent question, and challenge.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the question with full details',
+    type: Question,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Question not found',
+  })
+  findOne(@Param('id') id: string) {
+    return this.questionsService.findOne(id);
   }
 }

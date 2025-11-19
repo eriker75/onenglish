@@ -23,9 +23,9 @@ export declare class AuthController {
         user: {
             roles: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             email: string;
             phone: string | null;
             firstName: string;
@@ -50,9 +50,9 @@ export declare class AuthController {
             roles: string;
             student: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                isActive: boolean;
                 schoolId: string | null;
                 email: string;
                 phone: string | null;
@@ -63,9 +63,9 @@ export declare class AuthController {
                 userId: string;
             } | null;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             email: string;
             phone: string | null;
             firstName: string;
@@ -90,9 +90,9 @@ export declare class AuthController {
             roles: string;
             admin: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                isActive: boolean;
                 email: string;
                 phone: string | null;
                 firstName: string;
@@ -102,9 +102,9 @@ export declare class AuthController {
                 userId: string;
             } | null;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             email: string;
             phone: string | null;
             firstName: string;
@@ -128,9 +128,9 @@ export declare class AuthController {
         user: {
             roles: string;
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             email: string;
             phone: string | null;
             firstName: string;

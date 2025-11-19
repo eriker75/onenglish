@@ -10,7 +10,6 @@ export declare class QuestionsController {
     createWordAssociations(dto: QuestionDtos.CreateWordAssociationsDto): Promise<import("../services").FormattedQuestion | null>;
     createUnscramble(dto: QuestionDtos.CreateUnscrambleDto): Promise<{
         id: string;
-        challengeId: string;
         stage: import("@prisma/client").$Enums.QuestionStage;
         phase: string;
         position: number;
@@ -24,13 +23,16 @@ export declare class QuestionsController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
+        challengeId: string;
+        parentQuestionId: string | null;
     }>;
     createTenses(dto: QuestionDtos.CreateTensesDto): Promise<{
         id: string;
-        challengeId: string;
         stage: import("@prisma/client").$Enums.QuestionStage;
         phase: string;
         position: number;
@@ -44,16 +46,19 @@ export declare class QuestionsController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
+        challengeId: string;
+        parentQuestionId: string | null;
     }>;
     createTagIt(dto: QuestionDtos.CreateTagItDto): Promise<import("../services").FormattedQuestion | null>;
     createReportIt(dto: QuestionDtos.CreateReportItDto): Promise<import("../services").FormattedQuestion | null>;
     createReadIt(dto: QuestionDtos.CreateReadItDto): Promise<({
         subQuestions: {
             id: string;
-            challengeId: string;
             stage: import("@prisma/client").$Enums.QuestionStage;
             phase: string;
             position: number;
@@ -67,13 +72,16 @@ export declare class QuestionsController {
             content: import("@prisma/client/runtime/library").JsonValue | null;
             options: import("@prisma/client/runtime/library").JsonValue | null;
             answer: import("@prisma/client/runtime/library").JsonValue | null;
-            parentQuestionId: string | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            version: number;
             createdAt: Date;
             updatedAt: Date;
+            challengeId: string;
+            parentQuestionId: string | null;
         }[];
     } & {
         id: string;
-        challengeId: string;
         stage: import("@prisma/client").$Enums.QuestionStage;
         phase: string;
         position: number;
@@ -87,16 +95,19 @@ export declare class QuestionsController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
+        challengeId: string;
+        parentQuestionId: string | null;
     }) | null>;
     createWordMatch(dto: QuestionDtos.CreateWordMatchDto): Promise<import("../services").FormattedQuestion | null>;
     createGossip(dto: QuestionDtos.CreateGossipDto): Promise<import("../services").FormattedQuestion | null>;
     createTopicBasedAudio(dto: QuestionDtos.CreateTopicBasedAudioDto): Promise<({
         subQuestions: {
             id: string;
-            challengeId: string;
             stage: import("@prisma/client").$Enums.QuestionStage;
             phase: string;
             position: number;
@@ -110,13 +121,16 @@ export declare class QuestionsController {
             content: import("@prisma/client/runtime/library").JsonValue | null;
             options: import("@prisma/client/runtime/library").JsonValue | null;
             answer: import("@prisma/client/runtime/library").JsonValue | null;
-            parentQuestionId: string | null;
+            isActive: boolean;
+            deletedAt: Date | null;
+            version: number;
             createdAt: Date;
             updatedAt: Date;
+            challengeId: string;
+            parentQuestionId: string | null;
         }[];
     } & {
         id: string;
-        challengeId: string;
         stage: import("@prisma/client").$Enums.QuestionStage;
         phase: string;
         position: number;
@@ -130,15 +144,18 @@ export declare class QuestionsController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
+        challengeId: string;
+        parentQuestionId: string | null;
     }) | null>;
     createLyricsTraining(dto: QuestionDtos.CreateLyricsTrainingDto): Promise<import("../services").FormattedQuestion | null>;
     createSentenceMaker(dto: QuestionDtos.CreateSentenceMakerDto): Promise<import("../services").FormattedQuestion | null>;
     createFastTest(dto: QuestionDtos.CreateFastTestDto): Promise<{
         id: string;
-        challengeId: string;
         stage: import("@prisma/client").$Enums.QuestionStage;
         phase: string;
         position: number;
@@ -152,16 +169,20 @@ export declare class QuestionsController {
         content: import("@prisma/client/runtime/library").JsonValue | null;
         options: import("@prisma/client/runtime/library").JsonValue | null;
         answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
+        isActive: boolean;
+        deletedAt: Date | null;
+        version: number;
         createdAt: Date;
         updatedAt: Date;
+        challengeId: string;
+        parentQuestionId: string | null;
     }>;
     createTales(dto: QuestionDtos.CreateTalesDto): Promise<import("../services").FormattedQuestion | null>;
     createSuperbrain(dto: QuestionDtos.CreateSuperbrainDto): Promise<import("../services").FormattedQuestion | null>;
     createTellMeAboutIt(dto: QuestionDtos.CreateTellMeAboutItDto): Promise<import("../services").FormattedQuestion | null>;
     createDebate(dto: QuestionDtos.CreateDebateDto): Promise<import("../services").FormattedQuestion | null>;
     findAll(challengeId?: string, stage?: QuestionStage, phase?: string): Promise<import("../services").FormattedQuestion[]>;
-    findOne(id: string): Promise<import("../services").FormattedQuestion | null>;
+    findByChallengeId(challengeId: string, stage?: QuestionStage, phase?: string): Promise<import("../services").FormattedQuestion[]>;
     getSchoolStats(schoolId: string, questionId?: string): Promise<{
         questionId: string;
         questionText: string;
@@ -171,4 +192,5 @@ export declare class QuestionsController {
         averageTime: number;
         successRate: number;
     }[]>;
+    findOne(id: string): Promise<import("../services").FormattedQuestion | null>;
 }
