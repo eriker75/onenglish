@@ -23,6 +23,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             verb_conjugation: this.formatVerbConjugation.bind(this),
             gossip: this.formatGossip.bind(this),
             topic_based_audio: this.formatTopicBasedAudio.bind(this),
+            topic_based_audio_subquestion: this.formatTopicBasedAudioSubquestion.bind(this),
             lyrics_training: this.formatLyricsTraining.bind(this),
             sentence_maker: this.formatSentenceMaker.bind(this),
             tales: this.formatTales.bind(this),
@@ -59,7 +60,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.[0] || null,
+            images: question.media?.filter((m) => m.type === 'image') || [],
             options: question.options || [],
             answer: question.answer,
             configurations: question.configurations || {},
@@ -81,9 +82,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             image: question.media?.[0] || null,
-            audio: question.media?.find((m) => m.type === 'audio') || null,
             answer: question.answer,
-            configurations: question.configurations || {},
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -110,6 +109,7 @@ let QuestionFormatterService = class QuestionFormatterService {
         };
     }
     formatWordbox(question) {
+        const configurations = question.configurations || {};
         return {
             id: question.id,
             type: question.type,
@@ -123,8 +123,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             grid: question.content || [],
-            words: question.answer || [],
-            configurations: question.configurations || {},
+            ...configurations,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -257,6 +256,27 @@ let QuestionFormatterService = class QuestionFormatterService {
             updatedAt: question.updatedAt,
         };
     }
+    formatTopicBasedAudioSubquestion(question) {
+        return {
+            id: question.id,
+            type: question.type,
+            stage: question.stage,
+            phase: question.phase,
+            position: question.position,
+            points: question.points,
+            timeLimit: question.timeLimit,
+            maxAttempts: question.maxAttempts,
+            text: question.text,
+            instructions: question.instructions,
+            validationMethod: question.validationMethod,
+            content: question.content || '',
+            options: question.options || [],
+            answer: question.answer,
+            parentQuestionId: question.parentQuestion?.id,
+            createdAt: question.createdAt,
+            updatedAt: question.updatedAt,
+        };
+    }
     formatLyricsTraining(question) {
         return {
             id: question.id,
@@ -270,11 +290,10 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            audio: question.media?.find((m) => m.type === 'audio') || null,
-            subQuestions: question.subQuestions
-                ?.map((sq) => this.formatQuestion(sq))
-                .filter((q) => q !== null) || [],
-            configurations: question.configurations || {},
+            media: question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+                null,
+            options: question.options || [],
+            answer: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -292,10 +311,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.[0] || null,
-            prompt: question.content,
-            hints: question.configurations?.hints || null,
-            configurations: question.configurations || {},
+            images: question.media?.filter((m) => m.type === 'image') || [],
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -314,9 +330,6 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             images: question.media?.filter((m) => m.type === 'image') || [],
-            prompt: question.content,
-            minWords: parseInt(question.configurations?.minWords || '50'),
-            configurations: question.configurations || {},
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -438,11 +451,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            subQuestions: question.subQuestions
-                ?.map((sq) => this.formatQuestion(sq))
-                .filter((q) => q !== null) || [],
-            totalQuestions: question.subQuestions?.length || 0,
-            configurations: question.configurations || {},
+            content: question.content || [],
+            options: question.options || [],
+            answer: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -460,11 +471,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            subQuestions: question.subQuestions
-                ?.map((sq) => this.formatQuestion(sq))
-                .filter((q) => q !== null) || [],
-            totalQuestions: question.subQuestions?.length || 0,
-            configurations: question.configurations || {},
+            content: question.content,
+            image: question.media?.find((m) => m.type === 'image') || null,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

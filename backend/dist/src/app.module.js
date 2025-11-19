@@ -10,8 +10,10 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const nestjs_form_data_1 = require("nestjs-form-data");
+const core_1 = require("@nestjs/core");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
+const interceptors_1 = require("./common/interceptors");
 const database_module_1 = require("./database/database.module");
 const auth_module_1 = require("./auth/auth.module");
 const questions_module_1 = require("./questions/questions.module");
@@ -54,6 +56,15 @@ exports.AppModule = AppModule = __decorate([
                     index: 'index.html',
                 },
             }),
+            serve_static_1.ServeStaticModule.forRoot({
+                rootPath: (0, path_1.join)(process.cwd(), 'uploads'),
+                serveRoot: '/uploads',
+                serveStaticOptions: {
+                    setHeaders: (res) => {
+                        res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+                    },
+                },
+            }),
             ai_module_1.AiModule.forFeatureAsync('GEMINI_AI', {
                 imports: [config_1.ConfigModule],
                 useFactory: (configService) => ({
@@ -81,7 +92,13 @@ exports.AppModule = AppModule = __decorate([
             files_module_1.FilesModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [
+            app_service_1.AppService,
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: interceptors_1.LoggingInterceptor,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

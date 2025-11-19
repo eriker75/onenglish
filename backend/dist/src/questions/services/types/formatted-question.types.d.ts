@@ -47,13 +47,12 @@ export interface EnrichedQuestion extends BaseQuestionFields {
     parentQuestion?: any;
 }
 export interface FormattedImageToMultipleChoicesQuestion extends BaseQuestionFields {
-    image: MediaFile | null;
+    images: MediaFile[];
     options: string[];
     answer: string;
 }
-export interface FormattedSpellingQuestion extends BaseQuestionFields {
+export interface FormattedSpellingQuestion extends Omit<BaseQuestionFields, 'configurations'> {
     image: MediaFile | null;
-    audio: MediaFile | null;
     answer: string;
 }
 export interface FormattedWordMatchQuestion extends BaseQuestionFields {
@@ -61,9 +60,12 @@ export interface FormattedWordMatchQuestion extends BaseQuestionFields {
     options: string[];
     answer: string;
 }
-export interface FormattedWordboxQuestion extends BaseQuestionFields {
+export interface FormattedWordboxQuestion extends Omit<BaseQuestionFields, 'configurations'> {
     grid: string[][];
-    words: string[];
+    gridWidth?: string;
+    gridHeight?: string;
+    maxWords?: string;
+    [key: string]: any;
 }
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
     centralWord: string;
@@ -93,19 +95,22 @@ export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
     audio: MediaFile | null;
     subQuestions: FormattedQuestion[];
 }
+export interface FormattedTopicBasedAudioSubquestion extends BaseQuestionFields {
+    content: string;
+    options: string[];
+    answer: string;
+    parentQuestionId?: string;
+}
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
-    audio: MediaFile | null;
-    subQuestions: FormattedQuestion[];
+    media: MediaFile | null;
+    options: string[];
+    answer: string;
 }
 export interface FormattedSentenceMakerQuestion extends BaseQuestionFields {
-    image: MediaFile | null;
-    prompt: string;
-    hints: string | null;
+    images: MediaFile[];
 }
 export interface FormattedTalesQuestion extends BaseQuestionFields {
     images: MediaFile[];
-    prompt: string;
-    minWords: number;
 }
 export interface FormattedTagItQuestion extends BaseQuestionFields {
     sentence: string;
@@ -133,12 +138,13 @@ export interface FormattedDebateQuestion extends BaseQuestionFields {
     stance: string;
 }
 export interface FormattedFastTestQuestion extends BaseQuestionFields {
-    subQuestions: FormattedQuestion[];
-    totalQuestions: number;
+    content: string[];
+    options: string[];
+    answer: string;
 }
 export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
-    subQuestions: FormattedQuestion[];
-    totalQuestions: number;
+    content: string;
+    image: MediaFile | null;
 }
 export interface FormattedTensesQuestion extends BaseQuestionFields {
     subQuestions: FormattedQuestion[];
@@ -151,4 +157,4 @@ export interface FormattedDefaultQuestion extends BaseQuestionFields {
     media: MediaFile[];
     subQuestions: FormattedQuestion[];
 }
-export type FormattedQuestion = FormattedImageToMultipleChoicesQuestion | FormattedSpellingQuestion | FormattedWordMatchQuestion | FormattedWordboxQuestion | FormattedWordAssociationsQuestion | FormattedUnscrambleQuestion | FormattedFillInTheBlankQuestion | FormattedVerbConjugationQuestion | FormattedGossipQuestion | FormattedTopicBasedAudioQuestion | FormattedLyricsTrainingQuestion | FormattedSentenceMakerQuestion | FormattedTalesQuestion | FormattedTagItQuestion | FormattedReadItQuestion | FormattedTellMeAboutItQuestion | FormattedReportItQuestion | FormattedDebateQuestion | FormattedFastTestQuestion | FormattedSuperbrainQuestion | FormattedTensesQuestion | FormattedDefaultQuestion;
+export type FormattedQuestion = FormattedImageToMultipleChoicesQuestion | FormattedSpellingQuestion | FormattedWordMatchQuestion | FormattedWordboxQuestion | FormattedWordAssociationsQuestion | FormattedUnscrambleQuestion | FormattedFillInTheBlankQuestion | FormattedVerbConjugationQuestion | FormattedGossipQuestion | FormattedTopicBasedAudioQuestion | FormattedTopicBasedAudioSubquestion | FormattedLyricsTrainingQuestion | FormattedSentenceMakerQuestion | FormattedTalesQuestion | FormattedTagItQuestion | FormattedReadItQuestion | FormattedTellMeAboutItQuestion | FormattedReportItQuestion | FormattedDebateQuestion | FormattedFastTestQuestion | FormattedSuperbrainQuestion | FormattedTensesQuestion | FormattedDefaultQuestion;

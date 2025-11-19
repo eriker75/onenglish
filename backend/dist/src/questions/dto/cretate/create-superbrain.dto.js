@@ -12,9 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateSuperbrainDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const nestjs_form_data_1 = require("nestjs-form-data");
 const base_question_dto_1 = require("./base-question.dto");
 class CreateSuperbrainDto extends base_question_dto_1.BaseCreateQuestionDto {
     content;
+    media;
 }
 exports.CreateSuperbrainDto = CreateSuperbrainDto;
 __decorate([
@@ -25,4 +27,24 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateSuperbrainDto.prototype, "content", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        description: 'Optional reference image for the question (image/jpeg, image/png, image/webp)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateSuperbrainDto.prototype, "media", void 0);
 //# sourceMappingURL=create-superbrain.dto.js.map

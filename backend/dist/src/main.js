@@ -11,7 +11,6 @@ const config_1 = require("@nestjs/config");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const compression_1 = __importDefault(require("compression"));
 const helmet_1 = __importDefault(require("helmet"));
-const path_1 = require("path");
 const APP_PORT = process.env.PORT;
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
@@ -46,13 +45,6 @@ async function bootstrap() {
         }
         callback(new Error('Not allowed by CORS'));
     };
-    const uploadRoot = (0, path_1.join)(process.cwd(), 'uploads');
-    app.useStaticAssets(uploadRoot, {
-        prefix: '/uploads',
-        setHeaders: (res) => {
-            res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
-        },
-    });
     app.enableCors({
         origin: corsOriginCallback,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

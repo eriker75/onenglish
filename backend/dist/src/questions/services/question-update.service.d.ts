@@ -4,7 +4,8 @@ export declare class QuestionUpdateService {
     constructor(prisma: PrismaService);
     updateQuestion(questionId: string, updateData: any): Promise<any>;
     recalculateParentPoints(parentQuestionId: string): Promise<void>;
-    calculatePointsFromSubQuestions(subQuestions: any[]): Promise<number>;
+    calculatePointsFromSubQuestions(subQuestions: any[]): number;
+    updateTopicBasedAudioSubquestion(id: string, updateData: any): Promise<any>;
     updateQuestionText(questionId: string, text: string): Promise<any>;
     updateQuestionInstructions(questionId: string, instructions: string): Promise<any>;
     updateQuestionTimeLimit(questionId: string, timeLimit: number): Promise<any>;

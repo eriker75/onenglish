@@ -25,10 +25,46 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (!question) {
             throw new common_1.NotFoundException('Question not found');
         }
+        const { gridWidth, gridHeight, maxWords, ...questionData } = updateData;
         const updatedQuestion = await this.prisma.question.update({
             where: { id: questionId },
-            data: updateData,
+            data: questionData,
         });
+        if (question.type === 'wordbox' &&
+            (gridWidth !== undefined ||
+                gridHeight !== undefined ||
+                maxWords !== undefined)) {
+            const existingConfigs = await this.prisma.questionConfiguration.findMany({
+                where: { questionId },
+            });
+            const upsertConfig = async (key, value) => {
+                const existing = existingConfigs.find((c) => c.metaKey === key);
+                if (existing) {
+                    await this.prisma.questionConfiguration.update({
+                        where: { id: existing.id },
+                        data: { metaValue: String(value) },
+                    });
+                }
+                else {
+                    await this.prisma.questionConfiguration.create({
+                        data: {
+                            questionId,
+                            metaKey: key,
+                            metaValue: String(value),
+                        },
+                    });
+                }
+            };
+            if (gridWidth !== undefined) {
+                await upsertConfig('gridWidth', gridWidth);
+            }
+            if (gridHeight !== undefined) {
+                await upsertConfig('gridHeight', gridHeight);
+            }
+            if (maxWords !== undefined) {
+                await upsertConfig('maxWords', maxWords);
+            }
+        }
         if (question.parentQuestionId && updateData.points !== undefined) {
             await this.recalculateParentPoints(question.parentQuestionId);
         }
@@ -45,8 +81,32 @@ let QuestionUpdateService = class QuestionUpdateService {
             data: { points: totalPoints },
         });
     }
-    async calculatePointsFromSubQuestions(subQuestions) {
+    calculatePointsFromSubQuestions(subQuestions) {
         return subQuestions.reduce((sum, sq) => sum + (sq.points || 0), 0);
+    }
+    async updateTopicBasedAudioSubquestion(id, updateData) {
+        const question = await this.prisma.question.findUnique({
+            where: { id },
+        });
+        if (!question) {
+            throw new common_1.NotFoundException('Subquestion not found');
+        }
+        if (question.type !== 'topic_based_audio_subquestion') {
+            throw new common_1.BadRequestException('Question must be of type topic_based_audio_subquestion');
+        }
+        const finalOptions = updateData.options || question.options;
+        const finalAnswer = updateData.answer || question.answer;
+        if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
+            throw new common_1.BadRequestException('Answer must be one of the options');
+        }
+        const updatedQuestion = await this.prisma.question.update({
+            where: { id },
+            data: updateData,
+        });
+        if (question.parentQuestionId && updateData.points !== undefined) {
+            await this.recalculateParentPoints(question.parentQuestionId);
+        }
+        return updatedQuestion;
     }
     async updateQuestionText(questionId, text) {
         return this.updateQuestion(questionId, { text });

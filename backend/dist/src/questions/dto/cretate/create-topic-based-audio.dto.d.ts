@@ -6,8 +6,11 @@ export declare class AudioSubQuestionDto {
     options: string[];
     answer: string;
 }
-export declare class CreateTopicBasedAudioDto extends BaseCreateQuestionDto {
+declare const CreateTopicBasedAudioDto_base: import("@nestjs/common").Type<Omit<BaseCreateQuestionDto, "points">>;
+export declare class CreateTopicBasedAudioDto extends CreateTopicBasedAudioDto_base {
+    points?: number;
     media: FileSystemStoredFile;
-    subQuestions: AudioSubQuestionDto[];
+    subQuestions: string;
     parentQuestionId?: string;
 }
+export {};

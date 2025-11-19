@@ -449,9 +449,11 @@ __decorate([
 ], QuestionsController.prototype, "createTales", null);
 __decorate([
     (0, common_1.Post)('create/superbrain'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a superbrain question',
-        description: 'Creates a speaking question where students respond to a prompt with a single audio response. Default validation method: IA.',
+        description: 'Creates a speaking question where students respond to a prompt with a single audio response. Optionally includes a decorative reference image. Default validation method: IA.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,
@@ -468,9 +470,11 @@ __decorate([
 ], QuestionsController.prototype, "createSuperbrain", null);
 __decorate([
     (0, common_1.Post)('create/tell_me_about_it'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a tell me about it question',
-        description: 'Creates a speaking question where students create an audio story based on a prompt. Default validation method: IA.',
+        description: 'Creates a speaking question where students create an audio story based on a prompt. Optionally includes a decorative reference image. Default validation method: IA.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,

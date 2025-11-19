@@ -8,9 +8,6 @@ export declare class QuestionsService {
     private readonly questionFormatterService;
     constructor(prisma: PrismaService, questionMediaService: QuestionMediaService, questionFormatterService: QuestionFormatterService);
     private calculateNextPosition;
-    private getDefaultValidationMethod;
-    private getDefaultText;
-    private getDefaultInstructions;
     private attachConfigurations;
     createImageToMultipleChoices(dto: QuestionDtos.CreateImageToMultipleChoicesDto): Promise<import(".").FormattedQuestion | null>;
     createWordbox(dto: QuestionDtos.CreateWordboxDto): Promise<import(".").FormattedQuestion | null>;
@@ -180,6 +177,9 @@ export declare class QuestionsService {
         answer: import("@prisma/client/runtime/library").JsonValue | null;
         parentQuestionId: string | null;
     }) | null>;
+    createTopicBasedAudioSubquestion(dto: QuestionDtos.CreateTopicBasedAudioSubquestionDto): Promise<import(".").FormattedQuestion | null>;
+    private recalculateParentPoints;
+    updateTopicBasedAudioSubquestion(id: string, dto: QuestionDtos.UpdateTopicBasedAudioSubquestionDto): Promise<import(".").FormattedQuestion | null>;
     createLyricsTraining(dto: QuestionDtos.CreateLyricsTrainingDto): Promise<import(".").FormattedQuestion | null>;
     createSentenceMaker(dto: QuestionDtos.CreateSentenceMakerDto): Promise<import(".").FormattedQuestion | null>;
     createFastTest(dto: QuestionDtos.CreateFastTestDto): Promise<{
@@ -203,26 +203,7 @@ export declare class QuestionsService {
         parentQuestionId: string | null;
     }>;
     createTales(dto: QuestionDtos.CreateTalesDto): Promise<import(".").FormattedQuestion | null>;
-    createSuperbrain(dto: QuestionDtos.CreateSuperbrainDto): Promise<{
-        id: string;
-        type: string;
-        createdAt: Date;
-        updatedAt: Date;
-        stage: import("@prisma/client").$Enums.QuestionStage;
-        challengeId: string;
-        phase: string;
-        position: number;
-        points: number;
-        timeLimit: number;
-        maxAttempts: number;
-        text: string;
-        instructions: string;
-        validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
-    }>;
+    createSuperbrain(dto: QuestionDtos.CreateSuperbrainDto): Promise<import(".").FormattedQuestion | null>;
     createTellMeAboutIt(dto: QuestionDtos.CreateTellMeAboutItDto): Promise<import(".").FormattedQuestion | null>;
     createDebate(dto: QuestionDtos.CreateDebateDto): Promise<import(".").FormattedQuestion | null>;
     findAll(filters?: {

@@ -12,6 +12,7 @@ export declare class QuestionFormatterService {
     private formatVerbConjugation;
     private formatGossip;
     private formatTopicBasedAudio;
+    private formatTopicBasedAudioSubquestion;
     private formatLyricsTraining;
     private formatSentenceMaker;
     private formatTales;

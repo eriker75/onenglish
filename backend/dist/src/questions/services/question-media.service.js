@@ -37,6 +37,7 @@ let QuestionMediaService = class QuestionMediaService {
         }));
         await this.prisma.questionMedia.createMany({
             data: mediaAttachments,
+            skipDuplicates: true,
         });
     }
     async detachAllMediaFiles(questionId) {

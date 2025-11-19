@@ -27,6 +27,7 @@ __exportStar(require("./update-read-it.dto"), exports);
 __exportStar(require("./update-word-match.dto"), exports);
 __exportStar(require("./update-gossip.dto"), exports);
 __exportStar(require("./update-topic-based-audio.dto"), exports);
+__exportStar(require("./update-topic-based-audio-subquestion.dto"), exports);
 __exportStar(require("./update-lyrics-training.dto"), exports);
 __exportStar(require("./update-sentence-maker.dto"), exports);
 __exportStar(require("./update-fast-test.dto"), exports);

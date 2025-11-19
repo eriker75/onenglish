@@ -27,6 +27,7 @@ __exportStar(require("./cretate/create-read-it.dto"), exports);
 __exportStar(require("./cretate/create-word-match.dto"), exports);
 __exportStar(require("./cretate/create-gossip.dto"), exports);
 __exportStar(require("./cretate/create-topic-based-audio.dto"), exports);
+__exportStar(require("./cretate/create-topic-based-audio-subquestion.dto"), exports);
 __exportStar(require("./cretate/create-lyrics-training.dto"), exports);
 __exportStar(require("./cretate/create-sentence-maker.dto"), exports);
 __exportStar(require("./cretate/create-fast-test.dto"), exports);
@@ -34,4 +35,5 @@ __exportStar(require("./cretate/create-tales.dto"), exports);
 __exportStar(require("./cretate/create-superbrain.dto"), exports);
 __exportStar(require("./cretate/create-tell-me-about-it.dto"), exports);
 __exportStar(require("./cretate/create-debate.dto"), exports);
+__exportStar(require("./update/update-topic-based-audio-subquestion.dto"), exports);
 //# sourceMappingURL=index.js.map

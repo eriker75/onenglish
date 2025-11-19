@@ -22,15 +22,22 @@ class CreateImageToMultipleChoicesDto extends base_question_dto_1.BaseCreateQues
 }
 exports.CreateImageToMultipleChoicesDto = CreateImageToMultipleChoicesDto;
 __decorate([
-    (0, nestjs_form_data_1.IsFile)(),
-    (0, nestjs_form_data_1.MaxFileSize)(5e6),
-    (0, nestjs_form_data_1.HasMimeType)(['image/jpeg', 'image/png', 'image/webp']),
-    (0, swagger_1.ApiProperty)({
-        type: 'string',
-        format: 'binary',
-        description: 'Image file to upload',
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (!value)
+            return [];
+        return Array.isArray(value) ? value : [value];
     }),
-    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+    (0, nestjs_form_data_1.IsFile)({ each: true }),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6, { each: true }),
+    (0, nestjs_form_data_1.HasMimeType)(['image/jpeg', 'image/png', 'image/webp'], { each: true }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ArrayMinSize)(1, { message: 'At least one image file is required' }),
+    (0, swagger_1.ApiProperty)({
+        type: 'array',
+        items: { type: 'string', format: 'binary' },
+        description: 'Image files to upload (PNG, JPEG, or WebP, max 5MB each)',
+    }),
+    __metadata("design:type", Array)
 ], CreateImageToMultipleChoicesDto.prototype, "media", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({

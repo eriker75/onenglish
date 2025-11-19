@@ -25,7 +25,7 @@ exports.AudioSubQuestionDto = AudioSubQuestionDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'What is the main topic discussed in the audio?',
-        description: 'Sub-question text'
+        description: 'Sub-question text',
     }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
@@ -34,7 +34,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         example: 8,
         minimum: 0,
-        description: 'Points for this sub-question'
+        description: 'Points for this sub-question',
     }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(0),
@@ -44,7 +44,23 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         type: [String],
         description: 'Answer options for this sub-question',
-        example: ['Travel plans', 'Business meeting', 'Weather forecast', 'Sports event']
+        example: [
+            'Travel plans',
+            'Business meeting',
+            'Weather forecast',
+            'Sports event',
+        ],
+    }),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value);
+            }
+            catch {
+                return value.split(',').map((item) => item.trim());
+            }
+        }
+        return value;
     }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(2),
@@ -54,17 +70,32 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'Business meeting',
-        description: 'Correct answer (must match one of the options)'
+        description: 'Correct answer (must match one of the options)',
     }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], AudioSubQuestionDto.prototype, "answer", void 0);
-class CreateTopicBasedAudioDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateTopicBasedAudioDto extends (0, swagger_1.OmitType)(base_question_dto_1.BaseCreateQuestionDto, [
+    'points',
+]) {
+    points;
     media;
     subQuestions;
     parentQuestionId;
 }
 exports.CreateTopicBasedAudioDto = CreateTopicBasedAudioDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: 'Points value - Auto-calculated from sub-questions sum. If provided, it will be overwritten.',
+        example: 0,
+        minimum: 0,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(0),
+    (0, class_transformer_1.Transform)(({ value }) => (value === '' ? undefined : value)),
+    __metadata("design:type", Number)
+], CreateTopicBasedAudioDto.prototype, "points", void 0);
 __decorate([
     (0, nestjs_form_data_1.IsFile)(),
     (0, nestjs_form_data_1.MaxFileSize)(10e6),
@@ -78,39 +109,35 @@ __decorate([
 ], CreateTopicBasedAudioDto.prototype, "media", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        type: [AudioSubQuestionDto],
-        description: 'Multiple choice questions about the audio',
-        example: [
+        type: String,
+        description: 'JSON string array of sub-questions',
+        example: JSON.stringify([
             {
                 text: 'What is the main topic discussed in the audio?',
                 points: 8,
-                options: ['Travel plans', 'Business meeting', 'Weather forecast', 'Sports event'],
+                options: [
+                    'Travel plans',
+                    'Business meeting',
+                    'Weather forecast',
+                    'Sports event',
+                ],
                 answer: 'Business meeting',
             },
             {
                 text: 'When will the meeting take place?',
                 points: 8,
-                options: ['Monday morning', 'Tuesday afternoon', 'Wednesday evening', 'Thursday night'],
+                options: [
+                    'Monday morning',
+                    'Tuesday afternoon',
+                    'Wednesday evening',
+                    'Thursday night',
+                ],
                 answer: 'Monday morning',
             },
-        ],
+        ]),
     }),
-    (0, class_transformer_1.Transform)(({ value }) => {
-        if (typeof value === 'string') {
-            try {
-                return JSON.parse(value);
-            }
-            catch {
-                return value;
-            }
-        }
-        return value;
-    }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ArrayMinSize)(1),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => AudioSubQuestionDto),
-    __metadata("design:type", Array)
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
 ], CreateTopicBasedAudioDto.prototype, "subQuestions", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
