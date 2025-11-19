@@ -184,9 +184,14 @@ export class QuestionsService {
       dto.phase,
     );
 
+    // Ensure media is an array
+    const mediaFiles = Array.isArray(dto.media) ? dto.media : [dto.media];
+
     // Upload all files
     const uploadedFiles = await Promise.all(
-      dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)),
+      mediaFiles.map((file) =>
+        this.questionMediaService.uploadSingleFile(file),
+      ),
     );
 
     // Create the question

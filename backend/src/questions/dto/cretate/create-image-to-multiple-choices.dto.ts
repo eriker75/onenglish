@@ -10,6 +10,11 @@ import {
 } from 'nestjs-form-data';
 
 export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
+  @Transform(({ value }) => {
+    // Ensure value is always an array
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  })
   @IsFile({ each: true })
   @MaxFileSize(5e6, { each: true }) // 5MB per file
   @HasMimeType(['image/jpeg', 'image/png', 'image/webp'], { each: true })

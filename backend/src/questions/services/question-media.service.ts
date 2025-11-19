@@ -49,6 +49,7 @@ export class QuestionMediaService {
 
     await this.prisma.questionMedia.createMany({
       data: mediaAttachments,
+      skipDuplicates: true,
     });
   }
 

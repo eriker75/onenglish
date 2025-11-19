@@ -113,7 +113,7 @@ export class QuestionFormatterService {
       instructions: question.instructions,
       validationMethod: question.validationMethod,
       // Media handling
-      image: question.media?.[0] || null, // Primary image
+      images: question.media?.filter((m) => m.type === 'image') || [],
       // Options and answer
       options: question.options || [],
       answer: question.answer,

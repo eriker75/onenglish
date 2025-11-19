@@ -69,7 +69,7 @@ export interface EnrichedQuestion extends BaseQuestionFields {
 
 export interface FormattedImageToMultipleChoicesQuestion
   extends BaseQuestionFields {
-  image: MediaFile | null;
+  images: MediaFile[];
   options: string[];
   answer: string;
 }
