@@ -39,10 +39,9 @@ export class QuestionUpdateService {
         maxWords !== undefined)
     ) {
       // Obtener configuraciones existentes
-      const existingConfigs =
-        await this.prisma.questionConfiguration.findMany({
-          where: { questionId },
-        });
+      const existingConfigs = await this.prisma.questionConfiguration.findMany({
+        where: { questionId },
+      });
 
       // Helper para actualizar o crear configuración
       const upsertConfig = async (key: string, value: number) => {

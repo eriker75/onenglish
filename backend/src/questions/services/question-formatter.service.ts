@@ -139,13 +139,10 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
+      // Media handling - solo imagen
       image: question.media?.[0] || null,
-      audio: question.media?.find((m) => m.type === 'audio') || null,
       // Answer
       answer: question.answer,
-      // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

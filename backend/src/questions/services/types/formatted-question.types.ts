@@ -74,9 +74,9 @@ export interface FormattedImageToMultipleChoicesQuestion
   answer: string;
 }
 
-export interface FormattedSpellingQuestion extends BaseQuestionFields {
+export interface FormattedSpellingQuestion
+  extends Omit<BaseQuestionFields, 'configurations'> {
   image: MediaFile | null;
-  audio: MediaFile | null;
   answer: string;
 }
 
