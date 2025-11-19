@@ -15,6 +15,7 @@ const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 class CreateReportItDto extends base_question_dto_1.BaseCreateQuestionDto {
     content;
+    media;
 }
 exports.CreateReportItDto = CreateReportItDto;
 __decorate([
@@ -25,4 +26,14 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateReportItDto.prototype, "content", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image (PNG with transparency recommended)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateReportItDto.prototype, "media", void 0);
 //# sourceMappingURL=create-report-it.dto.js.map

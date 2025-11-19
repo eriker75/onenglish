@@ -54,26 +54,7 @@ export declare class QuestionsService {
         updatedAt: Date;
     }>;
     createTagIt(dto: QuestionDtos.CreateTagItDto): Promise<import(".").FormattedQuestion | null>;
-    createReportIt(dto: QuestionDtos.CreateReportItDto): Promise<{
-        id: string;
-        challengeId: string;
-        stage: import("@prisma/client").$Enums.QuestionStage;
-        phase: string;
-        position: number;
-        type: string;
-        points: number;
-        timeLimit: number;
-        maxAttempts: number;
-        text: string;
-        instructions: string;
-        validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
-        parentQuestionId: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    createReportIt(dto: QuestionDtos.CreateReportItDto): Promise<import(".").FormattedQuestion | null>;
     createReadIt(dto: QuestionDtos.CreateReadItDto): Promise<({
         subQuestions: {
             id: string;

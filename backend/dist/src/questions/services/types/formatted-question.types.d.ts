@@ -128,9 +128,8 @@ export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
     minDuration: number;
 }
 export interface FormattedReportItQuestion extends BaseQuestionFields {
-    topic: string;
-    media: MediaFile[];
-    minDuration: number;
+    content: string;
+    image: MediaFile | null;
 }
 export interface FormattedDebateQuestion extends BaseQuestionFields {
     topic: string;

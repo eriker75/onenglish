@@ -409,10 +409,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            topic: question.content,
-            media: question.media || [],
-            minDuration: parseInt(question.configurations?.minDuration || '60'),
-            configurations: question.configurations || {},
+            content: question.content,
+            image: question.media?.find((m) => m.type === 'image') || null,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

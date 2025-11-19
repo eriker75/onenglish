@@ -159,10 +159,12 @@ export class QuestionsCreationController {
   }
 
   @Post('report_it')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a reported speech question',
     description:
-      'Creates a grammar question where students convert direct speech to reported speech. Default validation method: IA.',
+      'Creates a grammar question where students convert direct speech to reported speech. Optionally include a reference image (PNG with transparency recommended). Default validation method: IA.',
   })
   @ApiResponse({
     status: 201,

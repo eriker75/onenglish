@@ -413,7 +413,18 @@ export class QuestionsService {
       dto.phase,
     );
 
-    return this.prisma.question.create({
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.media) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.media,
+      );
+    }
+
+    // Create the question
+    const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
@@ -429,6 +440,16 @@ export class QuestionsService {
         content: dto.content,
       },
     });
+
+    // Attach media file if uploaded
+    if (uploadedFile) {
+      await this.questionMediaService.attachMediaFiles(question.id, [
+        { id: uploadedFile.id, context: 'main', position: 0 },
+      ]);
+    }
+
+    // Return enriched question
+    return this.findOne(question.id);
   }
 
   async createReadIt(dto: QuestionDtos.CreateReadItDto) {

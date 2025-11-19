@@ -568,14 +568,11 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Topic or context
-      topic: question.content,
-      // Media resources
-      media: question.media || [],
-      // Speaking duration
-      minDuration: parseInt(question.configurations?.minDuration || '60'),
+      // Direct speech to convert
+      content: question.content,
+      // Optional reference image (PNG with transparency recommended)
+      image: question.media?.find((m) => m.type === 'image') || null,
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

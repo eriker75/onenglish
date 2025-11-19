@@ -262,9 +262,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createTagIt", null);
 __decorate([
     (0, common_1.Post)('report_it'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a reported speech question',
-        description: 'Creates a grammar question where students convert direct speech to reported speech. Default validation method: IA.',
+        description: 'Creates a grammar question where students convert direct speech to reported speech. Optionally include a reference image (PNG with transparency recommended). Default validation method: IA.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,

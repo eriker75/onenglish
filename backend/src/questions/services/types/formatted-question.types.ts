@@ -179,9 +179,8 @@ export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedReportItQuestion extends BaseQuestionFields {
-  topic: string;
-  media: MediaFile[];
-  minDuration: number;
+  content: string; // Direct speech sentence to convert
+  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
 }
 
 export interface FormattedDebateQuestion extends BaseQuestionFields {
