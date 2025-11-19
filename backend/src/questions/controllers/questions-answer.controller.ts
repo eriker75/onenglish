@@ -19,6 +19,10 @@ import { Auth } from '../../auth/decorators/auth.decorator';
 import { GetUser } from '../../auth/decorators/get-user.decorator';
 import { ValidRole } from '../../common/definitions/enums';
 import {
+  createQuestionSnapshot,
+  createChallengeSnapshot,
+} from '../helpers';
+import {
   AnswerImageToMultipleChoicesDto,
   AnswerWordboxDto,
   AnswerAudioQuestionDto,
@@ -72,10 +76,12 @@ export class QuestionsAnswerController {
     timeSpent?: number,
     audioFile?: any,
   ): Promise<ValidationResponseDto> {
-    // Get question
+    // Get question with challenge for snapshots
     const question = await this.prisma.question.findUnique({
       where: { id: questionId },
-      select: { id: true, challengeId: true, maxAttempts: true, type: true },
+      include: {
+        challenge: true, // Need challenge for snapshot
+      },
     });
 
     if (!question) {
@@ -112,6 +118,10 @@ export class QuestionsAnswerController {
       audioFile,
     );
 
+    // Create snapshots for data integrity
+    const questionSnapshot = createQuestionSnapshot(question);
+    const challengeSnapshot = createChallengeSnapshot(question.challenge);
+
     // Save to StudentAnswer
     const studentAnswer = await this.prisma.studentAnswer.create({
       data: {
@@ -123,10 +133,14 @@ export class QuestionsAnswerController {
         pointsEarned: validation.pointsEarned,
         attemptNumber: previousAttempts + 1,
         timeSpent: timeSpent || 0,
+        // Snapshots for data integrity
+        questionSnapshot,
+        questionVersion: (question as any).version || 1,
+        challengeSnapshot,
         feedbackEnglish: validation.feedbackEnglish,
         feedbackSpanish: validation.feedbackSpanish,
         audioUrl: audioFile ? `temp-audio-url-${Date.now()}` : null,
-      },
+      } as any, // Type will be correct after migration + prisma generate
     });
 
     return {
@@ -138,7 +152,7 @@ export class QuestionsAnswerController {
       details: validation.details,
       studentAnswer: {
         id: studentAnswer.id,
-        questionId: studentAnswer.questionId,
+        questionId: studentAnswer.questionId || questionId, // Use original if null
         studentId: studentAnswer.studentId,
         isCorrect: studentAnswer.isCorrect,
         pointsEarned: studentAnswer.pointsEarned,

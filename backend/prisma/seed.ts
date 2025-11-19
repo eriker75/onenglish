@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import {
+  createQuestionSnapshot,
+  createChallengeSnapshot,
+} from '../src/questions/helpers';
 
 const prisma = new PrismaClient();
 
@@ -1228,6 +1232,13 @@ async function seedPostgreSQL() {
   const createdQuestions = await Promise.all(allQuestions);
   console.log(`✅ Created ${createdQuestions.length} questions across all stages`);
 
+  // Create a map of challengeId -> challenge for snapshots
+  const challengeMap = new Map([
+    [beginnerChallenge.id, beginnerChallenge],
+    [intermediateChallenge.id, intermediateChallenge],
+    [advancedChallenge.id, advancedChallenge],
+  ]);
+
   // Create Student Answers (500+ answers)
   console.log('\n📊 Creating student answers...');
 
@@ -1263,6 +1274,13 @@ async function seedPostgreSQL() {
 
         const hasFeedback = faker.datatype.boolean({ probability: 0.3 });
 
+        // Get challenge for snapshot
+        const challenge = challengeMap.get(question.challengeId);
+
+        // Create snapshots
+        const questionSnapshot = createQuestionSnapshot(question as any);
+        const challengeSnapshot = challenge ? createChallengeSnapshot(challenge as any) : null;
+
         studentAnswers.push(
           prisma.studentAnswer.create({
             data: {
@@ -1274,11 +1292,14 @@ async function seedPostgreSQL() {
               attemptNumber: attempt,
               timeSpent,
               pointsEarned,
+              questionSnapshot, // Snapshot of question
+              questionVersion: 1, // Initial version
+              challengeSnapshot, // Snapshot of challenge
               feedbackEnglish: hasFeedback ? faker.lorem.sentence() : null,
               feedbackSpanish: hasFeedback ? faker.lorem.sentence() : null,
               audioUrl: question.stage === 'SPEAKING' ? faker.internet.url() : null,
               answeredAt: faker.date.recent({ days: 60 }),
-            },
+            } as any, // Type will be correct after prisma generate
           }),
         );
       }

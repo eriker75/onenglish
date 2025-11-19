@@ -171,6 +171,9 @@ model Challenge {
   studentChallenges StudentChallenge[]
   questions         Question[]
   studentAnswers    StudentAnswer[]
+  // Soft delete and archiving
+  deletedAt         DateTime? // Soft delete timestamp
+  archivedAt        DateTime? // Archive old challenges without deleting
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -180,6 +183,8 @@ model Challenge {
   @@index([stage])
   @@index([isDemo])
   @@index([isActive])
+  @@index([deletedAt])
+  @@index([archivedAt])
   @@map("challenges")
 }
 
@@ -422,7 +427,7 @@ enum ValidationMethod {
 model Question {
   id               String                    @id @default(uuid())
   challengeId      String
-  challenge        Challenge                 @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challenge        Challenge                 @relation(fields: [challengeId], references: [id], onDelete: Restrict)
   stage            QuestionStage
   phase            String
   position         Int
@@ -443,12 +448,18 @@ model Question {
   configurations   QuestionConfiguration[]
   studentAnswers   StudentAnswer[]
   questionStats    QuestionSchoolStats[]
+  // Soft delete and versioning
+  isActive         Boolean                   @default(true) // Can be disabled without deleting
+  deletedAt        DateTime? // Soft delete timestamp
+  version          Int                       @default(1) // Track question versions
   createdAt        DateTime                  @default(now())
   updatedAt        DateTime                  @updatedAt
 
   @@index([challengeId, stage, phase])
   @@index([parentQuestionId])
   @@index([type])
+  @@index([isActive])
+  @@index([deletedAt])
   @@map("questions")
 }
 
@@ -457,10 +468,10 @@ model StudentAnswer {
   id              String    @id @default(uuid())
   studentId       String
   student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  questionId      String
-  question        Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId      String?
+  question        Question? @relation(fields: [questionId], references: [id], onDelete: SetNull)
   challengeId     String
-  challenge       Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challenge       Challenge @relation(fields: [challengeId], references: [id], onDelete: Restrict)
   userAnswer      Json
   isCorrect       Boolean
   attemptNumber   Int       @default(1)
@@ -470,6 +481,11 @@ model StudentAnswer {
   feedbackSpanish String?
   audioUrl        String?
   answeredAt      DateTime  @default(now())
+  // Question snapshot: preserve question data at the time of answer
+  questionSnapshot Json // { text, type, instructions, options?, answer?, content?, points, timeLimit }
+  questionVersion  Int      @default(1) // Version of the question when answered
+  // Challenge snapshot: preserve challenge context at the time of answer
+  challengeSnapshot Json? // { name, grade, type, stage }
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

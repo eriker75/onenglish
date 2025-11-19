@@ -1310,6 +1310,9 @@ export class QuestionsService {
 
     // Build where clause for questions
     const whereCondition: any = {
+      // Only include active, non-deleted questions
+      isActive: true,
+      deletedAt: null,
       studentAnswers: {
         some: {
           student: {
