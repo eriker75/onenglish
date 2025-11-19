@@ -1308,25 +1308,72 @@ export class QuestionsService {
       throw new NotFoundException(`School with ID ${schoolId} not found`);
     }
 
-    const whereClause = questionId ? `AND q.id = '${questionId}'` : '';
+    // Build where clause for questions
+    const whereCondition: any = {
+      studentAnswers: {
+        some: {
+          student: {
+            schoolId: schoolId,
+          },
+        },
+      },
+    };
 
-    return this.prisma.$queryRawUnsafe(`
-      SELECT
-        q.id as "questionId",
-        q.text as "questionText",
-        q.type as "questionType",
-        COUNT(sa.id)::int as "totalAttempts",
-        SUM(CASE WHEN sa."isCorrect" THEN 1 ELSE 0 END)::int as "correctAnswers",
-        ROUND(AVG(sa."timeSpent"))::int as "averageTime",
-        ROUND(AVG(CASE WHEN sa."isCorrect" THEN 100 ELSE 0 END), 2) as "successRate"
-      FROM questions q
-      INNER JOIN student_answers sa ON sa."questionId" = q.id
-      INNER JOIN students s ON s.id = sa."studentId"
-      WHERE s."schoolId" = '${schoolId}'
-      ${whereClause}
-      GROUP BY q.id, q.text, q.type
-      ORDER BY "totalAttempts" DESC
-    `);
+    if (questionId) {
+      whereCondition.id = questionId;
+    }
+
+    // Get questions with their student answers filtered by school
+    const questions = await this.prisma.question.findMany({
+      where: whereCondition,
+      include: {
+        studentAnswers: {
+          where: {
+            student: {
+              schoolId: schoolId,
+            },
+          },
+          select: {
+            id: true,
+            isCorrect: true,
+            timeSpent: true,
+          },
+        },
+      },
+    });
+
+    // Calculate statistics for each question
+    return questions
+      .map((question) => {
+        const totalAttempts = question.studentAnswers.length;
+        const correctAnswers = question.studentAnswers.filter(
+          (sa) => sa.isCorrect,
+        ).length;
+        const averageTime =
+          totalAttempts > 0
+            ? Math.round(
+                question.studentAnswers.reduce(
+                  (sum, sa) => sum + (sa.timeSpent || 0),
+                  0,
+                ) / totalAttempts,
+              )
+            : 0;
+        const successRate =
+          totalAttempts > 0
+            ? parseFloat(((correctAnswers / totalAttempts) * 100).toFixed(2))
+            : 0;
+
+        return {
+          questionId: question.id,
+          questionText: question.text,
+          questionType: question.type,
+          totalAttempts,
+          correctAnswers,
+          averageTime,
+          successRate,
+        };
+      })
+      .sort((a, b) => b.totalAttempts - a.totalAttempts);
   }
 
   // ==================== HELPER METHODS ====================
