@@ -22,11 +22,58 @@ export class QuestionUpdateService {
       throw new NotFoundException('Question not found');
     }
 
+    // Extraer configuraciones de wordbox si existen
+    const { gridWidth, gridHeight, maxWords, ...questionData } = updateData;
+
     // Update the question
     const updatedQuestion = await this.prisma.question.update({
       where: { id: questionId },
-      data: updateData,
+      data: questionData,
     });
+
+    // Actualizar configuraciones de wordbox si se proporcionaron
+    if (
+      question.type === 'wordbox' &&
+      (gridWidth !== undefined ||
+        gridHeight !== undefined ||
+        maxWords !== undefined)
+    ) {
+      // Obtener configuraciones existentes
+      const existingConfigs =
+        await this.prisma.questionConfiguration.findMany({
+          where: { questionId },
+        });
+
+      // Helper para actualizar o crear configuración
+      const upsertConfig = async (key: string, value: number) => {
+        const existing = existingConfigs.find((c) => c.metaKey === key);
+        if (existing) {
+          await this.prisma.questionConfiguration.update({
+            where: { id: existing.id },
+            data: { metaValue: String(value) },
+          });
+        } else {
+          await this.prisma.questionConfiguration.create({
+            data: {
+              questionId,
+              metaKey: key,
+              metaValue: String(value),
+            },
+          });
+        }
+      };
+
+      // Actualizar cada configuración si fue proporcionada
+      if (gridWidth !== undefined) {
+        await upsertConfig('gridWidth', gridWidth);
+      }
+      if (gridHeight !== undefined) {
+        await upsertConfig('gridHeight', gridHeight);
+      }
+      if (maxWords !== undefined) {
+        await upsertConfig('maxWords', maxWords);
+      }
+    }
 
     // If this is a sub-question and points were updated, recalculate parent points
     if (question.parentQuestionId && updateData.points !== undefined) {

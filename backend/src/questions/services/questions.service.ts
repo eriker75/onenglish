@@ -231,21 +231,15 @@ export class QuestionsService {
   async createWordbox(dto: QuestionDtos.CreateWordboxDto) {
     await this.validateChallenge(dto.challengeId);
 
-    if (!Array.isArray(dto.content) || dto.content.length === 0) {
-      throw new BadRequestException('Content must be a non-empty 2D array');
-    }
-
-    const rowLength = dto.content[0].length;
-    const isValid = dto.content.every(
-      (row) =>
-        Array.isArray(row) &&
-        row.length === rowLength &&
-        row.every((cell) => typeof cell === 'string'),
+    // Validaciones ya se hacen en el DTO con el validador personalizado
+    // Solo validamos que cada celda sea string
+    const isValid = dto.content.every((row) =>
+      row.every((cell) => typeof cell === 'string'),
     );
 
     if (!isValid) {
       throw new BadRequestException(
-        'Content must be a valid 2D array of strings with consistent row length',
+        'All grid cells must be strings (single letters)',
       );
     }
 
@@ -275,14 +269,14 @@ export class QuestionsService {
       },
     });
 
-    // Attach configurations if provided
-    if (dto.configuration) {
-      const configs = Object.entries(dto.configuration).map(([key, value]) => ({
-        metaKey: key,
-        metaValue: String(value),
-      }));
-      await this.attachConfigurations(question.id, configs);
-    }
+    // Guardar gridWidth, gridHeight y maxWords como configuraciones
+    const configs = [
+      { metaKey: 'gridWidth', metaValue: String(dto.gridWidth) },
+      { metaKey: 'gridHeight', metaValue: String(dto.gridHeight) },
+      { metaKey: 'maxWords', metaValue: String(dto.maxWords ?? 5) },
+    ];
+
+    await this.attachConfigurations(question.id, configs);
 
     return this.findOne(question.id);
   }

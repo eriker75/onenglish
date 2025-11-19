@@ -86,9 +86,14 @@ export interface FormattedWordMatchQuestion extends BaseQuestionFields {
   answer: string;
 }
 
-export interface FormattedWordboxQuestion extends BaseQuestionFields {
+export interface FormattedWordboxQuestion
+  extends Omit<BaseQuestionFields, 'configurations'> {
   grid: string[][];
-  words: string[];
+  // Configuraciones aplanadas al nivel raíz
+  gridWidth?: string;
+  gridHeight?: string;
+  maxWords?: string;
+  [key: string]: any; // Permitir otras configuraciones dinámicas
 }
 
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
@@ -129,7 +134,8 @@ export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
   subQuestions: FormattedQuestion[];
 }
 
-export interface FormattedTopicBasedAudioSubquestion extends BaseQuestionFields {
+export interface FormattedTopicBasedAudioSubquestion
+  extends BaseQuestionFields {
   content: string;
   options: string[];
   answer: string;

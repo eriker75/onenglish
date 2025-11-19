@@ -179,6 +179,9 @@ export class QuestionFormatterService {
   }
 
   private formatWordbox(question: EnrichedQuestion): FormattedWordboxQuestion {
+    // Aplanar configuraciones al nivel raíz
+    const configurations = question.configurations || {};
+
     return {
       id: question.id,
       type: question.type,
@@ -193,10 +196,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // 2D array of letters
       grid: question.content || [],
-      // Words to find
-      words: question.answer || [],
-      // Metadata
-      configurations: question.configurations || {},
+      // Aplanar configuraciones (gridWidth, gridHeight, maxWords)
+      ...configurations,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
