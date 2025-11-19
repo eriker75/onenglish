@@ -349,6 +349,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             content: question.content,
             answer: question.answer,
+            image: question.media?.find((m) => m.type === 'image') || null,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

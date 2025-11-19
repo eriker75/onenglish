@@ -161,6 +161,7 @@ export interface FormattedTalesQuestion extends BaseQuestionFields {
 export interface FormattedTagItQuestion extends BaseQuestionFields {
   content: string[]; // Sentence parts (e.g., ["He is responsible for the project,", "?"])
   answer: string[]; // Multiple acceptable answers (e.g., ["isn't he", "is not he"])
+  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
 }
 
 // ==================== SPEAKING FORMATTED QUESTIONS ====================

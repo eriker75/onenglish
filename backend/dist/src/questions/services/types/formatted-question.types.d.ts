@@ -115,6 +115,7 @@ export interface FormattedTalesQuestion extends BaseQuestionFields {
 export interface FormattedTagItQuestion extends BaseQuestionFields {
     content: string[];
     answer: string[];
+    image: MediaFile | null;
 }
 export interface FormattedReadItQuestion extends BaseQuestionFields {
     textToRead: string;

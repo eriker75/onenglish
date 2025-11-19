@@ -490,6 +490,8 @@ export class QuestionFormatterService {
       content: question.content,
       // Correct answer(s) - multiple acceptable answers (e.g., ["isn't he", "is not he"])
       answer: question.answer,
+      // Optional reference image (PNG with transparency recommended)
+      image: question.media?.find((m) => m.type === 'image') || null,
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,

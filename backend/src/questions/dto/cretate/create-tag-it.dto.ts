@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, ArrayMinSize } from 'class-validator';
+import { IsArray, ArrayMinSize, IsOptional } from 'class-validator';
 import { BaseCreateQuestionDto } from './base-question.dto';
 
 export class CreateTagItDto extends BaseCreateQuestionDto {
@@ -20,5 +20,14 @@ export class CreateTagItDto extends BaseCreateQuestionDto {
   @IsArray()
   @ArrayMinSize(1)
   answer: string[];
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description: 'Optional reference image (PNG with transparency recommended)',
+  })
+  @IsOptional()
+  media?: any;
 }
 

@@ -139,10 +139,12 @@ export class QuestionsCreationController {
   }
 
   @Post('tag_it')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a tag question',
     description:
-      'Creates a grammar question where students complete a sentence with the correct question tag. Default validation method: AUTO.',
+      'Creates a grammar question where students complete a sentence with the correct question tag. Optionally include a reference image (PNG with transparency recommended). Default validation method: AUTO.',
   })
   @ApiResponse({
     status: 201,

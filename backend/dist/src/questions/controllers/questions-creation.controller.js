@@ -241,9 +241,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createTenses", null);
 __decorate([
     (0, common_1.Post)('tag_it'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a tag question',
-        description: 'Creates a grammar question where students complete a sentence with the correct question tag. Default validation method: AUTO.',
+        description: 'Creates a grammar question where students complete a sentence with the correct question tag. Optionally include a reference image (PNG with transparency recommended). Default validation method: AUTO.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,

@@ -16,6 +16,7 @@ const base_question_dto_1 = require("./base-question.dto");
 class CreateTagItDto extends base_question_dto_1.BaseCreateQuestionDto {
     content;
     answer;
+    media;
 }
 exports.CreateTagItDto = CreateTagItDto;
 __decorate([
@@ -38,4 +39,14 @@ __decorate([
     (0, class_validator_1.ArrayMinSize)(1),
     __metadata("design:type", Array)
 ], CreateTagItDto.prototype, "answer", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image (PNG with transparency recommended)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateTagItDto.prototype, "media", void 0);
 //# sourceMappingURL=create-tag-it.dto.js.map
