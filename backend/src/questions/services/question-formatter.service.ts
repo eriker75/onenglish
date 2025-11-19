@@ -486,14 +486,11 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Sentence to tag
-      sentence: question.content,
-      // Tags to identify (e.g., noun, verb, adjective)
-      tagsToIdentify: question.configurations?.tagsToIdentify?.split(',') || [],
-      // Correct answer
+      // Sentence parts (e.g., ["He is responsible for the project,", "?"])
+      content: question.content,
+      // Correct answer(s) - multiple acceptable answers (e.g., ["isn't he", "is not he"])
       answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

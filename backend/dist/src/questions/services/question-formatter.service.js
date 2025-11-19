@@ -347,10 +347,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            sentence: question.content,
-            tagsToIdentify: question.configurations?.tagsToIdentify?.split(',') || [],
+            content: question.content,
             answer: question.answer,
-            configurations: question.configurations || {},
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

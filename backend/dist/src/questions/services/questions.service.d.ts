@@ -212,6 +212,14 @@ export declare class QuestionsService {
         phase?: string;
     }): Promise<import(".").FormattedQuestion[]>;
     findOne(id: string): Promise<import(".").FormattedQuestion | null>;
-    getSchoolStats(schoolId: string, questionId?: string): Promise<unknown>;
+    getSchoolStats(schoolId: string, questionId?: string): Promise<{
+        questionId: string;
+        questionText: string;
+        questionType: string;
+        totalAttempts: number;
+        correctAnswers: number;
+        averageTime: number;
+        successRate: number;
+    }[]>;
     private validateChallenge;
 }

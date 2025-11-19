@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcrypt"));
+const helpers_1 = require("../src/questions/helpers");
 const prisma = new client_1.PrismaClient();
 const faker_1 = require("@faker-js/faker");
 faker_1.faker.seed(123);
@@ -1115,6 +1116,11 @@ async function seedPostgreSQL() {
     }
     const createdQuestions = await Promise.all(allQuestions);
     console.log(`✅ Created ${createdQuestions.length} questions across all stages`);
+    const challengeMap = new Map([
+        [beginnerChallenge.id, beginnerChallenge],
+        [intermediateChallenge.id, intermediateChallenge],
+        [advancedChallenge.id, advancedChallenge],
+    ]);
     console.log('\n📊 Creating student answers...');
     const studentAnswers = [];
     const allStudents = [
@@ -1139,6 +1145,9 @@ async function seedPostgreSQL() {
                     userAnswer = faker_1.faker.lorem.sentence();
                 }
                 const hasFeedback = faker_1.faker.datatype.boolean({ probability: 0.3 });
+                const challenge = challengeMap.get(question.challengeId);
+                const questionSnapshot = (0, helpers_1.createQuestionSnapshot)(question);
+                const challengeSnapshot = challenge ? (0, helpers_1.createChallengeSnapshot)(challenge) : null;
                 studentAnswers.push(prisma.studentAnswer.create({
                     data: {
                         studentId: student.id,
@@ -1149,6 +1158,9 @@ async function seedPostgreSQL() {
                         attemptNumber: attempt,
                         timeSpent,
                         pointsEarned,
+                        questionSnapshot,
+                        questionVersion: 1,
+                        challengeSnapshot,
                         feedbackEnglish: hasFeedback ? faker_1.faker.lorem.sentence() : null,
                         feedbackSpanish: hasFeedback ? faker_1.faker.lorem.sentence() : null,
                         audioUrl: question.stage === 'SPEAKING' ? faker_1.faker.internet.url() : null,

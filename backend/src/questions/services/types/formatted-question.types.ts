@@ -159,9 +159,8 @@ export interface FormattedTalesQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedTagItQuestion extends BaseQuestionFields {
-  sentence: string;
-  tagsToIdentify: string[];
-  answer: any;
+  content: string[]; // Sentence parts (e.g., ["He is responsible for the project,", "?"])
+  answer: string[]; // Multiple acceptable answers (e.g., ["isn't he", "is not he"])
 }
 
 // ==================== SPEAKING FORMATTED QUESTIONS ====================

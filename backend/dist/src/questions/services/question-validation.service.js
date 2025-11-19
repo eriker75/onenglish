@@ -122,9 +122,8 @@ let QuestionValidationService = class QuestionValidationService {
     }
     async validateTagIt(question, userAnswer) {
         const correctAnswers = question.answer;
-        const hasCorrectAnswer = userAnswer.some(ans => correctAnswers.includes(ans));
-        const allCorrect = userAnswer.every(ans => correctAnswers.includes(ans));
-        const isCorrect = hasCorrectAnswer && allCorrect;
+        const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+        const isCorrect = correctAnswers.some((correctAnswer) => correctAnswer.toLowerCase().trim() === normalizedUserAnswer);
         return {
             isCorrect,
             pointsEarned: isCorrect ? question.points : 0,

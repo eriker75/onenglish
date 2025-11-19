@@ -40,17 +40,17 @@ export declare class QuestionMediaService {
             type: string;
             createdAt: Date;
             updatedAt: Date;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
-            url: string;
             filename: string;
             pathName: string;
+            url: string;
             size: number;
             mimeType: string;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
         };
     } & {
         id: string;
-        createdAt: Date;
         position: number;
+        createdAt: Date;
         questionId: string;
         mediaFileId: string;
         context: string | null;

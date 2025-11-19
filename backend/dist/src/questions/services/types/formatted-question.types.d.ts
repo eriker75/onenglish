@@ -113,9 +113,8 @@ export interface FormattedTalesQuestion extends BaseQuestionFields {
     images: MediaFile[];
 }
 export interface FormattedTagItQuestion extends BaseQuestionFields {
-    sentence: string;
-    tagsToIdentify: string[];
-    answer: any;
+    content: string[];
+    answer: string[];
 }
 export interface FormattedReadItQuestion extends BaseQuestionFields {
     textToRead: string;

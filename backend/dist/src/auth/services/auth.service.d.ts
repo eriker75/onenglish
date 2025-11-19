@@ -24,11 +24,11 @@ export declare class AuthService {
         user: {
             roles: string;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -51,12 +51,12 @@ export declare class AuthService {
             roles: string;
             student: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
                 schoolId: string | null;
                 email: string;
                 phone: string | null;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
                 firstName: string;
                 lastName: string;
                 bio: string | null;
@@ -64,11 +64,11 @@ export declare class AuthService {
                 userId: string;
             } | null;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -91,11 +91,11 @@ export declare class AuthService {
             roles: string;
             admin: {
                 id: string;
-                email: string;
-                phone: string | null;
-                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                isActive: boolean;
+                email: string;
+                phone: string | null;
                 firstName: string;
                 lastName: string;
                 bio: string | null;
@@ -103,11 +103,11 @@ export declare class AuthService {
                 userId: string;
             } | null;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -129,11 +129,11 @@ export declare class AuthService {
         user: {
             roles: string;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;

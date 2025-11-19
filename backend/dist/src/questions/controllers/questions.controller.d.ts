@@ -200,5 +200,13 @@ export declare class QuestionsController {
     createDebate(dto: QuestionDtos.CreateDebateDto): Promise<import("../services").FormattedQuestion | null>;
     findAll(challengeId?: string, stage?: QuestionStage, phase?: string): Promise<import("../services").FormattedQuestion[]>;
     findOne(id: string): Promise<import("../services").FormattedQuestion | null>;
-    getSchoolStats(schoolId: string, questionId?: string): Promise<unknown>;
+    getSchoolStats(schoolId: string, questionId?: string): Promise<{
+        questionId: string;
+        questionText: string;
+        questionType: string;
+        totalAttempts: number;
+        correctAnswers: number;
+        averageTime: number;
+        successRate: number;
+    }[]>;
 }

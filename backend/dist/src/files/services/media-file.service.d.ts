@@ -14,36 +14,36 @@ export declare class MediaFileService {
         type: string;
         createdAt: Date;
         updatedAt: Date;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        url: string;
         filename: string;
         pathName: string;
+        url: string;
         size: number;
         mimeType: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
     findById(id: string): Promise<{
         id: string;
         type: string;
         createdAt: Date;
         updatedAt: Date;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        url: string;
         filename: string;
         pathName: string;
+        url: string;
         size: number;
         mimeType: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     findByRandomName(pathName: string): Promise<{
         id: string;
         type: string;
         createdAt: Date;
         updatedAt: Date;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        url: string;
         filename: string;
         pathName: string;
+        url: string;
         size: number;
         mimeType: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     update(pathName: string, updateData: {
         type?: string;
@@ -57,12 +57,12 @@ export declare class MediaFileService {
         type: string;
         createdAt: Date;
         updatedAt: Date;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        url: string;
         filename: string;
         pathName: string;
+        url: string;
         size: number;
         mimeType: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
     }>;
     delete(pathName: string): Promise<void>;
 }

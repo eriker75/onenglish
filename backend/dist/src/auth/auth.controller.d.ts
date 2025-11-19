@@ -23,11 +23,11 @@ export declare class AuthController {
         user: {
             roles: string;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -50,12 +50,12 @@ export declare class AuthController {
             roles: string;
             student: {
                 id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
                 schoolId: string | null;
                 email: string;
                 phone: string | null;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
                 firstName: string;
                 lastName: string;
                 bio: string | null;
@@ -63,11 +63,11 @@ export declare class AuthController {
                 userId: string;
             } | null;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -90,11 +90,11 @@ export declare class AuthController {
             roles: string;
             admin: {
                 id: string;
-                email: string;
-                phone: string | null;
-                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
+                isActive: boolean;
+                email: string;
+                phone: string | null;
                 firstName: string;
                 lastName: string;
                 bio: string | null;
@@ -102,11 +102,11 @@ export declare class AuthController {
                 userId: string;
             } | null;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;
@@ -128,11 +128,11 @@ export declare class AuthController {
         user: {
             roles: string;
             id: string;
-            email: string;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            isActive: boolean;
+            email: string;
+            phone: string | null;
             firstName: string;
             lastName: string;
             bio: string | null;

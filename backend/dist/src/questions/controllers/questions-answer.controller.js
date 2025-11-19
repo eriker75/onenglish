@@ -21,6 +21,7 @@ const question_validation_service_1 = require("../services/question-validation.s
 const auth_decorator_1 = require("../../auth/decorators/auth.decorator");
 const get_user_decorator_1 = require("../../auth/decorators/get-user.decorator");
 const enums_1 = require("../../common/definitions/enums");
+const helpers_1 = require("../helpers");
 const answer_1 = require("../dto/answer");
 let QuestionsAnswerController = class QuestionsAnswerController {
     prisma;
@@ -32,7 +33,9 @@ let QuestionsAnswerController = class QuestionsAnswerController {
     async processAnswer(questionId, userId, userAnswer, timeSpent, audioFile) {
         const question = await this.prisma.question.findUnique({
             where: { id: questionId },
-            select: { id: true, challengeId: true, maxAttempts: true, type: true },
+            include: {
+                challenge: true,
+            },
         });
         if (!question) {
             throw new common_1.BadRequestException('Question not found');
@@ -53,6 +56,8 @@ let QuestionsAnswerController = class QuestionsAnswerController {
             throw new common_1.BadRequestException(`Maximum attempts (${question.maxAttempts}) reached for this question`);
         }
         const validation = await this.validationService.validateAnswer(questionId, userAnswer, audioFile);
+        const questionSnapshot = (0, helpers_1.createQuestionSnapshot)(question);
+        const challengeSnapshot = (0, helpers_1.createChallengeSnapshot)(question.challenge);
         const studentAnswer = await this.prisma.studentAnswer.create({
             data: {
                 studentId: student.id,
@@ -63,6 +68,9 @@ let QuestionsAnswerController = class QuestionsAnswerController {
                 pointsEarned: validation.pointsEarned,
                 attemptNumber: previousAttempts + 1,
                 timeSpent: timeSpent || 0,
+                questionSnapshot,
+                questionVersion: question.version || 1,
+                challengeSnapshot,
                 feedbackEnglish: validation.feedbackEnglish,
                 feedbackSpanish: validation.feedbackSpanish,
                 audioUrl: audioFile ? `temp-audio-url-${Date.now()}` : null,
@@ -77,7 +85,7 @@ let QuestionsAnswerController = class QuestionsAnswerController {
             details: validation.details,
             studentAnswer: {
                 id: studentAnswer.id,
-                questionId: studentAnswer.questionId,
+                questionId: studentAnswer.questionId || questionId,
                 studentId: studentAnswer.studentId,
                 isCorrect: studentAnswer.isCorrect,
                 pointsEarned: studentAnswer.pointsEarned,

@@ -55,7 +55,7 @@ export function getDefaultText(questionType: string): string {
     // Grammar
     unscramble: 'Put the words in the correct order to form a sentence.',
     tenses: 'Identify the verb tense used in the sentence.',
-    tag_it: 'Select all the words that belong to the indicated category.',
+    tag_it: 'Complete the question tag.',
     report_it: 'Convert the direct speech into reported speech.',
     read_it: 'Read the text and answer the questions below.',
     // Listening
@@ -94,7 +94,7 @@ export function getDefaultInstructions(questionType: string): string {
       'Arrange the words to create a grammatically correct sentence.',
     tenses:
       'Choose the tense that best describes the verb usage in the sentence.',
-    tag_it: 'Select all words that fit the specified grammatical category.',
+    tag_it: 'Type the correct question tag to complete the sentence.',
     report_it:
       'Rewrite the sentence converting direct speech to reported speech.',
     read_it:

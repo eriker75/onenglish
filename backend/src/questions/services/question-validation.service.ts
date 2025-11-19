@@ -142,16 +142,16 @@ export class QuestionValidationService {
     };
   }
 
-  private async validateTagIt(question: any, userAnswer: string[]): Promise<ValidationResult> {
+  private async validateTagIt(question: any, userAnswer: string): Promise<ValidationResult> {
     const correctAnswers = question.answer as string[];
 
-    // Check if user selected at least one correct answer
-    const hasCorrectAnswer = userAnswer.some(ans => correctAnswers.includes(ans));
+    // Normalize user answer: trim and lowercase
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
 
-    // Check if all user answers are correct (no wrong selections)
-    const allCorrect = userAnswer.every(ans => correctAnswers.includes(ans));
-
-    const isCorrect = hasCorrectAnswer && allCorrect;
+    // Check if normalized answer matches any of the correct answers (also normalized)
+    const isCorrect = correctAnswers.some(
+      (correctAnswer) => correctAnswer.toLowerCase().trim() === normalizedUserAnswer
+    );
 
     return {
       isCorrect,
