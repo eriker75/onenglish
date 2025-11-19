@@ -2,7 +2,7 @@
  * Utility to detect file type based on file extension and MIME type
  */
 
-export type FileType = 'image' | 'voice' | 'document' | 'video';
+export type FileType = 'image' | 'audio' | 'document' | 'video';
 
 interface FileTypeMapping {
   extensions: string[];
@@ -23,7 +23,7 @@ const FILE_TYPE_MAPPINGS: Record<FileType, FileTypeMapping> = {
       'image/avif',
     ],
   },
-  voice: {
+  audio: {
     extensions: ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'],
     mimeTypes: [
       'audio/mpeg',

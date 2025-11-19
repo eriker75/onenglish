@@ -13,7 +13,7 @@ Módulo robusto para la gestión de archivos con detección automática de tipo,
   - MIME type (`image/jpeg`, `audio/mpeg`, etc.)
 - Tipos soportados:
   - `image`: JPG, PNG, GIF, WebP, SVG, BMP, ICO
-  - `voice`: MP3, WAV, OGG, M4A, AAC, FLAC
+  - `audio`: MP3, WAV, OGG, M4A, AAC, FLAC
   - `video`: MP4, WebM, AVI, MOV, MKV, FLV
   - `document`: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, CSV
 

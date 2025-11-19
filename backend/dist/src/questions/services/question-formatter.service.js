@@ -226,10 +226,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             audio: question.media?.find((m) => m.type === 'audio') || null,
-            subQuestions: question.subQuestions
-                ?.map((sq) => this.formatQuestion(sq))
-                .filter((q) => q !== null) || [],
-            configurations: question.configurations || {},
+            answer: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

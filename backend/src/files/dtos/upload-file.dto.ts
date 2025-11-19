@@ -12,7 +12,7 @@ export class UploadFileDto {
     type: 'string',
     format: 'binary',
     description:
-      'File to upload. Type will be automatically detected from extension and MIME type. Supported types: image, voice, document, video',
+      'File to upload. Type will be automatically detected from extension and MIME type. Supported types: image, audio, document, video',
     example: 'file.png',
   })
   @IsFile()

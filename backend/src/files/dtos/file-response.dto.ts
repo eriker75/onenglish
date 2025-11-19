@@ -22,7 +22,7 @@ export class FileResponseDto {
   @ApiProperty({
     description: 'Detected file type',
     example: 'image',
-    enum: ['image', 'voice', 'document', 'video'],
+    enum: ['image', 'audio', 'document', 'video'],
   })
   type: string;
 }

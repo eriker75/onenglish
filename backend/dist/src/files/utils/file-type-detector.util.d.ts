@@ -1,4 +1,4 @@
-export type FileType = 'image' | 'voice' | 'document' | 'video';
+export type FileType = 'image' | 'audio' | 'document' | 'video';
 export declare function detectFileTypeByExtension(filename: string): FileType | null;
 export declare function detectFileTypeByMimeType(mimeType: string): FileType | null;
 export declare function detectFileType(filename: string, mimeType: string): FileType;

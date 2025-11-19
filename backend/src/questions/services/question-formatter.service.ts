@@ -329,13 +329,9 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Media handling
       audio: question.media?.find((m) => m.type === 'audio') || null,
-      // Sub-questions
-      subQuestions:
-        question.subQuestions
-          ?.map((sq) => this.formatQuestion(sq))
-          .filter((q): q is FormattedQuestion => q !== null) || [],
+      // Expected transcription
+      answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

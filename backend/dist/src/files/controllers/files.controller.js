@@ -42,7 +42,7 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     (0, swagger_1.ApiOperation)({
         summary: 'Upload a file',
-        description: 'Upload a file to the storage system. File type (image, voice, document, video) is automatically detected from the file extension and MIME type. No need to specify the type manually.',
+        description: 'Upload a file to the storage system. File type (image, audio, document, video) is automatically detected from the file extension and MIME type. No need to specify the type manually.',
     }),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiResponse)({

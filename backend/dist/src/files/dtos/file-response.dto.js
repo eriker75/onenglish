@@ -43,7 +43,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Detected file type',
         example: 'image',
-        enum: ['image', 'voice', 'document', 'video'],
+        enum: ['image', 'audio', 'document', 'video'],
     }),
     __metadata("design:type", String)
 ], FileResponseDto.prototype, "type", void 0);

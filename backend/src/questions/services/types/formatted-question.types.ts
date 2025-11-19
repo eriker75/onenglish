@@ -124,9 +124,10 @@ export interface FormattedVerbConjugationQuestion extends BaseQuestionFields {
 
 // ==================== LISTENING FORMATTED QUESTIONS ====================
 
-export interface FormattedGossipQuestion extends BaseQuestionFields {
+export interface FormattedGossipQuestion
+  extends Omit<BaseQuestionFields, 'configurations'> {
   audio: MediaFile | null;
-  subQuestions: FormattedQuestion[];
+  answer: string;
 }
 
 export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {

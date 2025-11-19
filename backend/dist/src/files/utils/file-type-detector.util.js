@@ -20,7 +20,7 @@ const FILE_TYPE_MAPPINGS = {
             'image/avif',
         ],
     },
-    voice: {
+    audio: {
         extensions: ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'],
         mimeTypes: [
             'audio/mpeg',

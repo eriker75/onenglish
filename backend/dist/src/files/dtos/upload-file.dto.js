@@ -21,7 +21,7 @@ __decorate([
     (0, swagger_1.ApiProperty)({
         type: 'string',
         format: 'binary',
-        description: 'File to upload. Type will be automatically detected from extension and MIME type. Supported types: image, voice, document, video',
+        description: 'File to upload. Type will be automatically detected from extension and MIME type. Supported types: image, audio, document, video',
         example: 'file.png',
     }),
     (0, nestjs_form_data_1.IsFile)(),

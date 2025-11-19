@@ -35,7 +35,7 @@ export class FilesController {
   @ApiOperation({
     summary: 'Upload a file',
     description:
-      'Upload a file to the storage system. File type (image, voice, document, video) is automatically detected from the file extension and MIME type. No need to specify the type manually.',
+      'Upload a file to the storage system. File type (image, audio, document, video) is automatically detected from the file extension and MIME type. No need to specify the type manually.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({

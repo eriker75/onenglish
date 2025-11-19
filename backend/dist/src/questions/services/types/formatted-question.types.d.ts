@@ -87,9 +87,9 @@ export interface FormattedVerbConjugationQuestion extends BaseQuestionFields {
     subject: string;
     answer: string;
 }
-export interface FormattedGossipQuestion extends BaseQuestionFields {
+export interface FormattedGossipQuestion extends Omit<BaseQuestionFields, 'configurations'> {
     audio: MediaFile | null;
-    subQuestions: FormattedQuestion[];
+    answer: string;
 }
 export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
     audio: MediaFile | null;
