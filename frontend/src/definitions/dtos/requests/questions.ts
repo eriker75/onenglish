@@ -5,10 +5,9 @@
 
 import {
   QuestionStage,
-  ValidationMethod,
   ValidTenses,
   QuestionType,
-} from '@/definitions/types/Question';
+} from '@/src/definitions/types/Question';
 
 // ==================== BASE DTOs ====================
 
@@ -26,18 +25,16 @@ export interface BaseCreateQuestionDto {
 // ==================== VOCABULARY CREATE DTOs ====================
 
 export interface CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
-  media: File; // Image file (jpeg/png/webp, max 5MB)
+  media: File[]; // Image files (jpeg/png/webp, max 5MB each, minimum 1)
   options: string[]; // Minimum 2 options
   answer: string; // Must be one of the options
 }
 
 export interface CreateWordboxDto extends BaseCreateQuestionDto {
-  content: string[][]; // 2D grid of letters
-  configuration?: {
-    gridWidth?: number;
-    gridHeight?: number;
-    minWordLength?: number;
-  };
+  gridWidth: number; // Required: 1-10, width of the grid (number of columns)
+  gridHeight: number; // Required: 1-10, height of the grid (number of rows)
+  maxWords: number; // Required: 1-50, default 5, max words to form
+  content: string[][]; // 2D grid of letters, must match gridWidth x gridHeight
 }
 
 export interface CreateSpellingDto extends BaseCreateQuestionDto {
@@ -47,17 +44,15 @@ export interface CreateSpellingDto extends BaseCreateQuestionDto {
 
 export interface CreateWordAssociationsDto extends BaseCreateQuestionDto {
   content: string; // Central word
-  configuration?: {
-    totalAssociations?: number;
-    minAssociations?: number;
-  };
+  configuration: Record<string, unknown>; // Required: e.g., { totalAssociations: 20 }
+  media?: File; // Optional reference image
 }
 
 // ==================== GRAMMAR CREATE DTOs ====================
 
 export interface CreateUnscrambleDto extends BaseCreateQuestionDto {
-  content: string[]; // Array of scrambled words
-  answer: string; // Correct sentence
+  content: string[]; // Array of scrambled words (minimum 2)
+  answer: string[]; // Correct order as array (minimum 2)
 }
 
 export interface CreateTensesDto extends BaseCreateQuestionDto {
@@ -66,13 +61,14 @@ export interface CreateTensesDto extends BaseCreateQuestionDto {
 }
 
 export interface CreateTagItDto extends BaseCreateQuestionDto {
-  options: string[]; // Question tag options
-  answer: string[]; // Array of correct answers (can be multiple)
+  content: string[]; // Sentence parts with missing tag (minimum 2)
+  answer: string[]; // Array of acceptable answers (minimum 1)
+  media?: File; // Optional reference image (PNG with transparency recommended)
 }
 
 export interface CreateReportItDto extends BaseCreateQuestionDto {
-  content: string; // Direct speech sentence
-  answer?: string; // Reference answer (optional, for IA validation)
+  content: string; // Direct speech sentence to convert to reported speech
+  media?: File; // Optional reference image (PNG with transparency recommended)
 }
 
 export interface PassageDto {
@@ -109,14 +105,15 @@ export interface CreateGossipDto extends BaseCreateQuestionDto {
 
 export interface TopicBasedAudioSubQuestionDto {
   text: string; // Sub-question text
-  options: Array<{ id: string; text: string }>; // Multiple choice options
-  answer: string; // Correct option ID
+  options: string[]; // Multiple choice options (minimum 2)
+  answer: string; // Correct answer (must be one of the options)
   points: number; // Points for this sub-question
 }
 
 export interface CreateTopicBasedAudioDto extends BaseCreateQuestionDto {
-  media: File; // Audio file
-  subQuestions: TopicBasedAudioSubQuestionDto[];
+  media: File; // Audio file (mp3/wav/ogg, max 10MB)
+  subQuestions: TopicBasedAudioSubQuestionDto[]; // Will be serialized to JSON string for backend
+  parentQuestionId?: string; // Optional parent question reference
   // Note: Parent points auto-calculated as sum of sub-question points
 }
 
@@ -151,12 +148,15 @@ export interface CreateTalesDto extends BaseCreateQuestionDto {
 // ==================== SPEAKING CREATE DTOs ====================
 
 export interface CreateSuperbrainDto extends BaseCreateQuestionDto {
+  content: string; // Question prompt for audio response
+  media?: File; // Optional image prompt (max 5MB)
   // Student uploads audio answer
   // Validated by IA for pronunciation, grammar, relevance, coherence
 }
 
 export interface CreateTellMeAboutItDto extends BaseCreateQuestionDto {
-  media?: File; // Optional image as prompt
+  content: string; // Story prompt topic (e.g., "your first toy")
+  media?: File; // Optional reference image for the story
   // Student uploads audio answer
   // Validated by IA for storytelling, pronunciation, grammar, creativity
 }
@@ -182,6 +182,7 @@ export interface UpdateQuestionDto {
   options?: unknown;
   answer?: unknown;
   configurations?: Record<string, string>;
+  media?: File; // Optional media update for questions that support it
 }
 
 // Specific update DTOs for questions with complex structures
@@ -192,7 +193,7 @@ export interface UpdateImageToMultipleChoicesDto {
   points?: number;
   options?: string[];
   answer?: string;
-  media?: File; // Replace image
+  media?: File[]; // Replace images (can be multiple)
 }
 
 export interface UpdateReadItDto {
