@@ -3,6 +3,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { DatabaseModule } from '../database/database.module';
 import { FilesModule } from '../files/files.module';
 import { AiModule } from '../ai/ai.module';
+import { AiFilesModule } from '../ai-files/ai-files.module';
 // Services
 import { QuestionsService } from './services/questions.service';
 import { QuestionMediaService, QuestionFormatterService } from './services';
@@ -19,10 +20,20 @@ import { QuestionsUpdateController } from './controllers/questions-update.contro
     DatabaseModule,
     FilesModule,
     AiModule.forFeature('QUESTIONS_AI', {
-      provider: 'google_genai',
-      apiKey: process.env.GOOGLE_API_KEY || '',
-      model: 'gemini-2.0-flash-exp',
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY || '',
+      model: 'gpt-4o-mini',
       temperature: 0.2,
+    }),
+    AiFilesModule.forFeature('QUESTIONS_AI_FILES', {
+      defaultProvider: 'google_genai',
+      providers: {
+        gemini: {
+          apiKey: process.env.GEMINI_API_KEY || '',
+          model: 'gemini-2.0-flash-exp',
+          defaultTemperature: 0.2,
+        },
+      },
     }),
     NestjsFormDataModule,
   ],

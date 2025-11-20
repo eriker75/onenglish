@@ -24,6 +24,7 @@ export declare class QuestionValidationService {
     private validateTopicBasedAudio;
     private validateLyricsTraining;
     private validateFastTest;
+    private canFormWordFromGrid;
     private validateWordbox;
     private validateSpelling;
     private validateWordAssociations;

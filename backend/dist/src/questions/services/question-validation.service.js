@@ -47,6 +47,7 @@ let QuestionValidationService = class QuestionValidationService {
                 questionMedia: {
                     include: { mediaFile: true },
                 },
+                configurations: true,
             },
         });
         if (!question) {
@@ -193,32 +194,114 @@ let QuestionValidationService = class QuestionValidationService {
             pointsEarned: isCorrect ? question.points : 0,
         };
     }
+    canFormWordFromGrid(word, grid) {
+        if (!grid || !Array.isArray(grid) || grid.length === 0) {
+            return false;
+        }
+        const availableLetters = grid
+            .flat()
+            .map((letter) => letter.toLowerCase());
+        const availableFrequency = {};
+        for (const letter of availableLetters) {
+            availableFrequency[letter] = (availableFrequency[letter] || 0) + 1;
+        }
+        const wordLowerCase = word.toLowerCase();
+        const wordFrequency = {};
+        for (const letter of wordLowerCase) {
+            wordFrequency[letter] = (wordFrequency[letter] || 0) + 1;
+        }
+        for (const letter in wordFrequency) {
+            if (!availableFrequency[letter] || availableFrequency[letter] < wordFrequency[letter]) {
+                return false;
+            }
+        }
+        return true;
+    }
     async validateWordbox(question, userAnswer) {
+        const grid = question.content;
+        if (!grid || !Array.isArray(grid)) {
+            throw new common_1.BadRequestException('Invalid wordbox grid structure');
+        }
+        const maxWordsConfig = question.configurations?.find((config) => config.metaKey === 'maxWords');
+        const maxWords = maxWordsConfig ? parseInt(maxWordsConfig.metaValue) : 5;
+        const wordsNotInGrid = [];
+        const wordsInGrid = [];
+        for (const word of userAnswer) {
+            if (this.canFormWordFromGrid(word, grid)) {
+                wordsInGrid.push(word);
+            }
+            else {
+                wordsNotInGrid.push(word);
+            }
+        }
+        if (wordsInGrid.length === 0) {
+            return {
+                isCorrect: false,
+                pointsEarned: 0,
+                feedbackEnglish: `None of your words can be formed from the available letters.`,
+                feedbackSpanish: `Ninguna de tus palabras se puede formar con las letras disponibles.`,
+                details: {
+                    wordsInGrid: [],
+                    wordsNotInGrid,
+                    validWords: [],
+                    invalidWords: [],
+                    totalWords: userAnswer.length,
+                    maxWords,
+                },
+            };
+        }
         const systemPrompt = `You are an English vocabulary validator. Validate if the following words are valid English words.
 Return a JSON object with this structure:
 {
   "validWords": ["word1", "word2"],
   "invalidWords": ["word3"],
-  "score": 0.85,
-  "feedbackEnglish": "You formed X valid words out of Y attempts.",
-  "feedbackSpanish": "Formaste X palabras válidas de Y intentos."
+  "feedbackEnglish": "You formed X valid words.",
+  "feedbackSpanish": "Formaste X palabras válidas."
 }`;
-        const userPrompt = `Words to validate: ${userAnswer.join(', ')}`;
+        const userPrompt = `Words to validate: ${wordsInGrid.join(', ')}`;
+        console.log('Wordbox validation - Words in grid:', wordsInGrid);
+        console.log('Wordbox validation - Words not in grid:', wordsNotInGrid);
+        console.log('Wordbox validation - MaxWords:', maxWords);
         try {
-            const response = await this.aiService.invoke(`${systemPrompt}\n\n${userPrompt}`);
+            const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+            console.log('Wordbox validation - Calling AI with prompt:', fullPrompt);
+            const response = await this.aiService.invoke(fullPrompt);
+            console.log('Wordbox validation - AI raw response:', response);
             const result = this.parseAIResponse(response);
-            const score = result.score || 0;
-            const pointsEarned = Math.round(question.points * score);
+            const validWords = result.validWords || [];
+            const invalidWords = result.invalidWords || [];
+            const pointsEarned = Math.round((validWords.length / maxWords) * question.points);
+            const isCorrect = invalidWords.length === 0 && wordsNotInGrid.length === 0;
+            let feedbackEnglish = '';
+            let feedbackSpanish = '';
+            if (wordsNotInGrid.length > 0) {
+                feedbackEnglish = `Words not in grid: ${wordsNotInGrid.join(', ')}. `;
+                feedbackSpanish = `Palabras no en la cuadrícula: ${wordsNotInGrid.join(', ')}. `;
+            }
+            if (invalidWords.length > 0) {
+                feedbackEnglish += `Invalid English words: ${invalidWords.join(', ')}. `;
+                feedbackSpanish += `Palabras inválidas en inglés: ${invalidWords.join(', ')}. `;
+            }
+            feedbackEnglish += `You formed ${validWords.length} valid word(s) out of ${maxWords} needed. Points earned: ${pointsEarned}/${question.points}`;
+            feedbackSpanish += `Formaste ${validWords.length} palabra(s) válida(s) de ${maxWords} necesarias. Puntos obtenidos: ${pointsEarned}/${question.points}`;
             return {
-                isCorrect: score >= 0.7,
+                isCorrect,
                 pointsEarned,
-                feedbackEnglish: result.feedbackEnglish,
-                feedbackSpanish: result.feedbackSpanish,
-                details: result,
+                feedbackEnglish,
+                feedbackSpanish,
+                details: {
+                    wordsInGrid,
+                    wordsNotInGrid,
+                    validWords,
+                    invalidWords,
+                    totalWords: userAnswer.length,
+                    maxWords,
+                },
             };
         }
         catch (error) {
-            throw new common_1.BadRequestException('Error validating wordbox with AI');
+            console.error('Error validating wordbox with AI:', error);
+            throw new common_1.BadRequestException(`Error validating wordbox with AI: ${error.message || 'Unknown error'}`);
         }
     }
     async validateSpelling(question, audioFile) {

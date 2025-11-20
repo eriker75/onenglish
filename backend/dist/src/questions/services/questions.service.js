@@ -51,6 +51,26 @@ let QuestionsService = class QuestionsService {
             })),
         });
     }
+    validateWordboxGrid(grid) {
+        if (!grid || !Array.isArray(grid) || grid.length === 0) {
+            throw new common_1.BadRequestException('Invalid wordbox grid structure');
+        }
+        const allLetters = grid
+            .flat()
+            .map((letter) => letter.toLowerCase());
+        const letterSet = new Set(allLetters);
+        if (letterSet.size !== allLetters.length) {
+            const letterCounts = {};
+            for (const letter of allLetters) {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            }
+            const repeatedLetters = Object.entries(letterCounts)
+                .filter(([_, count]) => count > 1)
+                .map(([letter, count]) => `'${letter.toUpperCase()}' (${count} times)`)
+                .join(', ');
+            throw new common_1.BadRequestException(`Repeated letters found in wordbox grid: ${repeatedLetters}. Each letter must appear only once.`);
+        }
+    }
     async createImageToMultipleChoices(dto) {
         await this.validateChallenge(dto.challengeId);
         const optionsLowerCase = dto.options.map((opt) => opt.toLowerCase());
@@ -95,6 +115,7 @@ let QuestionsService = class QuestionsService {
         if (!isValid) {
             throw new common_1.BadRequestException('All grid cells must be strings (single letters)');
         }
+        this.validateWordboxGrid(dto.content);
         const questionType = 'wordbox';
         const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
         const question = await this.prisma.question.create({

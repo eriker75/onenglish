@@ -20,6 +20,26 @@ let QuestionUpdateService = class QuestionUpdateService {
         this.prisma = prisma;
         this.questionMediaService = questionMediaService;
     }
+    validateWordboxGrid(grid) {
+        if (!grid || !Array.isArray(grid) || grid.length === 0) {
+            throw new common_1.BadRequestException('Invalid wordbox grid structure');
+        }
+        const allLetters = grid
+            .flat()
+            .map((letter) => letter.toLowerCase());
+        const letterSet = new Set(allLetters);
+        if (letterSet.size !== allLetters.length) {
+            const letterCounts = {};
+            for (const letter of allLetters) {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            }
+            const repeatedLetters = Object.entries(letterCounts)
+                .filter(([_, count]) => count > 1)
+                .map(([letter, count]) => `'${letter.toUpperCase()}' (${count} times)`)
+                .join(', ');
+            throw new common_1.BadRequestException(`Repeated letters found in wordbox grid: ${repeatedLetters}. Each letter must appear only once.`);
+        }
+    }
     async updateQuestion(questionId, updateData) {
         const question = await this.prisma.question.findUnique({
             where: { id: questionId },
@@ -52,6 +72,9 @@ let QuestionUpdateService = class QuestionUpdateService {
                     throw new common_1.BadRequestException(`Answer "${finalAnswer}" must be one of the options: ${finalOptions.join(', ')}`);
                 }
             }
+        }
+        if (question.type === 'wordbox' && questionData.content) {
+            this.validateWordboxGrid(questionData.content);
         }
         const updatedQuestion = await this.prisma.question.update({
             where: { id: questionId },

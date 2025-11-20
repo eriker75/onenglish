@@ -4,6 +4,7 @@ export declare class QuestionUpdateService {
     private readonly prisma;
     private readonly questionMediaService;
     constructor(prisma: PrismaService, questionMediaService: QuestionMediaService);
+    private validateWordboxGrid;
     updateQuestion(questionId: string, updateData: any): Promise<any>;
     recalculateParentPoints(parentQuestionId: string): Promise<void>;
     calculatePointsFromSubQuestions(subQuestions: any[]): number;

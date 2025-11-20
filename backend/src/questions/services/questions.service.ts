@@ -61,6 +61,40 @@ export class QuestionsService {
     });
   }
 
+  /**
+   * Validate that the wordbox grid doesn't contain repeated letters
+   */
+  private validateWordboxGrid(grid: string[][]): void {
+    if (!grid || !Array.isArray(grid) || grid.length === 0) {
+      throw new BadRequestException('Invalid wordbox grid structure');
+    }
+
+    // Flatten grid to get all letters (case-insensitive)
+    const allLetters = grid
+      .flat()
+      .map((letter) => letter.toLowerCase());
+
+    // Check for duplicates
+    const letterSet = new Set(allLetters);
+
+    if (letterSet.size !== allLetters.length) {
+      // Find which letters are repeated
+      const letterCounts: Record<string, number> = {};
+      for (const letter of allLetters) {
+        letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+      }
+
+      const repeatedLetters = Object.entries(letterCounts)
+        .filter(([_, count]) => count > 1)
+        .map(([letter, count]) => `'${letter.toUpperCase()}' (${count} times)`)
+        .join(', ');
+
+      throw new BadRequestException(
+        `Repeated letters found in wordbox grid: ${repeatedLetters}. Each letter must appear only once.`,
+      );
+    }
+  }
+
   // ==================== VOCABULARY QUESTIONS ====================
 
   async createImageToMultipleChoices(
@@ -141,6 +175,9 @@ export class QuestionsService {
         'All grid cells must be strings (single letters)',
       );
     }
+
+    // Validate no repeated letters in grid
+    this.validateWordboxGrid(dto.content);
 
     const questionType = 'wordbox';
 

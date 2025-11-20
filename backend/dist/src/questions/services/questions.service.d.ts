@@ -9,6 +9,7 @@ export declare class QuestionsService {
     constructor(prisma: PrismaService, questionMediaService: QuestionMediaService, questionFormatterService: QuestionFormatterService);
     private calculateNextPosition;
     private attachConfigurations;
+    private validateWordboxGrid;
     createImageToMultipleChoices(dto: QuestionDtos.CreateImageToMultipleChoicesDto): Promise<import(".").FormattedQuestion | null>;
     createWordbox(dto: QuestionDtos.CreateWordboxDto): Promise<import(".").FormattedQuestion | null>;
     createSpelling(dto: QuestionDtos.CreateSpellingDto): Promise<import(".").FormattedQuestion | null>;

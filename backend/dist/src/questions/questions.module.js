@@ -12,6 +12,7 @@ const nestjs_form_data_1 = require("nestjs-form-data");
 const database_module_1 = require("../database/database.module");
 const files_module_1 = require("../files/files.module");
 const ai_module_1 = require("../ai/ai.module");
+const ai_files_module_1 = require("../ai-files/ai-files.module");
 const questions_service_1 = require("./services/questions.service");
 const services_1 = require("./services");
 const question_validation_service_1 = require("./services/question-validation.service");
@@ -29,10 +30,20 @@ exports.QuestionsModule = QuestionsModule = __decorate([
             database_module_1.DatabaseModule,
             files_module_1.FilesModule,
             ai_module_1.AiModule.forFeature('QUESTIONS_AI', {
-                provider: 'google_genai',
-                apiKey: process.env.GOOGLE_API_KEY || '',
-                model: 'gemini-2.0-flash-exp',
+                provider: 'openai',
+                apiKey: process.env.OPENAI_API_KEY || '',
+                model: 'gpt-4o-mini',
                 temperature: 0.2,
+            }),
+            ai_files_module_1.AiFilesModule.forFeature('QUESTIONS_AI_FILES', {
+                defaultProvider: 'google_genai',
+                providers: {
+                    gemini: {
+                        apiKey: process.env.GEMINI_API_KEY || '',
+                        model: 'gemini-2.0-flash-exp',
+                        defaultTemperature: 0.2,
+                    },
+                },
             }),
             nestjs_form_data_1.NestjsFormDataModule,
         ],
