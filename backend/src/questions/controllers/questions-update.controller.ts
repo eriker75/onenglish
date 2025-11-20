@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Patch,
-  Delete,
-  Param,
-  Body,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Patch, Delete, Param, Body } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -42,9 +35,13 @@ import {
   BulkUpdateQuestionsDto,
 } from '../dto/update';
 
+/* Stack(
+  children: [
+    @ApiBearerAuth()
+    @Auth(ValidRole.ADMIN, ValidRole.TEACHER, ValidRole.COORDINATOR)
+  ]
+) */
 @ApiTags('Questions - Update')
-@ApiBearerAuth()
-@Auth(ValidRole.ADMIN, ValidRole.TEACHER, ValidRole.COORDINATOR)
 @Controller('questions')
 export class QuestionsUpdateController {
   constructor(private readonly updateService: QuestionUpdateService) {}

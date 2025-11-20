@@ -46,6 +46,16 @@ let QuestionsAnswerController = class QuestionsAnswerController {
         if (!student) {
             throw new common_1.BadRequestException('Student profile not found');
         }
+        const correctAnswer = await this.prisma.studentAnswer.findFirst({
+            where: {
+                questionId,
+                studentId: student.id,
+                isCorrect: true,
+            },
+        });
+        if (correctAnswer) {
+            throw new common_1.BadRequestException('You have already answered this question correctly. Each student can only answer correctly once per question.');
+        }
         const previousAttempts = await this.prisma.studentAnswer.count({
             where: {
                 questionId,

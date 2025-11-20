@@ -68,9 +68,14 @@ export class QuestionsService {
   ) {
     await this.validateChallenge(dto.challengeId);
 
-    // Validate answer is in options
-    if (!dto.options.includes(dto.answer)) {
-      throw new BadRequestException('Answer must be one of the options');
+    // Validate answer is in options (case-insensitive)
+    const optionsLowerCase = dto.options.map((opt) => opt.toLowerCase());
+    const answerLowerCase = dto.answer.toLowerCase();
+
+    if (!optionsLowerCase.includes(answerLowerCase)) {
+      throw new BadRequestException(
+        `Answer "${dto.answer}" must be one of the options: ${dto.options.join(', ')}`,
+      );
     }
 
     const questionType = 'image_to_multiple_choices';
@@ -82,14 +87,9 @@ export class QuestionsService {
       dto.phase,
     );
 
-    // Ensure media is an array
-    const mediaFiles = Array.isArray(dto.media) ? dto.media : [dto.media];
-
-    // Upload all files
-    const uploadedFiles = await Promise.all(
-      mediaFiles.map((file) =>
-        this.questionMediaService.uploadSingleFile(file),
-      ),
+    // Upload single image file
+    const uploadedFile = await this.questionMediaService.uploadSingleFile(
+      dto.media,
     );
 
     // Create the question
@@ -108,18 +108,20 @@ export class QuestionsService {
         validationMethod: getDefaultValidationMethod(questionType),
         options: dto.options,
         answer: dto.answer,
+        // Explicitly set status fields for new questions
+        isActive: true,
+        deletedAt: null,
       },
     });
 
-    // Attach media files
-    await this.questionMediaService.attachMediaFiles(
-      question.id,
-      uploadedFiles.map((file, index) => ({
-        id: file.id,
+    // Attach media file
+    await this.questionMediaService.attachMediaFiles(question.id, [
+      {
+        id: uploadedFile.id,
         context: 'main',
-        position: index,
-      })),
-    );
+        position: 0,
+      },
+    ]);
 
     // Return enriched question
     return this.findOne(question.id);

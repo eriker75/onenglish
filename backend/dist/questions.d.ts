@@ -37,6 +37,20 @@ export declare const IMAGE_TO_MULTIPLE_CHOICES: {
         options: string[];
         answer: string;
     };
+    responseFormat: {
+        image: {
+            id: string;
+            url: string;
+            type: string;
+            filename: string;
+            mimeType: string;
+            size: number;
+            position: number;
+            context: string;
+        };
+        options: string[];
+        answer: string;
+    };
 };
 export declare const WORDBOX: {
     type: string;

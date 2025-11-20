@@ -4,10 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { QuestionMediaService } from './question-media.service';
 
 @Injectable()
 export class QuestionUpdateService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly questionMediaService: QuestionMediaService,
+  ) {}
 
   /**
    * Update a question and recalculate parent points if it's a sub-question
@@ -22,14 +26,80 @@ export class QuestionUpdateService {
       throw new NotFoundException('Question not found');
     }
 
+    // Check if question is deleted
+    if (question.deletedAt !== null) {
+      throw new BadRequestException(
+        'Cannot update a deleted question. This question was deleted and is archived for data integrity.',
+      );
+    }
+
     // Extraer configuraciones de wordbox si existen
-    const { gridWidth, gridHeight, maxWords, ...questionData } = updateData;
+    const { gridWidth, gridHeight, maxWords, ...restData } = updateData;
+
+    // Remove invalid fields for Prisma update (fields that cannot be updated directly)
+    const {
+      media, // Media files must be handled separately
+      challengeId, // Cannot change challenge relationship
+      stage, // Cannot change stage
+      ...questionData
+    } = restData;
+
+    // Validate answer is in options for multiple choice question types
+    const multipleChoiceTypes = [
+      'image_to_multiple_choices',
+      'word_match',
+      'fast_test',
+      'lyrics_training',
+    ];
+
+    if (multipleChoiceTypes.includes(question.type)) {
+      // Determine final values after update
+      const finalOptions = questionData.options || question.options;
+      const finalAnswer = questionData.answer || question.answer;
+
+      // Validate answer is in options (case-insensitive for image_to_multiple_choices)
+      if (Array.isArray(finalOptions) && finalAnswer) {
+        const isValid =
+          question.type === 'image_to_multiple_choices'
+            ? finalOptions
+                .map((opt) => opt.toLowerCase())
+                .includes(finalAnswer.toLowerCase())
+            : finalOptions.includes(finalAnswer);
+
+        if (!isValid) {
+          throw new BadRequestException(
+            `Answer "${finalAnswer}" must be one of the options: ${finalOptions.join(', ')}`,
+          );
+        }
+      }
+    }
 
     // Update the question
     const updatedQuestion = await this.prisma.question.update({
       where: { id: questionId },
       data: questionData,
     });
+
+    // Handle media file update if provided
+    if (media) {
+      // Upload new media file
+      const uploadedFile =
+        await this.questionMediaService.uploadSingleFile(media);
+
+      // Delete old media file records
+      await this.prisma.questionMedia.deleteMany({
+        where: { questionId },
+      });
+
+      // Attach new media file
+      await this.questionMediaService.attachMediaFiles(questionId, [
+        {
+          id: uploadedFile.id,
+          context: 'main',
+          position: 0,
+        },
+      ]);
+    }
 
     // Actualizar configuraciones de wordbox si se proporcionaron
     if (
@@ -119,6 +189,13 @@ export class QuestionUpdateService {
 
     if (!question) {
       throw new NotFoundException('Subquestion not found');
+    }
+
+    // Check if question is deleted
+    if (question.deletedAt !== null) {
+      throw new BadRequestException(
+        'Cannot update a deleted question. This question was deleted and is archived for data integrity.',
+      );
     }
 
     if (question.type !== 'topic_based_audio_subquestion') {
@@ -267,7 +344,7 @@ export class QuestionUpdateService {
   }
 
   /**
-   * Delete a question (and cascade to sub-questions if parent)
+   * Delete a question (soft delete if has answers, hard delete otherwise)
    */
   async deleteQuestion(questionId: string): Promise<void> {
     const question = await this.prisma.question.findUnique({
@@ -275,6 +352,7 @@ export class QuestionUpdateService {
       include: {
         subQuestions: true,
         parentQuestion: true,
+        studentAnswers: true, // Check if there are student answers
       },
     });
 
@@ -282,10 +360,35 @@ export class QuestionUpdateService {
       throw new NotFoundException('Question not found');
     }
 
-    // Delete the question (will cascade to sub-questions due to Prisma schema)
-    await this.prisma.question.delete({
-      where: { id: questionId },
-    });
+    // Check if question has student answers
+    const hasAnswers = question.studentAnswers && question.studentAnswers.length > 0;
+
+    if (hasAnswers) {
+      // Soft delete: mark as deleted without removing data
+      await this.prisma.question.update({
+        where: { id: questionId },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+        },
+      });
+
+      // If has sub-questions, soft delete them too
+      if (question.subQuestions && question.subQuestions.length > 0) {
+        await this.prisma.question.updateMany({
+          where: { parentQuestionId: questionId },
+          data: {
+            deletedAt: new Date(),
+            isActive: false,
+          },
+        });
+      }
+    } else {
+      // Hard delete: no student answers, safe to remove
+      await this.prisma.question.delete({
+        where: { id: questionId },
+      });
+    }
 
     // If this was a sub-question, recalculate parent points
     if (question.parentQuestionId) {

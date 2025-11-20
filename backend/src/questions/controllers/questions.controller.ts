@@ -462,7 +462,10 @@ export class QuestionsController {
     @Query('stage') stage?: QuestionStage,
     @Query('phase') phase?: string,
   ) {
-    return this.questionsService.findByChallengeId(challengeId, { stage, phase });
+    return this.questionsService.findByChallengeId(challengeId, {
+      stage,
+      phase,
+    });
   }
 
   @Get('schools/:schoolId/stats')

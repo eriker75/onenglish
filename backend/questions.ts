@@ -181,6 +181,22 @@ export const IMAGE_TO_MULTIPLE_CHOICES = {
     options: ['cat', 'dog', 'bird', 'fish'],
     answer: 'cat',
   },
+  responseFormat: {
+    // API response returns single image, not array
+    image: {
+      id: 'uuid',
+      url: '/uploads/image/filename.png',
+      type: 'image',
+      filename: 'original.png',
+      mimeType: 'image/png',
+      size: 12345,
+      position: 0,
+      context: 'main',
+    },
+    options: ['cat', 'dog', 'bird', 'fish'],
+    answer: 'cat',
+    // Note: configurations field is omitted when empty
+  },
 };
 
 export const WORDBOX = {

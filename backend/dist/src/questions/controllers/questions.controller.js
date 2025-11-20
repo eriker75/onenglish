@@ -119,7 +119,10 @@ let QuestionsController = class QuestionsController {
         return this.questionsService.findAll({ challengeId, stage, phase });
     }
     findByChallengeId(challengeId, stage, phase) {
-        return this.questionsService.findByChallengeId(challengeId, { stage, phase });
+        return this.questionsService.findByChallengeId(challengeId, {
+            stage,
+            phase,
+        });
     }
     getSchoolStats(schoolId, questionId) {
         return this.questionsService.getSchoolStats(schoolId, questionId);

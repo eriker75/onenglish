@@ -12,10 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionUpdateService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
+const question_media_service_1 = require("./question-media.service");
 let QuestionUpdateService = class QuestionUpdateService {
     prisma;
-    constructor(prisma) {
+    questionMediaService;
+    constructor(prisma, questionMediaService) {
         this.prisma = prisma;
+        this.questionMediaService = questionMediaService;
     }
     async updateQuestion(questionId, updateData) {
         const question = await this.prisma.question.findUnique({
@@ -25,11 +28,48 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (!question) {
             throw new common_1.NotFoundException('Question not found');
         }
-        const { gridWidth, gridHeight, maxWords, ...questionData } = updateData;
+        if (question.deletedAt !== null) {
+            throw new common_1.BadRequestException('Cannot update a deleted question. This question was deleted and is archived for data integrity.');
+        }
+        const { gridWidth, gridHeight, maxWords, ...restData } = updateData;
+        const { media, challengeId, stage, ...questionData } = restData;
+        const multipleChoiceTypes = [
+            'image_to_multiple_choices',
+            'word_match',
+            'fast_test',
+            'lyrics_training',
+        ];
+        if (multipleChoiceTypes.includes(question.type)) {
+            const finalOptions = questionData.options || question.options;
+            const finalAnswer = questionData.answer || question.answer;
+            if (Array.isArray(finalOptions) && finalAnswer) {
+                const isValid = question.type === 'image_to_multiple_choices'
+                    ? finalOptions
+                        .map((opt) => opt.toLowerCase())
+                        .includes(finalAnswer.toLowerCase())
+                    : finalOptions.includes(finalAnswer);
+                if (!isValid) {
+                    throw new common_1.BadRequestException(`Answer "${finalAnswer}" must be one of the options: ${finalOptions.join(', ')}`);
+                }
+            }
+        }
         const updatedQuestion = await this.prisma.question.update({
             where: { id: questionId },
             data: questionData,
         });
+        if (media) {
+            const uploadedFile = await this.questionMediaService.uploadSingleFile(media);
+            await this.prisma.questionMedia.deleteMany({
+                where: { questionId },
+            });
+            await this.questionMediaService.attachMediaFiles(questionId, [
+                {
+                    id: uploadedFile.id,
+                    context: 'main',
+                    position: 0,
+                },
+            ]);
+        }
         if (question.type === 'wordbox' &&
             (gridWidth !== undefined ||
                 gridHeight !== undefined ||
@@ -90,6 +130,9 @@ let QuestionUpdateService = class QuestionUpdateService {
         });
         if (!question) {
             throw new common_1.NotFoundException('Subquestion not found');
+        }
+        if (question.deletedAt !== null) {
+            throw new common_1.BadRequestException('Cannot update a deleted question. This question was deleted and is archived for data integrity.');
         }
         if (question.type !== 'topic_based_audio_subquestion') {
             throw new common_1.BadRequestException('Question must be of type topic_based_audio_subquestion');
@@ -168,14 +211,36 @@ let QuestionUpdateService = class QuestionUpdateService {
             include: {
                 subQuestions: true,
                 parentQuestion: true,
+                studentAnswers: true,
             },
         });
         if (!question) {
             throw new common_1.NotFoundException('Question not found');
         }
-        await this.prisma.question.delete({
-            where: { id: questionId },
-        });
+        const hasAnswers = question.studentAnswers && question.studentAnswers.length > 0;
+        if (hasAnswers) {
+            await this.prisma.question.update({
+                where: { id: questionId },
+                data: {
+                    deletedAt: new Date(),
+                    isActive: false,
+                },
+            });
+            if (question.subQuestions && question.subQuestions.length > 0) {
+                await this.prisma.question.updateMany({
+                    where: { parentQuestionId: questionId },
+                    data: {
+                        deletedAt: new Date(),
+                        isActive: false,
+                    },
+                });
+            }
+        }
+        else {
+            await this.prisma.question.delete({
+                where: { id: questionId },
+            });
+        }
         if (question.parentQuestionId) {
             await this.recalculateParentPoints(question.parentQuestionId);
         }
@@ -184,6 +249,7 @@ let QuestionUpdateService = class QuestionUpdateService {
 exports.QuestionUpdateService = QuestionUpdateService;
 exports.QuestionUpdateService = QuestionUpdateService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        question_media_service_1.QuestionMediaService])
 ], QuestionUpdateService);
 //# sourceMappingURL=question-update.service.js.map

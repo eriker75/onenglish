@@ -112,13 +112,12 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      images: question.media?.filter((m) => m.type === 'image') || [],
+      // Media handling - single image
+      image: question.media?.find((m) => m.type === 'image') || null,
       // Options and answer
       options: question.options || [],
       answer: question.answer,
-      // Metadata
-      configurations: question.configurations || {},
+      // Timestamps
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

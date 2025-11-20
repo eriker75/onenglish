@@ -44,7 +44,7 @@ interface CreateImageToMultipleChoicesDto {
   text?: string;
   instructions?: string;
 
-  media: File[];           // ⚠️ CAMBIO: Ahora es array (min 1)
+  media: File;             // ✅ Archivo de imagen único (max 5MB)
   options: string[];       // Min 2 opciones
   answer: string;          // Debe ser una de las opciones
 }
@@ -58,15 +58,46 @@ formData.append('stage', 'VOCABULARY');
 formData.append('phase', 'phase_1');
 formData.append('points', '10');
 
-// ⚠️ Múltiples archivos
-imageFiles.forEach(file => {
-  formData.append('media', file);
-});
+// ✅ Un solo archivo de imagen
+formData.append('media', imageFile);
 
 formData.append('options', 'Apple,Orange,Banana,Grapes');
 formData.append('answer', 'Apple');
 
 await createQuestion('image_to_multiple_choices', formData);
+```
+
+**📥 Formato de Respuesta:**
+```typescript
+// La respuesta del endpoint devuelve un solo objeto image (no array)
+{
+  id: "uuid",
+  type: "image_to_multiple_choices",
+  stage: "VOCABULARY",
+  phase: "phase_1",
+  position: 1,
+  points: 10,
+  timeLimit: 60,
+  maxAttempts: 1,
+  text: "What is shown in the image?",
+  instructions: "Select the correct option that matches the image.",
+  validationMethod: "AUTO",
+  image: {  // ⚠️ SINGULAR (no "images" array)
+    id: "uuid",
+    url: "/uploads/image/filename.png",
+    type: "image",
+    filename: "original.png",
+    mimeType: "image/png",
+    size: 12345,
+    position: 0,
+    context: "main"
+  },
+  options: ["Apple", "Orange", "Banana", "Grapes"],
+  answer: "Apple",
+  // Note: configurations omitido cuando está vacío
+  createdAt: "2025-11-20T18:01:36.207Z",
+  updatedAt: "2025-11-20T18:01:36.207Z"
+}
 ```
 
 ---

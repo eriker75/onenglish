@@ -10,22 +10,15 @@ import {
 } from 'nestjs-form-data';
 
 export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
-  @Transform(({ value }) => {
-    // Ensure value is always an array
-    if (!value) return [];
-    return Array.isArray(value) ? value : [value];
-  })
-  @IsFile({ each: true })
-  @MaxFileSize(5e6, { each: true }) // 5MB per file
-  @HasMimeType(['image/jpeg', 'image/png', 'image/webp'], { each: true })
-  @IsArray()
-  @ArrayMinSize(1, { message: 'At least one image file is required' })
+  @IsFile()
+  @MaxFileSize(5e6) // 5MB
+  @HasMimeType(['image/jpeg', 'image/png', 'image/webp'])
   @ApiProperty({
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-    description: 'Image files to upload (PNG, JPEG, or WebP, max 5MB each)',
+    type: 'string',
+    format: 'binary',
+    description: 'Image file to upload (PNG, JPEG, or WebP, max 5MB)',
   })
-  media: FileSystemStoredFile[];
+  media: FileSystemStoredFile;
 
   @ApiProperty({
     type: [String],

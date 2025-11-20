@@ -97,7 +97,22 @@ export class QuestionsAnswerController {
       throw new BadRequestException('Student profile not found');
     }
 
-    // Check attempts
+    // Check if student already answered correctly
+    const correctAnswer = await this.prisma.studentAnswer.findFirst({
+      where: {
+        questionId,
+        studentId: student.id,
+        isCorrect: true,
+      },
+    });
+
+    if (correctAnswer) {
+      throw new BadRequestException(
+        'You have already answered this question correctly. Each student can only answer correctly once per question.',
+      );
+    }
+
+    // Check attempts (only count incorrect attempts)
     const previousAttempts = await this.prisma.studentAnswer.count({
       where: {
         questionId,

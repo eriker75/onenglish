@@ -46,8 +46,8 @@ export interface EnrichedQuestion extends BaseQuestionFields {
     challenge?: any;
     parentQuestion?: any;
 }
-export interface FormattedImageToMultipleChoicesQuestion extends BaseQuestionFields {
-    images: MediaFile[];
+export interface FormattedImageToMultipleChoicesQuestion extends Omit<BaseQuestionFields, 'configurations'> {
+    image: MediaFile | null;
     options: string[];
     answer: string;
 }

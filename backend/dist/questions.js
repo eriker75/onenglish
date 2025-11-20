@@ -39,6 +39,20 @@ exports.IMAGE_TO_MULTIPLE_CHOICES = {
         options: ['cat', 'dog', 'bird', 'fish'],
         answer: 'cat',
     },
+    responseFormat: {
+        image: {
+            id: 'uuid',
+            url: '/uploads/image/filename.png',
+            type: 'image',
+            filename: 'original.png',
+            mimeType: 'image/png',
+            size: 12345,
+            position: 0,
+            context: 'main',
+        },
+        options: ['cat', 'dog', 'bird', 'fish'],
+        answer: 'cat',
+    },
 };
 exports.WORDBOX = {
     type: 'wordbox',

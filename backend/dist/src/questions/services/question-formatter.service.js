@@ -60,10 +60,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            images: question.media?.filter((m) => m.type === 'image') || [],
+            image: question.media?.find((m) => m.type === 'image') || null,
             options: question.options || [],
             answer: question.answer,
-            configurations: question.configurations || {},
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

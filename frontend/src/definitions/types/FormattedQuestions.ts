@@ -1,11 +1,10 @@
-import {
-  QuestionStage,
-  ValidationMethod,
-  Question,
-  QuestionMedia,
-  QuestionConfiguration,
-  MediaFile as PrismaMediaFile,
-} from '@prisma/client';
+/**
+ * Formatted Question Types
+ * These types match the backend formatted responses from QuestionFormatterService
+ * Used for type-safe consumption of API responses
+ */
+
+import { QuestionStage, ValidationMethod } from './Question';
 
 // ==================== BASE TYPES ====================
 
@@ -20,10 +19,6 @@ export interface MediaFile {
   context: string | null;
 }
 
-export interface QuestionConfigurations {
-  [key: string]: string;
-}
-
 export interface BaseQuestionFields {
   id: string;
   type: string;
@@ -36,33 +31,8 @@ export interface BaseQuestionFields {
   text: string;
   instructions: string;
   validationMethod: ValidationMethod;
-  configurations?: QuestionConfigurations;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// ==================== RAW QUESTION (from Prisma) ====================
-
-export type QuestionWithRelations = Question & {
-  questionMedia?: (QuestionMedia & {
-    mediaFile: PrismaMediaFile;
-  })[];
-  configurations?: QuestionConfiguration[];
-  subQuestions?: QuestionWithRelations[];
-  challenge?: any;
-  parentQuestion?: any;
-};
-
-// ==================== ENRICHED QUESTION (processed media & configs) ====================
-
-export interface EnrichedQuestion extends BaseQuestionFields {
-  content?: any;
-  options?: any;
-  answer?: any;
-  media: MediaFile[];
-  subQuestions?: EnrichedQuestion[];
-  challenge?: any;
-  parentQuestion?: any;
 }
 
 // ==================== VOCABULARY FORMATTED QUESTIONS ====================
@@ -84,22 +54,23 @@ export interface FormattedWordMatchQuestion extends BaseQuestionFields {
   images: MediaFile[];
   options: string[];
   answer: string;
+  configurations?: Record<string, string>;
 }
 
 export interface FormattedWordboxQuestion
   extends Omit<BaseQuestionFields, 'configurations'> {
   grid: string[][];
-  // Configuraciones aplanadas al nivel raíz
   gridWidth?: string;
   gridHeight?: string;
   maxWords?: string;
-  [key: string]: any; // Permitir otras configuraciones dinámicas
+  [key: string]: any;
 }
 
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
   centralWord: string;
-  image: MediaFile | null; // Optional reference image
+  image: MediaFile | null;
   totalAssociations: number;
+  configurations?: Record<string, string>;
 }
 
 // ==================== GRAMMAR FORMATTED QUESTIONS ====================
@@ -107,12 +78,14 @@ export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
 export interface FormattedUnscrambleQuestion extends BaseQuestionFields {
   scrambledWords: string[];
   correctSentence: string;
+  configurations?: Record<string, string>;
 }
 
 export interface FormattedFillInTheBlankQuestion extends BaseQuestionFields {
   sentence: string;
   options: string[] | null;
   answer: string | string[];
+  configurations?: Record<string, string>;
 }
 
 export interface FormattedVerbConjugationQuestion extends BaseQuestionFields {
@@ -121,6 +94,7 @@ export interface FormattedVerbConjugationQuestion extends BaseQuestionFields {
   tense: string;
   subject: string;
   answer: string;
+  configurations?: Record<string, string>;
 }
 
 // ==================== LISTENING FORMATTED QUESTIONS ====================
@@ -134,10 +108,10 @@ export interface FormattedGossipQuestion
 export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
   audio: MediaFile | null;
   subQuestions: FormattedQuestion[];
+  configurations?: Record<string, string>;
 }
 
-export interface FormattedTopicBasedAudioSubquestion
-  extends BaseQuestionFields {
+export interface FormattedTopicBasedAudioSubquestion extends BaseQuestionFields {
   content: string;
   options: string[];
   answer: string;
@@ -161,9 +135,9 @@ export interface FormattedTalesQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedTagItQuestion extends BaseQuestionFields {
-  content: string[]; // Sentence parts (e.g., ["He is responsible for the project,", "?"])
-  answer: string[]; // Multiple acceptable answers (e.g., ["isn't he", "is not he"])
-  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
+  content: string[];
+  answer: string[];
+  image: MediaFile | null;
 }
 
 // ==================== SPEAKING FORMATTED QUESTIONS ====================
@@ -171,6 +145,7 @@ export interface FormattedTagItQuestion extends BaseQuestionFields {
 export interface FormattedReadItQuestion extends BaseQuestionFields {
   textToRead: string;
   referenceAudio: MediaFile | null;
+  configurations?: Record<string, string>;
 }
 
 export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
@@ -178,11 +153,12 @@ export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
   video: MediaFile | null;
   prompt: string;
   minDuration: number;
+  configurations?: Record<string, string>;
 }
 
 export interface FormattedReportItQuestion extends BaseQuestionFields {
-  content: string; // Direct speech sentence to convert
-  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
+  content: string;
+  image: MediaFile | null;
 }
 
 export interface FormattedDebateQuestion extends BaseQuestionFields {
@@ -207,6 +183,7 @@ export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
 export interface FormattedTensesQuestion extends BaseQuestionFields {
   subQuestions: FormattedQuestion[];
   totalQuestions: number;
+  configurations?: Record<string, string>;
 }
 
 // ==================== DEFAULT FORMATTED QUESTION ====================
@@ -217,6 +194,7 @@ export interface FormattedDefaultQuestion extends BaseQuestionFields {
   answer?: any;
   media: MediaFile[];
   subQuestions: FormattedQuestion[];
+  configurations?: Record<string, string>;
 }
 
 // ==================== UNION TYPE ====================
@@ -252,3 +230,25 @@ export type FormattedQuestion =
   | FormattedTensesQuestion
   // Default
   | FormattedDefaultQuestion;
+
+// ==================== TYPE GUARDS ====================
+
+export function isImageToMultipleChoicesQuestion(
+  question: FormattedQuestion
+): question is FormattedImageToMultipleChoicesQuestion {
+  return question.type === 'image_to_multiple_choices';
+}
+
+export function isSpellingQuestion(
+  question: FormattedQuestion
+): question is FormattedSpellingQuestion {
+  return question.type === 'spelling';
+}
+
+export function isWordMatchQuestion(
+  question: FormattedQuestion
+): question is FormattedWordMatchQuestion {
+  return question.type === 'word_match';
+}
+
+// Add more type guards as needed...

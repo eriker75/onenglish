@@ -17,8 +17,6 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const nestjs_form_data_1 = require("nestjs-form-data");
 const question_update_service_1 = require("../services/question-update.service");
-const auth_decorator_1 = require("../../auth/decorators/auth.decorator");
-const enums_1 = require("../../common/definitions/enums");
 const update_1 = require("../dto/update");
 let QuestionsUpdateController = class QuestionsUpdateController {
     updateService;
@@ -465,8 +463,6 @@ __decorate([
 ], QuestionsUpdateController.prototype, "deleteQuestion", null);
 exports.QuestionsUpdateController = QuestionsUpdateController = __decorate([
     (0, swagger_1.ApiTags)('Questions - Update'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, auth_decorator_1.Auth)(enums_1.ValidRole.ADMIN, enums_1.ValidRole.TEACHER, enums_1.ValidRole.COORDINATOR),
     (0, common_1.Controller)('questions'),
     __metadata("design:paramtypes", [question_update_service_1.QuestionUpdateService])
 ], QuestionsUpdateController);

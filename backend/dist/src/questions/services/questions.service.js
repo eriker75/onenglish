@@ -53,13 +53,14 @@ let QuestionsService = class QuestionsService {
     }
     async createImageToMultipleChoices(dto) {
         await this.validateChallenge(dto.challengeId);
-        if (!dto.options.includes(dto.answer)) {
-            throw new common_1.BadRequestException('Answer must be one of the options');
+        const optionsLowerCase = dto.options.map((opt) => opt.toLowerCase());
+        const answerLowerCase = dto.answer.toLowerCase();
+        if (!optionsLowerCase.includes(answerLowerCase)) {
+            throw new common_1.BadRequestException(`Answer "${dto.answer}" must be one of the options: ${dto.options.join(', ')}`);
         }
         const questionType = 'image_to_multiple_choices';
         const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
-        const mediaFiles = Array.isArray(dto.media) ? dto.media : [dto.media];
-        const uploadedFiles = await Promise.all(mediaFiles.map((file) => this.questionMediaService.uploadSingleFile(file)));
+        const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
@@ -75,13 +76,17 @@ let QuestionsService = class QuestionsService {
                 validationMethod: (0, helpers_1.getDefaultValidationMethod)(questionType),
                 options: dto.options,
                 answer: dto.answer,
+                isActive: true,
+                deletedAt: null,
             },
         });
-        await this.questionMediaService.attachMediaFiles(question.id, uploadedFiles.map((file, index) => ({
-            id: file.id,
-            context: 'main',
-            position: index,
-        })));
+        await this.questionMediaService.attachMediaFiles(question.id, [
+            {
+                id: uploadedFile.id,
+                context: 'main',
+                position: 0,
+            },
+        ]);
         return this.findOne(question.id);
     }
     async createWordbox(dto) {

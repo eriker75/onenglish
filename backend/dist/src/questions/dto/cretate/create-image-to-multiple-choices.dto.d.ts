@@ -1,7 +1,7 @@
 import { BaseCreateQuestionDto } from './base-question.dto';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 export declare class CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
-    media: FileSystemStoredFile[];
+    media: FileSystemStoredFile;
     options: string[];
     answer: string;
 }
