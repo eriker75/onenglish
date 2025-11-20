@@ -155,6 +155,10 @@ let QuestionsService = class QuestionsService {
         }
         const questionType = 'word_associations';
         const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        let uploadedFile = null;
+        if (dto.media) {
+            uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
+        }
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
@@ -171,6 +175,11 @@ let QuestionsService = class QuestionsService {
                 content: dto.content,
             },
         });
+        if (uploadedFile) {
+            await this.questionMediaService.attachMediaFiles(question.id, [
+                { id: uploadedFile.id, context: 'main', position: 0 },
+            ]);
+        }
         const configs = Object.entries(dto.configuration).map(([key, value]) => ({
             metaKey: key,
             metaValue: String(value),
@@ -857,14 +866,22 @@ let QuestionsService = class QuestionsService {
     }
     async findByChallengeId(challengeId, filters) {
         await this.validateChallenge(challengeId);
+        const where = {
+            challengeId,
+            parentQuestionId: null,
+            deletedAt: null,
+        };
+        if (filters?.stage) {
+            where.stage = filters.stage;
+        }
+        if (filters?.phase && filters.phase.trim() !== '') {
+            where.phase = filters.phase;
+        }
+        if (filters?.type && filters.type.trim() !== '') {
+            where.type = filters.type;
+        }
         const questions = await this.prisma.question.findMany({
-            where: {
-                challengeId,
-                stage: filters?.stage,
-                phase: filters?.phase,
-                parentQuestionId: null,
-                deletedAt: null,
-            },
+            where,
             include: {
                 questionMedia: {
                     include: {

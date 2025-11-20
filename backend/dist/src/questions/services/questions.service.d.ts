@@ -1,5 +1,5 @@
 import { PrismaService } from '../../database/prisma.service';
-import { QuestionStage } from '@prisma/client';
+import { QuestionStage, Prisma } from '@prisma/client';
 import { QuestionMediaService, QuestionFormatterService } from '.';
 import * as QuestionDtos from '../dto';
 export declare class QuestionsService {
@@ -26,9 +26,9 @@ export declare class QuestionsService {
         text: string;
         instructions: string;
         validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
+        content: Prisma.JsonValue | null;
+        options: Prisma.JsonValue | null;
+        answer: Prisma.JsonValue | null;
         parentQuestionId: string | null;
         isActive: boolean;
         deletedAt: Date | null;
@@ -49,9 +49,9 @@ export declare class QuestionsService {
         text: string;
         instructions: string;
         validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
+        content: Prisma.JsonValue | null;
+        options: Prisma.JsonValue | null;
+        answer: Prisma.JsonValue | null;
         parentQuestionId: string | null;
         isActive: boolean;
         deletedAt: Date | null;
@@ -75,9 +75,9 @@ export declare class QuestionsService {
             text: string;
             instructions: string;
             validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-            content: import("@prisma/client/runtime/library").JsonValue | null;
-            options: import("@prisma/client/runtime/library").JsonValue | null;
-            answer: import("@prisma/client/runtime/library").JsonValue | null;
+            content: Prisma.JsonValue | null;
+            options: Prisma.JsonValue | null;
+            answer: Prisma.JsonValue | null;
             parentQuestionId: string | null;
             isActive: boolean;
             deletedAt: Date | null;
@@ -98,9 +98,9 @@ export declare class QuestionsService {
         text: string;
         instructions: string;
         validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
+        content: Prisma.JsonValue | null;
+        options: Prisma.JsonValue | null;
+        answer: Prisma.JsonValue | null;
         parentQuestionId: string | null;
         isActive: boolean;
         deletedAt: Date | null;
@@ -124,9 +124,9 @@ export declare class QuestionsService {
             text: string;
             instructions: string;
             validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-            content: import("@prisma/client/runtime/library").JsonValue | null;
-            options: import("@prisma/client/runtime/library").JsonValue | null;
-            answer: import("@prisma/client/runtime/library").JsonValue | null;
+            content: Prisma.JsonValue | null;
+            options: Prisma.JsonValue | null;
+            answer: Prisma.JsonValue | null;
             parentQuestionId: string | null;
             isActive: boolean;
             deletedAt: Date | null;
@@ -147,9 +147,9 @@ export declare class QuestionsService {
         text: string;
         instructions: string;
         validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
+        content: Prisma.JsonValue | null;
+        options: Prisma.JsonValue | null;
+        answer: Prisma.JsonValue | null;
         parentQuestionId: string | null;
         isActive: boolean;
         deletedAt: Date | null;
@@ -175,9 +175,9 @@ export declare class QuestionsService {
         text: string;
         instructions: string;
         validationMethod: import("@prisma/client").$Enums.ValidationMethod;
-        content: import("@prisma/client/runtime/library").JsonValue | null;
-        options: import("@prisma/client/runtime/library").JsonValue | null;
-        answer: import("@prisma/client/runtime/library").JsonValue | null;
+        content: Prisma.JsonValue | null;
+        options: Prisma.JsonValue | null;
+        answer: Prisma.JsonValue | null;
         parentQuestionId: string | null;
         isActive: boolean;
         deletedAt: Date | null;
@@ -197,6 +197,7 @@ export declare class QuestionsService {
     findByChallengeId(challengeId: string, filters?: {
         stage?: QuestionStage;
         phase?: string;
+        type?: string;
     }): Promise<import(".").FormattedQuestion[]>;
     findOne(id: string): Promise<import(".").FormattedQuestion | null>;
     getSchoolStats(schoolId: string, questionId?: string): Promise<{

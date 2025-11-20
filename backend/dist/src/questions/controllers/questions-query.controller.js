@@ -26,8 +26,18 @@ let QuestionsQueryController = class QuestionsQueryController {
     findAll(challengeId, stage, phase) {
         return this.questionsService.findAll({ challengeId, stage, phase });
     }
-    findByChallengeId(challengeId, stage, phase) {
-        return this.questionsService.findByChallengeId(challengeId, { stage, phase });
+    findByChallengeId(challengeId, stage, phase, type) {
+        const filters = {};
+        if (stage) {
+            filters.stage = stage;
+        }
+        if (phase && phase.trim() !== '') {
+            filters.phase = phase;
+        }
+        if (type && type.trim() !== '') {
+            filters.type = type;
+        }
+        return this.questionsService.findByChallengeId(challengeId, filters);
     }
     getSchoolStats(schoolId, questionId) {
         return this.questionsService.getSchoolStats(schoolId, questionId);
@@ -75,7 +85,7 @@ __decorate([
     (0, common_1.Get)('challenge/:challengeId'),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all questions for a specific challenge',
-        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage, phase, or type. Each question is formatted according to its type for optimal frontend consumption.',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'stage',
@@ -87,6 +97,11 @@ __decorate([
         name: 'phase',
         required: false,
         description: 'Filter by phase identifier (optional)',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'type',
+        required: false,
+        description: 'Filter by question type (optional). Examples: image_to_multiple_choices, wordbox, spelling, unscramble, etc.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -100,8 +115,9 @@ __decorate([
     __param(0, (0, common_1.Param)('challengeId')),
     __param(1, (0, common_1.Query)('stage')),
     __param(2, (0, common_1.Query)('phase')),
+    __param(3, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], QuestionsQueryController.prototype, "findByChallengeId", null);
 __decorate([

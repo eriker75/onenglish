@@ -16,6 +16,7 @@ const base_question_dto_1 = require("./base-question.dto");
 class CreateWordAssociationsDto extends base_question_dto_1.BaseCreateQuestionDto {
     content;
     configuration;
+    media;
 }
 exports.CreateWordAssociationsDto = CreateWordAssociationsDto;
 __decorate([
@@ -34,4 +35,14 @@ __decorate([
     (0, class_validator_1.IsObject)(),
     __metadata("design:type", Object)
 ], CreateWordAssociationsDto.prototype, "configuration", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateWordAssociationsDto.prototype, "media", void 0);
 //# sourceMappingURL=create-word-associations.dto.js.map

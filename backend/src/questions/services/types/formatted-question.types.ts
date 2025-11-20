@@ -98,6 +98,7 @@ export interface FormattedWordboxQuestion
 
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
   centralWord: string;
+  image: MediaFile | null; // Optional reference image
   totalAssociations: number;
 }
 

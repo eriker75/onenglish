@@ -69,6 +69,7 @@ export interface FormattedWordboxQuestion extends Omit<BaseQuestionFields, 'conf
 }
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
     centralWord: string;
+    image: MediaFile | null;
     totalAssociations: number;
 }
 export interface FormattedUnscrambleQuestion extends BaseQuestionFields {

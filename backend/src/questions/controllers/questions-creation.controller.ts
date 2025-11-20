@@ -83,10 +83,12 @@ export class QuestionsCreationController {
   }
 
   @Post('word_associations')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a word associations question',
     description:
-      'Creates a vocabulary question where students connect a target word with related concepts. Default validation method: IA.',
+      'Creates a vocabulary question where students connect a target word with related concepts. Optionally include a reference image. Default validation method: IA.',
   })
   @ApiResponse({
     status: 201,

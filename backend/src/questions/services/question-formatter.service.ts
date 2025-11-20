@@ -217,6 +217,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Central word
       centralWord: question.content,
+      // Optional reference image
+      image: question.media?.find((m) => m.type === 'image') || null,
       // Configuration
       totalAssociations: parseInt(
         question.configurations?.totalAssociations || '5',

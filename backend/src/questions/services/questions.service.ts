@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { QuestionStage, ValidationMethod } from '@prisma/client';
+import { QuestionStage, ValidationMethod, Prisma } from '@prisma/client';
 import { QuestionMediaService, QuestionFormatterService } from '.';
 import * as QuestionDtos from '../dto';
 import {
@@ -245,6 +245,17 @@ export class QuestionsService {
       dto.phase,
     );
 
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.media) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.media,
+      );
+    }
+
+    // Create the question
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
@@ -261,6 +272,13 @@ export class QuestionsService {
         content: dto.content,
       },
     });
+
+    // Attach media file if uploaded
+    if (uploadedFile) {
+      await this.questionMediaService.attachMediaFiles(question.id, [
+        { id: uploadedFile.id, context: 'main', position: 0 },
+      ]);
+    }
 
     // Attach configurations
     const configs = Object.entries(dto.configuration).map(([key, value]) => ({
@@ -1307,19 +1325,35 @@ export class QuestionsService {
     filters?: {
       stage?: QuestionStage;
       phase?: string;
+      type?: string;
     },
   ) {
     // Validate challenge exists
     await this.validateChallenge(challengeId);
 
+    // Build where clause conditionally - all filters must match (AND logic)
+    // Each filter is exclusive: if provided, it MUST match exactly
+    const where: Prisma.QuestionWhereInput = {
+      challengeId,
+      parentQuestionId: null,
+      deletedAt: null,
+    };
+
+    // Apply filters only if they have valid values - all filters use AND logic
+    if (filters?.stage) {
+      where.stage = filters.stage;
+    }
+
+    if (filters?.phase && filters.phase.trim() !== '') {
+      where.phase = filters.phase;
+    }
+
+    if (filters?.type && filters.type.trim() !== '') {
+      where.type = filters.type;
+    }
+
     const questions = await this.prisma.question.findMany({
-      where: {
-        challengeId,
-        stage: filters?.stage,
-        phase: filters?.phase,
-        parentQuestionId: null,
-        deletedAt: null,
-      },
+      where,
       include: {
         questionMedia: {
           include: {

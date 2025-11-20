@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsObject } from 'class-validator';
+import { IsString, IsObject, IsOptional } from 'class-validator';
 import { BaseCreateQuestionDto } from './base-question.dto';
 
 export class CreateWordAssociationsDto extends BaseCreateQuestionDto {
@@ -16,5 +16,14 @@ export class CreateWordAssociationsDto extends BaseCreateQuestionDto {
   })
   @IsObject()
   configuration: Record<string, unknown>;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description: 'Optional reference image',
+  })
+  @IsOptional()
+  media?: any;
 }
 

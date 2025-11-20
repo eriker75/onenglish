@@ -184,9 +184,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createSpelling", null);
 __decorate([
     (0, common_1.Post)('word_associations'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a word associations question',
-        description: 'Creates a vocabulary question where students connect a target word with related concepts. Default validation method: IA.',
+        description: 'Creates a vocabulary question where students connect a target word with related concepts. Optionally include a reference image. Default validation method: IA.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,

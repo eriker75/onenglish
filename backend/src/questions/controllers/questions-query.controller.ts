@@ -55,7 +55,7 @@ export class QuestionsQueryController {
   @ApiOperation({
     summary: 'Get all questions for a specific challenge',
     description:
-      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage, phase, or type. Each question is formatted according to its type for optimal frontend consumption.',
   })
   @ApiQuery({
     name: 'stage',
@@ -67,6 +67,11 @@ export class QuestionsQueryController {
     name: 'phase',
     required: false,
     description: 'Filter by phase identifier (optional)',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by question type (optional). Examples: image_to_multiple_choices, wordbox, spelling, unscramble, etc.',
   })
   @ApiResponse({
     status: 200,
@@ -81,8 +86,26 @@ export class QuestionsQueryController {
     @Param('challengeId') challengeId: string,
     @Query('stage') stage?: QuestionStage,
     @Query('phase') phase?: string,
+    @Query('type') type?: string,
   ) {
-    return this.questionsService.findByChallengeId(challengeId, { stage, phase });
+    const filters: {
+      stage?: QuestionStage;
+      phase?: string;
+      type?: string;
+    } = {};
+
+    // Only add filters if they have valid non-empty values
+    if (stage) {
+      filters.stage = stage;
+    }
+    if (phase && phase.trim() !== '') {
+      filters.phase = phase;
+    }
+    if (type && type.trim() !== '') {
+      filters.type = type;
+    }
+
+    return this.questionsService.findByChallengeId(challengeId, filters);
   }
 
   @Get('schools/:schoolId/stats')
