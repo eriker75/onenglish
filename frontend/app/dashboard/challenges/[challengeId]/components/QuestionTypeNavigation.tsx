@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from "react";
+import { useStepper } from "@/hooks/useStepper";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { questionTypesByArea, QuestionType } from "./questionTypes";
 import { Question } from "./ChallengeForm";
@@ -12,20 +14,50 @@ interface QuestionTypeNavigationProps {
 export default function QuestionTypeNavigation({
   questionsByArea,
 }: QuestionTypeNavigationProps) {
-  const { currentStage, currentQuestionType, setCurrentQuestionType } =
+  const { currentStep, steps } = useStepper();
+  const { currentQuestionType, setCurrentQuestionType } =
     useChallengeFormUIStore();
 
-  if (!currentStage) return null;
+  // Get current stage directly from stepper (single source of truth)
+  const currentArea = steps[currentStep - 1]?.name || "";
+  const currentStage = currentArea.toLowerCase();
+
+  // Reset currentQuestionType when stage changes - ensure it exists in the new stage's question types
+  // This must be called before any early returns to follow Rules of Hooks
+  useEffect(() => {
+    if (!currentArea) return;
+
+    const normalized = currentArea.charAt(0).toUpperCase() + currentArea.slice(1).toLowerCase();
+    const types = questionTypesByArea[normalized] || [];
+
+    if (types.length === 0) {
+      // If no question types available for this stage, reset the filter
+      if (currentQuestionType) {
+        setCurrentQuestionType(null);
+      }
+      return;
+    }
+
+    // If there's a current question type, check if it exists in the new stage
+    if (currentQuestionType) {
+      const typeExists = types.some((type) => type.id === currentQuestionType);
+      if (!typeExists) {
+        setCurrentQuestionType(null);
+      }
+    }
+  }, [currentArea, currentQuestionType, setCurrentQuestionType]);
+
+  if (!currentArea) return null;
 
   // Normalize stage name to match questionTypesByArea keys (capitalize first letter)
-  const normalizedStage = currentStage.charAt(0).toUpperCase() + currentStage.slice(1).toLowerCase();
+  const normalizedStage = currentArea.charAt(0).toUpperCase() + currentArea.slice(1).toLowerCase();
 
   // Get question types for current stage
   const questionTypes = questionTypesByArea[normalizedStage] || [];
 
   // Get questions for current stage (map stage name to area name)
   // Try both normalized and original stage name
-  const stageQuestions = questionsByArea[normalizedStage] || questionsByArea[currentStage] || [];
+  const stageQuestions = questionsByArea[normalizedStage] || questionsByArea[currentArea] || [];
 
   // Count questions by type
   const getQuestionCount = (typeId: string): number => {

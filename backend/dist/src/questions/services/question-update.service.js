@@ -13,12 +13,15 @@ exports.QuestionUpdateService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
 const question_media_service_1 = require("./question-media.service");
+const question_formatter_service_1 = require("./question-formatter.service");
 let QuestionUpdateService = class QuestionUpdateService {
     prisma;
     questionMediaService;
-    constructor(prisma, questionMediaService) {
+    questionFormatterService;
+    constructor(prisma, questionMediaService, questionFormatterService) {
         this.prisma = prisma;
         this.questionMediaService = questionMediaService;
+        this.questionFormatterService = questionFormatterService;
     }
     validateWordboxGrid(grid) {
         if (!grid || !Array.isArray(grid) || grid.length === 0) {
@@ -131,7 +134,41 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (question.parentQuestionId && updateData.points !== undefined) {
             await this.recalculateParentPoints(question.parentQuestionId);
         }
-        return updatedQuestion;
+        const questionWithRelations = await this.prisma.question.findUnique({
+            where: { id: questionId },
+            include: {
+                questionMedia: {
+                    include: {
+                        mediaFile: true,
+                    },
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+                configurations: true,
+                subQuestions: {
+                    include: {
+                        questionMedia: {
+                            include: {
+                                mediaFile: true,
+                            },
+                        },
+                        configurations: true,
+                    },
+                },
+                challenge: true,
+                parentQuestion: true,
+            },
+        });
+        if (!questionWithRelations) {
+            throw new common_1.NotFoundException('Question not found after update');
+        }
+        const enrichedQuestion = this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
+        const formattedQuestion = this.questionFormatterService.formatQuestion(enrichedQuestion);
+        if (!formattedQuestion) {
+            throw new common_1.BadRequestException('Failed to format question. Invalid question type or data.');
+        }
+        return formattedQuestion;
     }
     async recalculateParentPoints(parentQuestionId) {
         const subQuestions = await this.prisma.question.findMany({
@@ -165,14 +202,48 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
-        const updatedQuestion = await this.prisma.question.update({
+        await this.prisma.question.update({
             where: { id },
             data: updateData,
         });
         if (question.parentQuestionId && updateData.points !== undefined) {
             await this.recalculateParentPoints(question.parentQuestionId);
         }
-        return updatedQuestion;
+        const questionWithRelations = await this.prisma.question.findUnique({
+            where: { id },
+            include: {
+                questionMedia: {
+                    include: {
+                        mediaFile: true,
+                    },
+                    orderBy: {
+                        position: 'asc',
+                    },
+                },
+                configurations: true,
+                subQuestions: {
+                    include: {
+                        questionMedia: {
+                            include: {
+                                mediaFile: true,
+                            },
+                        },
+                        configurations: true,
+                    },
+                },
+                challenge: true,
+                parentQuestion: true,
+            },
+        });
+        if (!questionWithRelations) {
+            throw new common_1.NotFoundException('Subquestion not found after update');
+        }
+        const enrichedQuestion = this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
+        const formattedQuestion = this.questionFormatterService.formatQuestion(enrichedQuestion);
+        if (!formattedQuestion) {
+            throw new common_1.BadRequestException('Failed to format subquestion. Invalid question type or data.');
+        }
+        return formattedQuestion;
     }
     async updateQuestionText(questionId, text) {
         return this.updateQuestion(questionId, { text });
@@ -266,6 +337,7 @@ exports.QuestionUpdateService = QuestionUpdateService;
 exports.QuestionUpdateService = QuestionUpdateService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        question_media_service_1.QuestionMediaService])
+        question_media_service_1.QuestionMediaService,
+        question_formatter_service_1.QuestionFormatterService])
 ], QuestionUpdateService);
 //# sourceMappingURL=question-update.service.js.map

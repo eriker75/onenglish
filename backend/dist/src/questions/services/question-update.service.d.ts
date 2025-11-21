@@ -1,9 +1,11 @@
 import { PrismaService } from '../../database/prisma.service';
 import { QuestionMediaService } from './question-media.service';
+import { QuestionFormatterService } from './question-formatter.service';
 export declare class QuestionUpdateService {
     private readonly prisma;
     private readonly questionMediaService;
-    constructor(prisma: PrismaService, questionMediaService: QuestionMediaService);
+    private readonly questionFormatterService;
+    constructor(prisma: PrismaService, questionMediaService: QuestionMediaService, questionFormatterService: QuestionFormatterService);
     private validateWordboxGrid;
     updateQuestion(questionId: string, updateData: any): Promise<any>;
     recalculateParentPoints(parentQuestionId: string): Promise<void>;

@@ -5,12 +5,14 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { QuestionMediaService } from './question-media.service';
+import { QuestionFormatterService } from './question-formatter.service';
 
 @Injectable()
 export class QuestionUpdateService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly questionMediaService: QuestionMediaService,
+    private readonly questionFormatterService: QuestionFormatterService,
   ) {}
 
   /**
@@ -188,7 +190,53 @@ export class QuestionUpdateService {
       await this.recalculateParentPoints(question.parentQuestionId);
     }
 
-    return updatedQuestion;
+    // Fetch the updated question with all relations (same as findOne)
+    const questionWithRelations = await this.prisma.question.findUnique({
+      where: { id: questionId },
+      include: {
+        questionMedia: {
+          include: {
+            mediaFile: true,
+          },
+          orderBy: {
+            position: 'asc',
+          },
+        },
+        configurations: true,
+        subQuestions: {
+          include: {
+            questionMedia: {
+              include: {
+                mediaFile: true,
+              },
+            },
+            configurations: true,
+          },
+        },
+        challenge: true,
+        parentQuestion: true,
+      },
+    });
+
+    if (!questionWithRelations) {
+      throw new NotFoundException('Question not found after update');
+    }
+
+    // Enrich with media and configurations (including subQuestions recursively)
+    const enrichedQuestion =
+      this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
+
+    // Format based on question type for optimal frontend structure
+    const formattedQuestion =
+      this.questionFormatterService.formatQuestion(enrichedQuestion);
+
+    if (!formattedQuestion) {
+      throw new BadRequestException(
+        'Failed to format question. Invalid question type or data.',
+      );
+    }
+
+    return formattedQuestion;
   }
 
   /**
@@ -252,7 +300,7 @@ export class QuestionUpdateService {
     }
 
     // Update the subquestion
-    const updatedQuestion = await this.prisma.question.update({
+    await this.prisma.question.update({
       where: { id },
       data: updateData,
     });
@@ -262,7 +310,53 @@ export class QuestionUpdateService {
       await this.recalculateParentPoints(question.parentQuestionId);
     }
 
-    return updatedQuestion;
+    // Fetch the updated question with all relations (same as findOne)
+    const questionWithRelations = await this.prisma.question.findUnique({
+      where: { id },
+      include: {
+        questionMedia: {
+          include: {
+            mediaFile: true,
+          },
+          orderBy: {
+            position: 'asc',
+          },
+        },
+        configurations: true,
+        subQuestions: {
+          include: {
+            questionMedia: {
+              include: {
+                mediaFile: true,
+              },
+            },
+            configurations: true,
+          },
+        },
+        challenge: true,
+        parentQuestion: true,
+      },
+    });
+
+    if (!questionWithRelations) {
+      throw new NotFoundException('Subquestion not found after update');
+    }
+
+    // Enrich with media and configurations (including subQuestions recursively)
+    const enrichedQuestion =
+      this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
+
+    // Format based on question type for optimal frontend structure
+    const formattedQuestion =
+      this.questionFormatterService.formatQuestion(enrichedQuestion);
+
+    if (!formattedQuestion) {
+      throw new BadRequestException(
+        'Failed to format subquestion. Invalid question type or data.',
+      );
+    }
+
+    return formattedQuestion;
   }
 
   /**

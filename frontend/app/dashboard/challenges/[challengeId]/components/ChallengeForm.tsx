@@ -44,6 +44,7 @@ export default function ChallengeForm({
     currentPhase,
     setCurrentStage,
     addStage,
+    setCurrentQuestionType,
   } = useChallengeFormUIStore();
 
   // Set stage from stepper when it changes (single source of truth: stepper)
@@ -55,6 +56,9 @@ export default function ChallengeForm({
       
       // Only update if different to avoid loops
       if (stageName !== state.currentStage) {
+        // Reset question type filter when stage changes
+        setCurrentQuestionType(null);
+        
         // Add stage if it doesn't exist
         if (!state.stages.includes(stageName as any)) {
           addStage(stageName as any);
