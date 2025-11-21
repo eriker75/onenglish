@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import QuestionCard from "./QuestionCard";
 import QuestionTypeGrid from "./QuestionTypeGrid";
-import { QuestionType } from "./questionTypes";
+import { QuestionType, questionTypesByArea } from "./questionTypes";
 import {
   ImageToMultipleChoiceText,
   WordBox,
@@ -218,6 +218,25 @@ export default function QuestionsSection({
   // Get the form component for the selected question type
   const FormComponent = selectedQuestionType ? componentMap[selectedQuestionType.id] : null;
 
+  // When currentQuestionType changes and we're on the grid, auto-select that type to create
+  useEffect(() => {
+    if (currentQuestionType && isShowingGrid && !selectedQuestionType) {
+      // Find the question type from questionTypesByArea
+      const allTypes = Object.values(questionTypesByArea).flat();
+      const typeToSelect = allTypes.find((t) => t.id === currentQuestionType);
+      
+      if (typeToSelect) {
+        setSelectedQuestionType(typeToSelect);
+        // Set default question text based on question type
+        let initialData: any = {};
+        if (typeToSelect.id === "image_to_multiple_choice_text") {
+          initialData.question = "Select the correct word for the image";
+        }
+        setNewQuestionData(initialData);
+      }
+    }
+  }, [currentQuestionType, isShowingGrid, selectedQuestionType]);
+
   // Calculate pagination info - only show pages for existing questions
   // The grid appears when currentPage > filteredQuestions.length, but it's not a numbered page
   const displayPages = Math.max(1, filteredQuestions.length);
@@ -322,38 +341,58 @@ export default function QuestionsSection({
       </div>
 
       {/* Content: Either question form, question type selector, or existing question */}
-      {isShowingQuestionForm && selectedQuestionType && FormComponent ? (
-        // Show question form for selected type
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="space-y-6">
-            <FormComponent
-              {...newQuestionData}
-              onQuestionChange={(value: string) => setNewQuestionData({ ...newQuestionData, question: value })}
-              onOptionsChange={(options: string[]) => setNewQuestionData({ ...newQuestionData, options })}
-              onCorrectAnswerChange={(answer: string) => setNewQuestionData({ ...newQuestionData, correctAnswer: answer })}
-              onImageChange={(imageUrl: string | null) => setNewQuestionData({ ...newQuestionData, imageUrl })}
-              onAudioChange={(audioUrl: string | null) => setNewQuestionData({ ...newQuestionData, audioUrl })}
-              onPointsChange={(points: number) => setNewQuestionData({ ...newQuestionData, points })}
-              onTimeMinutesChange={(minutes: number) => setNewQuestionData({ ...newQuestionData, timeMinutes: minutes })}
-              onTimeSecondsChange={(seconds: number) => setNewQuestionData({ ...newQuestionData, timeSeconds: seconds })}
-              onMaxAttemptsChange={(attempts: number) => setNewQuestionData({ ...newQuestionData, maxAttempts: attempts })}
-            />
-            <div className="flex justify-end gap-3 pt-4 border-t">
+      {isShowingQuestionForm && selectedQuestionType ? (
+        FormComponent ? (
+          // Show question form for selected type
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="space-y-6">
+              <FormComponent
+                {...newQuestionData}
+                onQuestionChange={(value: string) => setNewQuestionData({ ...newQuestionData, question: value })}
+                onOptionsChange={(options: string[]) => setNewQuestionData({ ...newQuestionData, options })}
+                onCorrectAnswerChange={(answer: string) => setNewQuestionData({ ...newQuestionData, correctAnswer: answer })}
+                onImageChange={(imageUrl: string | null) => setNewQuestionData({ ...newQuestionData, imageUrl })}
+                onAudioChange={(audioUrl: string | null) => setNewQuestionData({ ...newQuestionData, audioUrl })}
+                onPointsChange={(points: number) => setNewQuestionData({ ...newQuestionData, points })}
+                onTimeMinutesChange={(minutes: number) => setNewQuestionData({ ...newQuestionData, timeMinutes: minutes })}
+                onTimeSecondsChange={(seconds: number) => setNewQuestionData({ ...newQuestionData, timeSeconds: seconds })}
+                onMaxAttemptsChange={(attempts: number) => setNewQuestionData({ ...newQuestionData, maxAttempts: attempts })}
+              />
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  onClick={handleCancelQuestion}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveQuestion}
+                  className="px-6 py-2 bg-[#33CC00] text-white rounded-lg hover:bg-[#33CC00]/90 transition-colors font-medium"
+                >
+                  Save Question
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Show error if component not found
+          <div className="bg-white rounded-lg border border-red-200 p-6">
+            <div className="text-center">
+              <p className="text-red-600 font-medium mb-2">
+                Component not found for question type: {selectedQuestionType.name}
+              </p>
+              <p className="text-gray-600 text-sm mb-4">
+                Type ID: {selectedQuestionType.id}
+              </p>
               <button
                 onClick={handleCancelQuestion}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveQuestion}
-                className="px-6 py-2 bg-[#33CC00] text-white rounded-lg hover:bg-[#33CC00]/90 transition-colors font-medium"
-              >
-                Save Question
+                Go Back
               </button>
             </div>
           </div>
-        </div>
+        )
       ) : isShowingGrid ? (
         // Show QuestionTypeGrid when no questions or when currentPage > questions.length
         <div className="bg-white rounded-lg border border-gray-200 p-6">
