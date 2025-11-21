@@ -14,6 +14,7 @@ export * from './enums/file-type.enum';
 
 // Adapters
 export * from './adapters/gemini-files.adapter';
+export * from './adapters/openai-files.adapter';
 
 // DTOs
 export * from './dto/process-audio.dto';

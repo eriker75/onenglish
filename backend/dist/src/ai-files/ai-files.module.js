@@ -13,6 +13,7 @@ const config_1 = require("@nestjs/config");
 const nestjs_form_data_1 = require("nestjs-form-data");
 const ai_files_service_1 = require("./ai-files.service");
 const gemini_files_adapter_1 = require("./adapters/gemini-files.adapter");
+const openai_files_adapter_1 = require("./adapters/openai-files.adapter");
 const ai_files_test_controller_1 = require("./controllers/ai-files-test.controller");
 let AiFilesModule = class AiFilesModule {
     static { AiFilesModule_1 = this; }
@@ -112,11 +113,23 @@ let AiFilesModule = class AiFilesModule {
             });
             service.registerAdapter(geminiAdapter);
         }
+        if (options.providers.openai) {
+            const openaiAdapter = new openai_files_adapter_1.OpenAIFilesAdapter({
+                apiKey: options.providers.openai.apiKey,
+                visionModel: options.providers.openai.visionModel,
+                audioModel: options.providers.openai.audioModel,
+                defaultTemperature: options.providers.openai.defaultTemperature,
+            });
+            service.registerAdapter(openaiAdapter);
+        }
         if (options.defaultProvider) {
             service.setDefaultProvider(options.defaultProvider);
         }
         else if (options.providers.gemini) {
             service.setDefaultProvider('google_genai');
+        }
+        else if (options.providers.openai) {
+            service.setDefaultProvider('openai');
         }
         return service;
     }

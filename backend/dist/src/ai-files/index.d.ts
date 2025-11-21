@@ -5,6 +5,7 @@ export * from './interfaces/file-input.interface';
 export * from './interfaces/provider-adapter.interface';
 export * from './enums/file-type.enum';
 export * from './adapters/gemini-files.adapter';
+export * from './adapters/openai-files.adapter';
 export * from './dto/process-audio.dto';
 export * from './dto/process-image.dto';
 export * from './dto/responses.dto';

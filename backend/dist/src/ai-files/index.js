@@ -21,6 +21,7 @@ __exportStar(require("./interfaces/file-input.interface"), exports);
 __exportStar(require("./interfaces/provider-adapter.interface"), exports);
 __exportStar(require("./enums/file-type.enum"), exports);
 __exportStar(require("./adapters/gemini-files.adapter"), exports);
+__exportStar(require("./adapters/openai-files.adapter"), exports);
 __exportStar(require("./dto/process-audio.dto"), exports);
 __exportStar(require("./dto/process-image.dto"), exports);
 __exportStar(require("./dto/responses.dto"), exports);

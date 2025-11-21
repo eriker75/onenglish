@@ -2,7 +2,10 @@
 
 ## Overview
 
-The `AiFilesModule` provides multimodal AI processing capabilities for audio, images, and video files. It supports multiple AI providers through an adapter pattern, with Gemini currently implemented.
+The `AiFilesModule` provides multimodal AI processing capabilities for audio, images, and video files. It supports multiple AI providers through an adapter pattern. Currently implemented providers:
+
+- **Gemini (Google)**: Supports audio, images, and video
+- **OpenAI (ChatGPT)**: Supports audio (Whisper + GPT) and images (GPT-4 Vision)
 
 ## Module Configuration
 
@@ -30,12 +33,18 @@ import { AiFilesModule } from '../ai-files/ai-files.module';
 @Module({
   imports: [
     AiFilesModule.forFeature('CUSTOM_AI', {
-      defaultProvider: 'google_genai',
+      defaultProvider: 'openai', // or 'google_genai'
       providers: {
         gemini: {
           apiKey: 'custom-api-key',
           model: 'gemini-1.5-pro',
           defaultTemperature: 0.5,
+        },
+        openai: {
+          apiKey: 'your-openai-api-key',
+          visionModel: 'gpt-4o', // gpt-4o, gpt-4-turbo, gpt-4o-mini
+          audioModel: 'whisper-1',
+          defaultTemperature: 0.2,
         },
       },
     }),
@@ -101,11 +110,11 @@ async validateSpellingWithCustomProvider(audioPath: string, word: string) {
     FileType.AUDIO,
   );
 
-  // Override default provider
+  // Override default provider - use OpenAI instead of Gemini
   const result = await this.aiFilesService.validateSpellingFromAudio(
     audioInput,
     word,
-    'google_genai', // Explicit provider
+    'openai', // or 'google_genai'
   );
 
   return result;
@@ -280,14 +289,26 @@ async createMultimodalChallenge(
 ```typescript
 // Check available providers
 const providers = this.aiFilesService.getAvailableProviders();
-console.log('Available providers:', providers); // ['google_genai']
+console.log('Available providers:', providers); // ['google_genai', 'openai']
 
 // Check if provider supports file type
-const supportsAudio = this.aiFilesService.providerSupportsFileType(
+const geminiSupportsAudio = this.aiFilesService.providerSupportsFileType(
   FileType.AUDIO,
   'google_genai',
 );
-console.log('Supports audio:', supportsAudio); // true
+console.log('Gemini supports audio:', geminiSupportsAudio); // true
+
+const openaiSupportsVideo = this.aiFilesService.providerSupportsFileType(
+  FileType.VIDEO,
+  'openai',
+);
+console.log('OpenAI supports video:', openaiSupportsVideo); // false (OpenAI doesn't support video)
+
+const openaiSupportsImage = this.aiFilesService.providerSupportsFileType(
+  FileType.IMAGE,
+  'openai',
+);
+console.log('OpenAI supports images:', openaiSupportsImage); // true
 ```
 
 ## Error Handling
@@ -368,21 +389,109 @@ export class SpellingController {
 5. **Provider override** - Use when you need specific provider features
 6. **File size limits** - Current limit is 10MB per file, consider chunking for larger files
 
+## Provider-Specific Features
+
+### OpenAI (ChatGPT + Whisper)
+
+The OpenAI adapter uses a two-step approach for audio processing:
+
+1. **Whisper** transcribes the audio to text
+2. **GPT-4** analyzes the transcription with your system prompt
+
+This means you get accurate transcription plus intelligent analysis.
+
+**Example: Audio Processing with OpenAI**
+
+```typescript
+async analyzeAudioWithOpenAI(audioPath: string) {
+  const audioInput = this.aiFilesService.filePathToFileInput(
+    audioPath,
+    SupportedMimeType.AUDIO_MP3,
+    FileType.AUDIO,
+  );
+
+  const result = await this.aiFilesService.processSingleFile(
+    audioInput,
+    'Analyze the sentiment and grammar of this transcription',
+    'Is the speaker expressing positive or negative emotions?',
+    0.3,
+    'openai', // Use OpenAI instead of Gemini
+  );
+
+  return result;
+}
+```
+
+**Example: Image Analysis with GPT-4 Vision**
+
+```typescript
+async analyzeImageWithOpenAI(imagePath: string) {
+  const imageInput = this.aiFilesService.filePathToFileInput(
+    imagePath,
+    SupportedMimeType.IMAGE_JPEG,
+    FileType.IMAGE,
+  );
+
+  const result = await this.aiFilesService.processSingleFile(
+    imageInput,
+    'You are an expert art teacher. Describe this image in detail.',
+    'What artistic elements can you identify?',
+    0.2,
+    'openai', // GPT-4 Vision
+  );
+
+  return result;
+}
+```
+
+### Gemini (Google)
+
+Gemini supports audio, images, and video in a single multimodal model, making it ideal for complex multimodal tasks.
+
 ## Adding New Providers (Future)
 
-To add OpenAI or other providers:
+To add additional providers (Anthropic Claude, etc.):
 
 1. Create adapter implementing `IFilesProviderAdapter`
 2. Register in `AiFilesModule.createServiceWithAdapters()`
 3. Update `AiFilesModuleOptions` interface
-4. Use with provider name: `'openai'`
+4. Use with provider name: `'provider_name'`
 
 ## Environment Variables
 
 Required in `.env`:
 
 ```env
+# Gemini Configuration
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-2.0-flash-exp  # Optional, defaults to gemini-2.0-flash-exp
+
+# OpenAI Configuration (optional, only if using OpenAI adapter)
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+To enable OpenAI in your app, update `app.module.ts`:
+
+```typescript
+AiFilesModule.forRootAsync({
+  imports: [ConfigModule],
+  useFactory: (configService: ConfigService) => ({
+    defaultProvider: 'openai', // or 'google_genai'
+    providers: {
+      gemini: {
+        apiKey: configService.get<string>('GEMINI_API_KEY')!,
+        model: configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash-exp',
+        defaultTemperature: 0.2,
+      },
+      openai: {
+        apiKey: configService.get<string>('OPENAI_API_KEY')!,
+        visionModel: 'gpt-4o', // or gpt-4-turbo, gpt-4o-mini
+        audioModel: 'whisper-1',
+        defaultTemperature: 0.2,
+      },
+    },
+  }),
+  inject: [ConfigService],
+}),
 ```
 

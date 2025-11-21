@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { AiFilesService } from './ai-files.service';
 import { GeminiFilesAdapter } from './adapters/gemini-files.adapter';
+import { OpenAIFilesAdapter } from './adapters/openai-files.adapter';
 import { AiFilesTestController } from './controllers/ai-files-test.controller';
 
 export interface AiFilesModuleOptions {
@@ -19,10 +20,11 @@ export interface AiFilesModuleOptions {
       model: string;
       defaultTemperature?: number;
     };
-    // Future providers
     openai?: {
       apiKey: string;
-      model: string;
+      visionModel?: string; // 'gpt-4o', 'gpt-4-turbo', etc.
+      audioModel?: string; // 'whisper-1'
+      defaultTemperature?: number;
     };
   };
 }
@@ -150,15 +152,27 @@ export class AiFilesModule {
       service.registerAdapter(geminiAdapter);
     }
 
+    // Register OpenAI adapter if configured
+    if (options.providers.openai) {
+      const openaiAdapter = new OpenAIFilesAdapter({
+        apiKey: options.providers.openai.apiKey,
+        visionModel: options.providers.openai.visionModel,
+        audioModel: options.providers.openai.audioModel,
+        defaultTemperature: options.providers.openai.defaultTemperature,
+      });
+      service.registerAdapter(openaiAdapter);
+    }
+
     // Set default provider
     if (options.defaultProvider) {
       service.setDefaultProvider(options.defaultProvider);
     } else if (options.providers.gemini) {
       // Default to gemini if no default specified but gemini is configured
       service.setDefaultProvider('google_genai');
+    } else if (options.providers.openai) {
+      // Default to openai if gemini is not configured
+      service.setDefaultProvider('openai');
     }
-
-    // Add more providers here as needed
 
     return service;
   }

@@ -9,7 +9,9 @@ export interface AiFilesModuleOptions {
         };
         openai?: {
             apiKey: string;
-            model: string;
+            visionModel?: string;
+            audioModel?: string;
+            defaultTemperature?: number;
         };
     };
 }
