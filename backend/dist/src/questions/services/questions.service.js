@@ -174,23 +174,10 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         return this.findOne(question.id);
     }
     async createWordAssociations(dto) {
-        this.logger.log('========================================');
-        this.logger.log('[SERVICE] createWordAssociations - Starting creation');
-        this.logger.log('[SERVICE] DTO received: ' + JSON.stringify({
-            challengeId: dto.challengeId,
-            content: dto.content,
-            maxAssociations: dto.maxAssociations,
-            maxAssociationsType: typeof dto.maxAssociations,
-            maxAssociationsValue: dto.maxAssociations,
-            points: dto.points,
-            hasMedia: !!dto.media,
-        }, null, 2));
         await this.validateChallenge(dto.challengeId);
         if (!dto.content || dto.content.trim().length === 0) {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
-        const maxAssociations = dto.maxAssociations;
-        this.logger.log(`[SERVICE] maxAssociations extracted: ${maxAssociations} (type: ${typeof maxAssociations})`);
         const questionType = 'word_associations';
         const stage = client_1.QuestionStage.VOCABULARY;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
@@ -213,25 +200,18 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 content: dto.content,
             },
         });
-        this.logger.log(`[SERVICE] Question created with ID: ${question.id}`);
         if (uploadedFile) {
             await this.questionMediaService.attachMediaFiles(question.id, [
                 { id: uploadedFile.id, context: 'main', position: 0 },
             ]);
         }
-        const configValue = String(maxAssociations ?? 10);
-        this.logger.log(`[SERVICE] Saving configuration: maxAssociations = ${configValue} (original: ${maxAssociations}, isUndefined: ${maxAssociations === undefined}, isNull: ${maxAssociations === null})`);
         await this.attachConfigurations(question.id, [
             {
                 metaKey: 'maxAssociations',
-                metaValue: configValue,
+                metaValue: String(dto.maxAssociations ?? 10),
             },
         ]);
-        this.logger.log('[SERVICE] Configuration saved, fetching question to verify...');
-        const result = await this.findOne(question.id);
-        this.logger.log(`[SERVICE] Final result maxAssociations: ${result.maxAssociations}`);
-        this.logger.log('========================================');
-        return result;
+        return this.findOne(question.id);
     }
     async createUnscramble(dto) {
         await this.validateChallenge(dto.challengeId);

@@ -68,15 +68,6 @@ let QuestionsCreationController = class QuestionsCreationController {
         return this.questionsService.createSpelling(dto);
     }
     createWordAssociations(dto) {
-        const dtoAny = dto;
-        console.log('[CONTROLLER] createWordAssociations called with DTO:', {
-            challengeId: dto.challengeId,
-            content: dto.content,
-            maxAssociations: dtoAny.maxAssociations,
-            maxAssociationsType: typeof dtoAny.maxAssociations,
-            points: dto.points,
-            hasMedia: !!dto.media,
-        });
         return this.questionsService.createWordAssociations(dto);
     }
     createUnscramble(dto) {

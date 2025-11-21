@@ -265,30 +265,13 @@ export class QuestionsService {
   }
 
   async createWordAssociations(dto: QuestionDtos.CreateWordAssociationsDto) {
-    this.logger.log('========================================');
-    this.logger.log('[SERVICE] createWordAssociations - Starting creation');
-    this.logger.log('[SERVICE] DTO received: ' + JSON.stringify({
-      challengeId: dto.challengeId,
-      content: dto.content,
-      maxAssociations: dto.maxAssociations,
-      maxAssociationsType: typeof dto.maxAssociations,
-      maxAssociationsValue: dto.maxAssociations,
-      points: dto.points,
-      hasMedia: !!dto.media,
-    }, null, 2));
-
     await this.validateChallenge(dto.challengeId);
 
     if (!dto.content || dto.content.trim().length === 0) {
       throw new BadRequestException('Content must be a non-empty string');
     }
 
-    // Ensure we correctly read maxAssociations from the incoming payload (form-data sends it as string)
-    const maxAssociations = dto.maxAssociations;
-    this.logger.log(`[SERVICE] maxAssociations extracted: ${maxAssociations} (type: ${typeof maxAssociations})`);
-
     const questionType = 'word_associations';
-    // word_associations is always VOCABULARY stage
     const stage = QuestionStage.VOCABULARY;
 
     const position = await this.calculateNextPosition(
@@ -296,7 +279,6 @@ export class QuestionsService {
       stage,
     );
 
-    // Upload optional media file if provided
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
@@ -306,7 +288,6 @@ export class QuestionsService {
       );
     }
 
-    // Create the question
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
@@ -323,30 +304,20 @@ export class QuestionsService {
       },
     });
 
-    this.logger.log(`[SERVICE] Question created with ID: ${question.id}`);
-
-    // Attach media file if uploaded
     if (uploadedFile) {
       await this.questionMediaService.attachMediaFiles(question.id, [
         { id: uploadedFile.id, context: 'main', position: 0 },
       ]);
     }
 
-    // Attach maxAssociations configuration
-    const configValue = String(maxAssociations ?? 10);
-    this.logger.log(`[SERVICE] Saving configuration: maxAssociations = ${configValue} (original: ${maxAssociations}, isUndefined: ${maxAssociations === undefined}, isNull: ${maxAssociations === null})`);
     await this.attachConfigurations(question.id, [
       {
         metaKey: 'maxAssociations',
-        metaValue: configValue,
+        metaValue: String(dto.maxAssociations ?? 10),
       },
     ]);
 
-    this.logger.log('[SERVICE] Configuration saved, fetching question to verify...');
-    const result = await this.findOne(question.id);
-    this.logger.log(`[SERVICE] Final result maxAssociations: ${(result as any).maxAssociations}`);
-    this.logger.log('========================================');
-    return result;
+    return this.findOne(question.id);
   }
 
   // ==================== GRAMMAR QUESTIONS ====================
