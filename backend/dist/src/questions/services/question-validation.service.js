@@ -309,12 +309,7 @@ Return a JSON object with this structure:
             throw new common_1.BadRequestException('Audio file is required for spelling validation');
         }
         const expectedWord = question.answer;
-        const fileInput = {
-            data: audioFile.buffer.toString('base64'),
-            mimeType: audioFile.mimetype,
-            fileType: file_type_enum_1.FileType.AUDIO,
-            fileName: audioFile.originalname,
-        };
+        const fileInput = this.aiFilesService.filePathToFileInput(audioFile.path, audioFile.busBoyMimeType || audioFile.fileType?.mime, file_type_enum_1.FileType.AUDIO);
         try {
             const result = await this.aiFilesService.validateSpellingFromAudio(fileInput, expectedWord);
             if (!result.success) {
@@ -402,12 +397,7 @@ Return a JSON object with this structure:
             throw new common_1.BadRequestException('Audio file is required for gossip validation');
         }
         const expectedTranscription = question.answer;
-        const fileInput = {
-            data: audioFile.buffer.toString('base64'),
-            mimeType: audioFile.mimetype,
-            fileType: file_type_enum_1.FileType.AUDIO,
-            fileName: audioFile.originalname,
-        };
+        const fileInput = this.aiFilesService.filePathToFileInput(audioFile.path, audioFile.busBoyMimeType || audioFile.fileType?.mime, file_type_enum_1.FileType.AUDIO);
         const systemPrompt = `You are a transcription and pronunciation expert.
 Transcribe the audio accurately and compare it with the expected transcription.
 Expected transcription: "${expectedTranscription}"
@@ -513,12 +503,7 @@ Return a JSON object with this structure:
         if (!audioFile) {
             throw new common_1.BadRequestException('Audio file is required for superbrain validation');
         }
-        const fileInput = {
-            data: audioFile.buffer.toString('base64'),
-            mimeType: audioFile.mimetype,
-            fileType: file_type_enum_1.FileType.AUDIO,
-            fileName: audioFile.originalname,
-        };
+        const fileInput = this.aiFilesService.filePathToFileInput(audioFile.path, audioFile.busBoyMimeType || audioFile.fileType?.mime, file_type_enum_1.FileType.AUDIO);
         const systemPrompt = `You are an English speaking expert. Evaluate the audio response based on:
 1. Pronunciation and fluency (30%)
 2. Grammar and vocabulary (30%)
@@ -561,12 +546,7 @@ Return a JSON object with this structure:
         if (!audioFile) {
             throw new common_1.BadRequestException('Audio file is required for tell_me_about_it validation');
         }
-        const fileInput = {
-            data: audioFile.buffer.toString('base64'),
-            mimeType: audioFile.mimetype,
-            fileType: file_type_enum_1.FileType.AUDIO,
-            fileName: audioFile.originalname,
-        };
+        const fileInput = this.aiFilesService.filePathToFileInput(audioFile.path, audioFile.busBoyMimeType || audioFile.fileType?.mime, file_type_enum_1.FileType.AUDIO);
         const systemPrompt = `You are a storytelling and English speaking expert. Evaluate the audio story based on:
 1. Storytelling quality (25%)
 2. Pronunciation and fluency (25%)
@@ -607,12 +587,7 @@ Return a JSON object with this structure:
         if (!audioFile) {
             throw new common_1.BadRequestException('Audio file is required for debate validation');
         }
-        const fileInput = {
-            data: audioFile.buffer.toString('base64'),
-            mimeType: audioFile.mimetype,
-            fileType: file_type_enum_1.FileType.AUDIO,
-            fileName: audioFile.originalname,
-        };
+        const fileInput = this.aiFilesService.filePathToFileInput(audioFile.path, audioFile.busBoyMimeType || audioFile.fileType?.mime, file_type_enum_1.FileType.AUDIO);
         const systemPrompt = `You are a debate and argumentation expert. Evaluate the audio debate response based on:
 1. Argument clarity and logic (30%)
 2. Supporting evidence and examples (25%)

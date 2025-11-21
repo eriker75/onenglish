@@ -406,12 +406,12 @@ Return a JSON object with this structure:
     const expectedWord = question.answer as string;
 
     // Convert uploaded file to FileInput format
-    const fileInput: FileInput = {
-      data: audioFile.buffer.toString('base64'),
-      mimeType: audioFile.mimetype,
-      fileType: FileType.AUDIO,
-      fileName: audioFile.originalname,
-    };
+    // audioFile is a FileSystemStoredFile from nestjs-form-data
+    const fileInput: FileInput = this.aiFilesService.filePathToFileInput(
+      audioFile.path,
+      audioFile.busBoyMimeType || audioFile.fileType?.mime,
+      FileType.AUDIO,
+    );
 
     try {
       const result = await this.aiFilesService.validateSpellingFromAudio(
@@ -519,12 +519,12 @@ Return a JSON object with this structure:
 
     const expectedTranscription = question.answer as string;
 
-    const fileInput: FileInput = {
-      data: audioFile.buffer.toString('base64'),
-      mimeType: audioFile.mimetype,
-      fileType: FileType.AUDIO,
-      fileName: audioFile.originalname,
-    };
+    // Convert uploaded file to FileInput format
+    const fileInput: FileInput = this.aiFilesService.filePathToFileInput(
+      audioFile.path,
+      audioFile.busBoyMimeType || audioFile.fileType?.mime,
+      FileType.AUDIO,
+    );
 
     const systemPrompt = `You are a transcription and pronunciation expert.
 Transcribe the audio accurately and compare it with the expected transcription.
@@ -653,12 +653,12 @@ Return a JSON object with this structure:
       throw new BadRequestException('Audio file is required for superbrain validation');
     }
 
-    const fileInput: FileInput = {
-      data: audioFile.buffer.toString('base64'),
-      mimeType: audioFile.mimetype,
-      fileType: FileType.AUDIO,
-      fileName: audioFile.originalname,
-    };
+    // Convert uploaded file to FileInput format
+    const fileInput: FileInput = this.aiFilesService.filePathToFileInput(
+      audioFile.path,
+      audioFile.busBoyMimeType || audioFile.fileType?.mime,
+      FileType.AUDIO,
+    );
 
     const systemPrompt = `You are an English speaking expert. Evaluate the audio response based on:
 1. Pronunciation and fluency (30%)
@@ -712,12 +712,12 @@ Return a JSON object with this structure:
       throw new BadRequestException('Audio file is required for tell_me_about_it validation');
     }
 
-    const fileInput: FileInput = {
-      data: audioFile.buffer.toString('base64'),
-      mimeType: audioFile.mimetype,
-      fileType: FileType.AUDIO,
-      fileName: audioFile.originalname,
-    };
+    // Convert uploaded file to FileInput format
+    const fileInput: FileInput = this.aiFilesService.filePathToFileInput(
+      audioFile.path,
+      audioFile.busBoyMimeType || audioFile.fileType?.mime,
+      FileType.AUDIO,
+    );
 
     const systemPrompt = `You are a storytelling and English speaking expert. Evaluate the audio story based on:
 1. Storytelling quality (25%)
@@ -769,12 +769,12 @@ Return a JSON object with this structure:
       throw new BadRequestException('Audio file is required for debate validation');
     }
 
-    const fileInput: FileInput = {
-      data: audioFile.buffer.toString('base64'),
-      mimeType: audioFile.mimetype,
-      fileType: FileType.AUDIO,
-      fileName: audioFile.originalname,
-    };
+    // Convert uploaded file to FileInput format
+    const fileInput: FileInput = this.aiFilesService.filePathToFileInput(
+      audioFile.path,
+      audioFile.busBoyMimeType || audioFile.fileType?.mime,
+      FileType.AUDIO,
+    );
 
     const systemPrompt = `You are a debate and argumentation expert. Evaluate the audio debate response based on:
 1. Argument clarity and logic (30%)
