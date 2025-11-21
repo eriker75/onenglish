@@ -36,12 +36,13 @@ export class S3StorageService implements IStorageService {
     const s3Key = `${type}/${randomName}`;
 
     try {
+      const mimeType = (file as any).busBoyMimeType || (file as any).fileType?.mime || 'application/octet-stream';
       await this.s3Client.send(
         new PutObjectCommand({
           Bucket: this.bucketName,
           Key: s3Key,
           Body: fs.readFileSync(file.path),
-          ContentType: file.mimeType,
+          ContentType: mimeType,
         }),
       );
       return `https://${this.bucketName}.s3.amazonaws.com/${s3Key}`;

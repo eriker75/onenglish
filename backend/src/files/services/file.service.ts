@@ -56,7 +56,8 @@ export class FileService {
     file: FileSystemStoredFile,
   ): Promise<{ id: string; url: string; filename: string; type: string }> {
     // Detect file type automatically
-    const type = detectFileType(file.originalName, file.mimeType);
+    const mimeType = (file as any).busBoyMimeType || (file as any).fileType?.mime || 'application/octet-stream';
+    const type = detectFileType(file.originalName, mimeType);
 
     const randomName = `${uuidv4()}${path.extname(file.originalName)}`;
     const url = await this.storageService.uploadFile(file, type, randomName);
@@ -67,7 +68,7 @@ export class FileService {
       filename: file.originalName,
       pathName: randomName,
       size: file.size,
-      mimeType: file.mimeType,
+      mimeType: mimeType,
     });
 
     return {
@@ -98,7 +99,8 @@ export class FileService {
 
     try {
       // Detect new file type
-      const newType = detectFileType(newFile.originalName, newFile.mimeType);
+      const newMimeType = (newFile as any).busBoyMimeType || (newFile as any).fileType?.mime || 'application/octet-stream';
+      const newType = detectFileType(newFile.originalName, newMimeType);
 
       // Step 1: Create backup of existing file
       this.logger.log(`Creating backup for file ${existingFile.pathName}`);
@@ -135,7 +137,7 @@ export class FileService {
         filename: newFile.originalName,
         pathName: newRandomName,
         size: newFile.size,
-        mimeType: newFile.mimeType,
+        mimeType: newMimeType,
       });
 
       // Step 6: Clean up backup

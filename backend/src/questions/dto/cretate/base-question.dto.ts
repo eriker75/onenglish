@@ -3,21 +3,17 @@ import { IsString, IsInt, IsEnum, IsOptional, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { QuestionStage } from '@prisma/client';
 
-export class BaseCreateQuestionDto {
+/**
+ * Base DTO for question creation without stage field
+ * Used for question types that have a fixed stage (e.g., VOCABULARY)
+ */
+export class BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     description: 'Challenge ID',
     example: '507f1f77-bcf8-6cd7-9943-9101abcd1234',
   })
   @IsString()
   challengeId: string;
-
-  @ApiProperty({
-    enum: [],
-    example: 'VOCABULARY',
-    description: 'Question stage/category',
-  })
-  @IsEnum(QuestionStage)
-  stage: QuestionStage;
 
   @ApiProperty({
     description: 'Points value for correct answer',
@@ -70,4 +66,18 @@ export class BaseCreateQuestionDto {
   @IsOptional()
   @IsString()
   instructions?: string;
+}
+
+/**
+ * Base DTO for question creation with stage field
+ * Used for question types that can have different stages
+ */
+export class BaseCreateQuestionDto extends BaseCreateQuestionWithoutStageDto {
+  @ApiProperty({
+    enum: QuestionStage,
+    example: 'VOCABULARY',
+    description: 'Question stage/category',
+  })
+  @IsEnum(QuestionStage)
+  stage: QuestionStage;
 }

@@ -38,7 +38,7 @@ let GridDimensionsMatchConstraint = class GridDimensionsMatchConstraint {
 GridDimensionsMatchConstraint = __decorate([
     (0, class_validator_1.ValidatorConstraint)({ name: 'GridDimensionsMatch', async: false })
 ], GridDimensionsMatchConstraint);
-class CreateWordboxDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateWordboxDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     gridWidth;
     gridHeight;
     maxWords = 5;

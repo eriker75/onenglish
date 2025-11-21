@@ -68,8 +68,7 @@ export interface FormattedWordboxQuestion
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
   centralWord: string;
   image: MediaFile | null;
-  totalAssociations: number;
-  configurations?: Record<string, string>;
+  maxAssociations: number; // Maximum number of associations for scoring
 }
 
 // ==================== GRAMMAR FORMATTED QUESTIONS ====================

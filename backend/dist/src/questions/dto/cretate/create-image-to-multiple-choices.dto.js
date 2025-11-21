@@ -15,7 +15,7 @@ const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-class CreateImageToMultipleChoicesDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateImageToMultipleChoicesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     media;
     options;
     answer;

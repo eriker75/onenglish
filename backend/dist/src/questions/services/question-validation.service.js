@@ -331,28 +331,63 @@ Return a JSON object with this structure:
     }
     async validateWordAssociations(question, userAnswer) {
         const centralWord = question.content;
+        const maxAssociationsConfig = question.configurations?.find((config) => config.metaKey === 'maxAssociations');
+        const maxAssociations = maxAssociationsConfig ? parseInt(maxAssociationsConfig.metaValue) : 10;
+        if (!userAnswer || !Array.isArray(userAnswer) || userAnswer.length === 0) {
+            return {
+                isCorrect: false,
+                pointsEarned: 0,
+                feedbackEnglish: `You must provide at least one word association.`,
+                feedbackSpanish: `Debes proporcionar al menos una asociación de palabras.`,
+                details: {
+                    validAssociations: [],
+                    weakAssociations: [],
+                    totalProvided: 0,
+                    maxAssociations,
+                },
+            };
+        }
         const systemPrompt = `You are an English vocabulary expert. Evaluate if the following words are semantically related to the central word "${centralWord}".
-Rate the overall quality of associations on a scale of 0-1 and provide feedback.
+
+The student should provide up to ${maxAssociations} associations. Evaluate the quality and relevance of each association.
+
+For scoring:
+- Count how many associations are semantically valid and strong
+- Count how many associations are weak but acceptable
+- Scoring formula: (validCount / ${maxAssociations}) = proportion of max points earned
+- Example: If student provides ${maxAssociations} associations and all are valid = 100% of points
+- Example: If student provides 3 associations and 2 are valid out of ${maxAssociations} max = (2/${maxAssociations}) of points
+
 Return a JSON object with this structure:
 {
   "score": 0.85,
   "validAssociations": ["word1", "word2"],
   "weakAssociations": ["word3"],
-  "feedbackEnglish": "Good associations! Most words are strongly related to ${centralWord}.",
-  "feedbackSpanish": "¡Buenas asociaciones! La mayoría de las palabras están fuertemente relacionadas con ${centralWord}."
+  "invalidAssociations": [],
+  "feedbackEnglish": "Good associations! You provided X valid words related to ${centralWord} out of ${maxAssociations} expected.",
+  "feedbackSpanish": "¡Buenas asociaciones! Proporcionaste X palabras válidas relacionadas con ${centralWord} de ${maxAssociations} esperadas."
 }`;
-        const userPrompt = `Central word: "${centralWord}"\nUser's associations: ${userAnswer.join(', ')}`;
+        const userPrompt = `Central word: "${centralWord}"\nMaximum associations expected: ${maxAssociations}\nUser's associations (${userAnswer.length} words): ${userAnswer.join(', ')}`;
         try {
             const response = await this.aiService.invoke(`${systemPrompt}\n\n${userPrompt}`);
             const result = this.parseAIResponse(response);
             const score = result.score || 0;
-            const pointsEarned = Math.round(question.points * score);
+            const validAssociations = result.validAssociations || [];
+            const associationRatio = Math.min(validAssociations.length / maxAssociations, 1);
+            const pointsEarned = Math.round(question.points * associationRatio);
             return {
-                isCorrect: score >= 0.6,
+                isCorrect: validAssociations.length > 0,
                 pointsEarned,
                 feedbackEnglish: result.feedbackEnglish,
                 feedbackSpanish: result.feedbackSpanish,
-                details: result,
+                details: {
+                    ...result,
+                    totalProvided: userAnswer.length,
+                    maxAssociations,
+                    validCount: validAssociations.length,
+                    associationRatio,
+                    scoreCalculation: `${validAssociations.length}/${maxAssociations} = ${pointsEarned}/${question.points} points`,
+                },
             };
         }
         catch (error) {

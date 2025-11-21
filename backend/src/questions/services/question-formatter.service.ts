@@ -213,11 +213,8 @@ export class QuestionFormatterService {
       centralWord: question.content,
       // Optional reference image
       image: question.media?.find((m) => m.type === 'image') || null,
-      // Configuration
-      totalAssociations: parseInt(
-        question.configurations?.totalAssociations || '5',
-      ),
-      configurations: question.configurations || {},
+      // Maximum number of associations for scoring
+      maxAssociations: parseInt(question.configurations?.maxAssociations || '10'),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };

@@ -85,7 +85,8 @@ let FileService = FileService_1 = class FileService {
         }
     }
     async saveFile(file) {
-        const type = (0, file_type_detector_util_1.detectFileType)(file.originalName, file.mimeType);
+        const mimeType = file.busBoyMimeType || file.fileType?.mime || 'application/octet-stream';
+        const type = (0, file_type_detector_util_1.detectFileType)(file.originalName, mimeType);
         const randomName = `${(0, uuid_1.v4)()}${path.extname(file.originalName)}`;
         const url = await this.storageService.uploadFile(file, type, randomName);
         const mediaFile = await this.attachmentService.create({
@@ -94,7 +95,7 @@ let FileService = FileService_1 = class FileService {
             filename: file.originalName,
             pathName: randomName,
             size: file.size,
-            mimeType: file.mimeType,
+            mimeType: mimeType,
         });
         return {
             id: mediaFile.id,
@@ -111,7 +112,8 @@ let FileService = FileService_1 = class FileService {
         const backupPath = path.join(this.tmpDir, `backup-${existingFile.pathName}`);
         let backupCreated = false;
         try {
-            const newType = (0, file_type_detector_util_1.detectFileType)(newFile.originalName, newFile.mimeType);
+            const newMimeType = newFile.busBoyMimeType || newFile.fileType?.mime || 'application/octet-stream';
+            const newType = (0, file_type_detector_util_1.detectFileType)(newFile.originalName, newMimeType);
             this.logger.log(`Creating backup for file ${existingFile.pathName}`);
             await this.createBackup(existingFile.type, existingFile.pathName, backupPath);
             backupCreated = true;
@@ -131,7 +133,7 @@ let FileService = FileService_1 = class FileService {
                 filename: newFile.originalName,
                 pathName: newRandomName,
                 size: newFile.size,
-                mimeType: newFile.mimeType,
+                mimeType: newMimeType,
             });
             await this.cleanupBackup(backupPath);
             this.logger.log(`File ${fileId} updated successfully`);

@@ -9,21 +9,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BaseCreateQuestionDto = void 0;
+exports.BaseCreateQuestionDto = exports.BaseCreateQuestionWithoutStageDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const client_1 = require("@prisma/client");
-class BaseCreateQuestionDto {
+class BaseCreateQuestionWithoutStageDto {
     challengeId;
-    stage;
     points;
     timeLimit = 60;
     maxAttempts = 1;
     text;
     instructions;
 }
-exports.BaseCreateQuestionDto = BaseCreateQuestionDto;
+exports.BaseCreateQuestionWithoutStageDto = BaseCreateQuestionWithoutStageDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Challenge ID',
@@ -31,16 +30,7 @@ __decorate([
     }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], BaseCreateQuestionDto.prototype, "challengeId", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        enum: [],
-        example: 'VOCABULARY',
-        description: 'Question stage/category',
-    }),
-    (0, class_validator_1.IsEnum)(client_1.QuestionStage),
-    __metadata("design:type", String)
-], BaseCreateQuestionDto.prototype, "stage", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "challengeId", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Points value for correct answer',
@@ -51,7 +41,7 @@ __decorate([
     (0, class_validator_1.Min)(0),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], BaseCreateQuestionDto.prototype, "points", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "points", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Time limit in seconds',
@@ -64,7 +54,7 @@ __decorate([
     (0, class_validator_1.Min)(0),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], BaseCreateQuestionDto.prototype, "timeLimit", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "timeLimit", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Maximum attempts allowed',
@@ -77,7 +67,7 @@ __decorate([
     (0, class_validator_1.Min)(1),
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
-], BaseCreateQuestionDto.prototype, "maxAttempts", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "maxAttempts", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Question text/prompt. If not provided, a default text will be assigned based on question type.',
@@ -86,7 +76,7 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], BaseCreateQuestionDto.prototype, "text", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "text", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
         description: 'Instructions for answering the question. If not provided, default instructions will be assigned based on question type.',
@@ -95,5 +85,18 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], BaseCreateQuestionDto.prototype, "instructions", void 0);
+], BaseCreateQuestionWithoutStageDto.prototype, "instructions", void 0);
+class BaseCreateQuestionDto extends BaseCreateQuestionWithoutStageDto {
+    stage;
+}
+exports.BaseCreateQuestionDto = BaseCreateQuestionDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        enum: client_1.QuestionStage,
+        example: 'VOCABULARY',
+        description: 'Question stage/category',
+    }),
+    (0, class_validator_1.IsEnum)(client_1.QuestionStage),
+    __metadata("design:type", String)
+], BaseCreateQuestionDto.prototype, "stage", void 0);
 //# sourceMappingURL=base-question.dto.js.map

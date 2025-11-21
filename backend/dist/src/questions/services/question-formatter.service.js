@@ -137,8 +137,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             centralWord: question.content,
             image: question.media?.find((m) => m.type === 'image') || null,
-            totalAssociations: parseInt(question.configurations?.totalAssociations || '5'),
-            configurations: question.configurations || {},
+            maxAssociations: parseInt(question.configurations?.maxAssociations || '10'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

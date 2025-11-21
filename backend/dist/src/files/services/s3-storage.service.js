@@ -65,11 +65,12 @@ let S3StorageService = class S3StorageService {
     async uploadFile(file, type, randomName) {
         const s3Key = `${type}/${randomName}`;
         try {
+            const mimeType = file.busBoyMimeType || file.fileType?.mime || 'application/octet-stream';
             await this.s3Client.send(new client_s3_1.PutObjectCommand({
                 Bucket: this.bucketName,
                 Key: s3Key,
                 Body: fs.readFileSync(file.path),
-                ContentType: file.mimeType,
+                ContentType: mimeType,
             }));
             return `https://${this.bucketName}.s3.amazonaws.com/${s3Key}`;
         }

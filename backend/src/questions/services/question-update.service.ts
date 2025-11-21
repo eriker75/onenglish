@@ -69,8 +69,8 @@ export class QuestionUpdateService {
       );
     }
 
-    // Extraer configuraciones de wordbox si existen
-    const { gridWidth, gridHeight, maxWords, ...restData } = updateData;
+    // Extraer configuraciones de wordbox y word_associations si existen
+    const { gridWidth, gridHeight, maxWords, maxAssociations, ...restData } = updateData;
 
     // Remove invalid fields for Prisma update (fields that cannot be updated directly)
     const {
@@ -116,7 +116,7 @@ export class QuestionUpdateService {
     }
 
     // Update the question
-    const updatedQuestion = await this.prisma.question.update({
+    await this.prisma.question.update({
       where: { id: questionId },
       data: questionData,
     });
@@ -183,6 +183,35 @@ export class QuestionUpdateService {
       if (maxWords !== undefined) {
         await upsertConfig('maxWords', maxWords);
       }
+    }
+
+    // Actualizar configuraciones de word_associations si se proporcionó maxAssociations
+    if (question.type === 'word_associations' && maxAssociations !== undefined) {
+      // Obtener configuraciones existentes
+      const existingConfigs = await this.prisma.questionConfiguration.findMany({
+        where: { questionId },
+      });
+
+      // Helper para actualizar o crear configuración
+      const upsertConfig = async (key: string, value: number) => {
+        const existing = existingConfigs.find((c) => c.metaKey === key);
+        if (existing) {
+          await this.prisma.questionConfiguration.update({
+            where: { id: existing.id },
+            data: { metaValue: String(value) },
+          });
+        } else {
+          await this.prisma.questionConfiguration.create({
+            data: {
+              questionId,
+              metaKey: key,
+              metaValue: String(value),
+            },
+          });
+        }
+      };
+
+      await upsertConfig('maxAssociations', maxAssociations);
     }
 
     // If this is a sub-question and points were updated, recalculate parent points

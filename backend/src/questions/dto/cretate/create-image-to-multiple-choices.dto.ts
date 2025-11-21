@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsString, ArrayMinSize } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import {
   FileSystemStoredFile,
   IsFile,
@@ -9,7 +9,7 @@ import {
   HasMimeType,
 } from 'nestjs-form-data';
 
-export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
+export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionWithoutStageDto {
   @IsFile()
   @MaxFileSize(5e6) // 5MB
   @HasMimeType(['image/jpeg', 'image/png', 'image/webp'])

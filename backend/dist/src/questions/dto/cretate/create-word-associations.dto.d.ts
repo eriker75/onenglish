@@ -1,6 +1,7 @@
-import { BaseCreateQuestionDto } from './base-question.dto';
-export declare class CreateWordAssociationsDto extends BaseCreateQuestionDto {
+import { FileSystemStoredFile } from 'nestjs-form-data';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+export declare class CreateWordAssociationsDto extends BaseCreateQuestionWithoutStageDto {
     content: string;
-    configuration: Record<string, unknown>;
-    media?: any;
+    maxAssociations: number;
+    media?: FileSystemStoredFile;
 }

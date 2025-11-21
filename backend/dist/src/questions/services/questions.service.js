@@ -8,16 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var QuestionsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
+const client_1 = require("@prisma/client");
 const _1 = require(".");
 const helpers_1 = require("../helpers");
-let QuestionsService = class QuestionsService {
+let QuestionsService = QuestionsService_1 = class QuestionsService {
     prisma;
     questionMediaService;
     questionFormatterService;
+    logger = new common_1.Logger(QuestionsService_1.name);
     constructor(prisma, questionMediaService, questionFormatterService) {
         this.prisma = prisma;
         this.questionMediaService = questionMediaService;
@@ -78,12 +81,13 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException(`Answer "${dto.answer}" must be one of the options: ${dto.options.join(', ')}`);
         }
         const questionType = 'image_to_multiple_choices';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.VOCABULARY;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -115,11 +119,12 @@ let QuestionsService = class QuestionsService {
         }
         this.validateWordboxGrid(dto.content);
         const questionType = 'wordbox';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.VOCABULARY;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -145,12 +150,13 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be a non-empty string');
         }
         const questionType = 'spelling';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.VOCABULARY;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -168,15 +174,26 @@ let QuestionsService = class QuestionsService {
         return this.findOne(question.id);
     }
     async createWordAssociations(dto) {
+        this.logger.log('========================================');
+        this.logger.log('[SERVICE] createWordAssociations - Starting creation');
+        this.logger.log('[SERVICE] DTO received: ' + JSON.stringify({
+            challengeId: dto.challengeId,
+            content: dto.content,
+            maxAssociations: dto.maxAssociations,
+            maxAssociationsType: typeof dto.maxAssociations,
+            maxAssociationsValue: dto.maxAssociations,
+            points: dto.points,
+            hasMedia: !!dto.media,
+        }, null, 2));
         await this.validateChallenge(dto.challengeId);
         if (!dto.content || dto.content.trim().length === 0) {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
-        if (!dto.configuration || !dto.configuration.totalAssociations) {
-            throw new common_1.BadRequestException('Configuration must include totalAssociations');
-        }
+        const maxAssociations = dto.maxAssociations;
+        this.logger.log(`[SERVICE] maxAssociations extracted: ${maxAssociations} (type: ${typeof maxAssociations})`);
         const questionType = 'word_associations';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.VOCABULARY;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -184,7 +201,7 @@ let QuestionsService = class QuestionsService {
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -196,17 +213,25 @@ let QuestionsService = class QuestionsService {
                 content: dto.content,
             },
         });
+        this.logger.log(`[SERVICE] Question created with ID: ${question.id}`);
         if (uploadedFile) {
             await this.questionMediaService.attachMediaFiles(question.id, [
                 { id: uploadedFile.id, context: 'main', position: 0 },
             ]);
         }
-        const configs = Object.entries(dto.configuration).map(([key, value]) => ({
-            metaKey: key,
-            metaValue: String(value),
-        }));
-        await this.attachConfigurations(question.id, configs);
-        return this.findOne(question.id);
+        const configValue = String(maxAssociations ?? 10);
+        this.logger.log(`[SERVICE] Saving configuration: maxAssociations = ${configValue} (original: ${maxAssociations}, isUndefined: ${maxAssociations === undefined}, isNull: ${maxAssociations === null})`);
+        await this.attachConfigurations(question.id, [
+            {
+                metaKey: 'maxAssociations',
+                metaValue: configValue,
+            },
+        ]);
+        this.logger.log('[SERVICE] Configuration saved, fetching question to verify...');
+        const result = await this.findOne(question.id);
+        this.logger.log(`[SERVICE] Final result maxAssociations: ${result.maxAssociations}`);
+        this.logger.log('========================================');
+        return result;
     }
     async createUnscramble(dto) {
         await this.validateChallenge(dto.challengeId);
@@ -1014,7 +1039,7 @@ let QuestionsService = class QuestionsService {
     }
 };
 exports.QuestionsService = QuestionsService;
-exports.QuestionsService = QuestionsService = __decorate([
+exports.QuestionsService = QuestionsService = QuestionsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         _1.QuestionMediaService,

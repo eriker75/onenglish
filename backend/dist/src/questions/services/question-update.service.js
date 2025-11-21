@@ -54,7 +54,7 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (question.deletedAt !== null) {
             throw new common_1.BadRequestException('Cannot update a deleted question. This question was deleted and is archived for data integrity.');
         }
-        const { gridWidth, gridHeight, maxWords, ...restData } = updateData;
+        const { gridWidth, gridHeight, maxWords, maxAssociations, ...restData } = updateData;
         const { media, challengeId, stage, ...questionData } = restData;
         const multipleChoiceTypes = [
             'image_to_multiple_choices',
@@ -79,7 +79,7 @@ let QuestionUpdateService = class QuestionUpdateService {
         if (question.type === 'wordbox' && questionData.content) {
             this.validateWordboxGrid(questionData.content);
         }
-        const updatedQuestion = await this.prisma.question.update({
+        await this.prisma.question.update({
             where: { id: questionId },
             data: questionData,
         });
@@ -130,6 +130,30 @@ let QuestionUpdateService = class QuestionUpdateService {
             if (maxWords !== undefined) {
                 await upsertConfig('maxWords', maxWords);
             }
+        }
+        if (question.type === 'word_associations' && maxAssociations !== undefined) {
+            const existingConfigs = await this.prisma.questionConfiguration.findMany({
+                where: { questionId },
+            });
+            const upsertConfig = async (key, value) => {
+                const existing = existingConfigs.find((c) => c.metaKey === key);
+                if (existing) {
+                    await this.prisma.questionConfiguration.update({
+                        where: { id: existing.id },
+                        data: { metaValue: String(value) },
+                    });
+                }
+                else {
+                    await this.prisma.questionConfiguration.create({
+                        data: {
+                            questionId,
+                            metaKey: key,
+                            metaValue: String(value),
+                        },
+                    });
+                }
+            };
+            await upsertConfig('maxAssociations', maxAssociations);
         }
         if (question.parentQuestionId && updateData.points !== undefined) {
             await this.recalculateParentPoints(question.parentQuestionId);

@@ -11,7 +11,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 
 @ValidatorConstraint({ name: 'GridDimensionsMatch', async: false })
 class GridDimensionsMatchConstraint implements ValidatorConstraintInterface {
@@ -46,7 +46,7 @@ class GridDimensionsMatchConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export class CreateWordboxDto extends BaseCreateQuestionDto {
+export class CreateWordboxDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     example: 3,
     description: 'Width of the grid (number of columns)',

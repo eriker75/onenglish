@@ -99,6 +99,15 @@ export class QuestionsCreationController {
     description: 'Bad request - validation failed',
   })
   createWordAssociations(@Body() dto: QuestionDtos.CreateWordAssociationsDto) {
+    const dtoAny = dto as any;
+    console.log('[CONTROLLER] createWordAssociations called with DTO:', {
+      challengeId: dto.challengeId,
+      content: dto.content,
+      maxAssociations: dtoAny.maxAssociations,
+      maxAssociationsType: typeof dtoAny.maxAssociations,
+      points: dto.points,
+      hasMedia: !!dto.media,
+    });
     return this.questionsService.createWordAssociations(dto);
   }
 

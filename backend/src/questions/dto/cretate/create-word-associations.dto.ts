@@ -1,8 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsObject, IsOptional } from 'class-validator';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsString,
+  IsInt,
+  IsOptional,
+  Min,
+  Max,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 
-export class CreateWordAssociationsDto extends BaseCreateQuestionDto {
+export class CreateWordAssociationsDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     example: 'Journey',
     description: 'Target word for associations',
@@ -11,19 +24,38 @@ export class CreateWordAssociationsDto extends BaseCreateQuestionDto {
   content: string;
 
   @ApiProperty({
-    example: { totalAssociations: 20 },
-    description: 'Configuration including total associations expected',
+    example: 10,
+    default: 10,
+    description: 'Maximum number of word associations the student needs to provide (used for scoring)',
+    minimum: 1,
+    maximum: 50,
+    required: true,
   })
-  @IsObject()
-  configuration: Record<string, unknown>;
+  @IsInt()
+  @Min(1, { message: 'Max associations must be at least 1' })
+  @Max(50, { message: 'Max associations cannot exceed 50' })
+  @Type(() => Number)
+  maxAssociations: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     required: false,
-    description: 'Optional reference image',
+    description:
+      'Optional reference image for the associations (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
   })
   @IsOptional()
-  media?: any;
+  @IsFile()
+  @MaxFileSize(5e6) // 5MB
+  @HasMimeType([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/gif',
+    'image/avif',
+  ])
+  media?: FileSystemStoredFile;
 }
 
