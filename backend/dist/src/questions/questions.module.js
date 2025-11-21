@@ -36,11 +36,17 @@ exports.QuestionsModule = QuestionsModule = __decorate([
                 temperature: 0.2,
             }),
             ai_files_module_1.AiFilesModule.forFeature('QUESTIONS_AI_FILES', {
-                defaultProvider: 'google_genai',
+                defaultProvider: 'openai',
                 providers: {
                     gemini: {
                         apiKey: process.env.GEMINI_API_KEY || '',
                         model: 'gemini-2.0-flash-exp',
+                        defaultTemperature: 0.2,
+                    },
+                    openai: {
+                        apiKey: process.env.OPENAI_API_KEY || '',
+                        visionModel: 'gpt-4o',
+                        audioModel: 'whisper-1',
                         defaultTemperature: 0.2,
                     },
                 },

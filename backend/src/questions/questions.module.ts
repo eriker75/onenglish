@@ -26,11 +26,17 @@ import { QuestionsUpdateController } from './controllers/questions-update.contro
       temperature: 0.2,
     }),
     AiFilesModule.forFeature('QUESTIONS_AI_FILES', {
-      defaultProvider: 'google_genai',
+      defaultProvider: 'openai', // OpenAI como provider por defecto
       providers: {
         gemini: {
           apiKey: process.env.GEMINI_API_KEY || '',
           model: 'gemini-2.0-flash-exp',
+          defaultTemperature: 0.2,
+        },
+        openai: {
+          apiKey: process.env.OPENAI_API_KEY || '',
+          visionModel: 'gpt-4o', // GPT-4 Vision para imágenes
+          audioModel: 'whisper-1', // Whisper para audio
           defaultTemperature: 0.2,
         },
       },
