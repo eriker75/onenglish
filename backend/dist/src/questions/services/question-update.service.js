@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionUpdateService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
+const client_1 = require("@prisma/client");
 const question_media_service_1 = require("./question-media.service");
 const question_formatter_service_1 = require("./question-formatter.service");
 let QuestionUpdateService = class QuestionUpdateService {
@@ -55,7 +56,17 @@ let QuestionUpdateService = class QuestionUpdateService {
             throw new common_1.BadRequestException('Cannot update a deleted question. This question was deleted and is archived for data integrity.');
         }
         const { gridWidth, gridHeight, maxWords, maxAssociations, ...restData } = updateData;
+        const grammarQuestionTypes = [
+            'unscramble',
+            'tenses',
+            'read_it',
+            'tag_it',
+            'report_it',
+        ];
         const { media, challengeId, stage, ...questionData } = restData;
+        if (grammarQuestionTypes.includes(question.type)) {
+            questionData.stage = client_1.QuestionStage.GRAMMAR;
+        }
         const multipleChoiceTypes = [
             'image_to_multiple_choices',
             'word_match',

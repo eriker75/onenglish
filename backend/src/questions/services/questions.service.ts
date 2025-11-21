@@ -332,16 +332,18 @@ export class QuestionsService {
     }
 
     const questionType = 'unscramble';
+    // unscramble is always GRAMMAR stage
+    const stage = QuestionStage.GRAMMAR;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -364,16 +366,18 @@ export class QuestionsService {
     }
 
     const questionType = 'tenses';
+    // tenses is always GRAMMAR stage
+    const stage = QuestionStage.GRAMMAR;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -397,10 +401,12 @@ export class QuestionsService {
     }
 
     const questionType = 'tag_it';
+    // tag_it is always GRAMMAR stage
+    const stage = QuestionStage.GRAMMAR;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload optional media file if provided
@@ -417,7 +423,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -450,10 +456,12 @@ export class QuestionsService {
     }
 
     const questionType = 'report_it';
+    // report_it is always GRAMMAR stage
+    const stage = QuestionStage.GRAMMAR;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload optional media file if provided
@@ -470,7 +478,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -521,10 +529,12 @@ export class QuestionsService {
     }
 
     const questionType = 'read_it';
+    // read_it is always GRAMMAR stage
+    const stage = QuestionStage.GRAMMAR;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     return this.prisma.$transaction(async (tx) => {
@@ -537,7 +547,7 @@ export class QuestionsService {
       const parent = await tx.question.create({
         data: {
           challengeId: dto.challengeId,
-          stage: dto.stage,
+          stage,
           position,
           type: questionType,
           points: totalPoints, // Auto-calculated from sub-questions
@@ -555,7 +565,7 @@ export class QuestionsService {
       await tx.question.createMany({
         data: dto.subQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
-          stage: dto.stage,
+          stage,
           position: index + 1,
           type: 'true_false',
           points: sub.points, // Use points from DTO

@@ -219,11 +219,12 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             throw new common_1.BadRequestException('Content and answer must have the same number of words');
         }
         const questionType = 'unscramble';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.GRAMMAR;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         return this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -243,11 +244,12 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
         const questionType = 'tenses';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.GRAMMAR;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         return this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -268,7 +270,8 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             throw new common_1.BadRequestException('Must provide at least one valid answer');
         }
         const questionType = 'tag_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.GRAMMAR;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -276,7 +279,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -302,7 +305,8 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
         const questionType = 'report_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.GRAMMAR;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -310,7 +314,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
-                stage: dto.stage,
+                stage,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -346,13 +350,14 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             }
         }
         const questionType = 'read_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
+        const stage = client_1.QuestionStage.GRAMMAR;
+        const position = await this.calculateNextPosition(dto.challengeId, stage);
         return this.prisma.$transaction(async (tx) => {
             const totalPoints = dto.subQuestions.reduce((sum, sub) => sum + sub.points, 0);
             const parent = await tx.question.create({
                 data: {
                     challengeId: dto.challengeId,
-                    stage: dto.stage,
+                    stage,
                     position,
                     type: questionType,
                     points: totalPoints,
@@ -368,7 +373,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             await tx.question.createMany({
                 data: dto.subQuestions.map((sub, index) => ({
                     challengeId: dto.challengeId,
-                    stage: dto.stage,
+                    stage,
                     position: index + 1,
                     type: 'true_false',
                     points: sub.points,

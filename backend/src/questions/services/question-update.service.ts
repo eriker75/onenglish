@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { QuestionStage } from '@prisma/client';
 import { QuestionMediaService } from './question-media.service';
 import { QuestionFormatterService } from './question-formatter.service';
 
@@ -72,13 +73,27 @@ export class QuestionUpdateService {
     // Extraer configuraciones de wordbox y word_associations si existen
     const { gridWidth, gridHeight, maxWords, maxAssociations, ...restData } = updateData;
 
+    // Question types that always have GRAMMAR stage
+    const grammarQuestionTypes = [
+      'unscramble',
+      'tenses',
+      'read_it',
+      'tag_it',
+      'report_it',
+    ];
+
     // Remove invalid fields for Prisma update (fields that cannot be updated directly)
     const {
       media, // Media files must be handled separately
       challengeId, // Cannot change challenge relationship
-      stage, // Cannot change stage
+      stage, // Stage is handled separately for grammar question types
       ...questionData
     } = restData;
+
+    // For grammar question types, always set stage to GRAMMAR
+    if (grammarQuestionTypes.includes(question.type)) {
+      questionData.stage = QuestionStage.GRAMMAR;
+    }
 
     // Validate answer is in options for multiple choice question types
     const multipleChoiceTypes = [
