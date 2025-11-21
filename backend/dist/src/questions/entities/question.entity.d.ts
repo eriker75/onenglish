@@ -3,7 +3,6 @@ export declare class Question {
     id: string;
     challengeId: string;
     stage: QuestionStage;
-    phase: string;
     position: number;
     type: string;
     points: number;

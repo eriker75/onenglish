@@ -25,13 +25,7 @@ export class DebateResponseDto {
   stage: QuestionStage;
 
   @ApiProperty({
-    description: 'Phase identifier',
-    example: 'phase_3',
-  })
-  phase: string;
-
-  @ApiProperty({
-    description: 'Position within phase',
+    description: 'Position within challenge',
     example: 1,
   })
   position: number;

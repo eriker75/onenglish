@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 export const useCreateQuestion = (type: QuestionType) => {
   const queryClient = useQueryClient();
   const store = useChallengeQuestionsStore();
-  const { currentStage, currentPhase, currentChallengeId } = store;
+  const { currentStage, currentChallengeId } = store;
 
   return useMutation({
     mutationFn: async (data: FormData | Record<string, unknown>) => {
@@ -23,19 +23,18 @@ export const useCreateQuestion = (type: QuestionType) => {
     // ⭐ OPTIMISTIC UPDATE
     onMutate: async (newQuestionData) => {
       // Cancel outgoing queries to prevent overwriting optimistic update
-      if (currentChallengeId && currentStage && currentPhase) {
-        const queryKey = QUERY_KEYS.byPhase(
+      if (currentChallengeId && currentStage) {
+        const queryKey = QUERY_KEYS.byStage(
           currentChallengeId,
-          currentStage,
-          currentPhase
+          currentStage
         );
         await queryClient.cancelQueries({ queryKey });
       }
 
       // Snapshot previous value for rollback
-      const previousQuestions = currentChallengeId && currentStage && currentPhase
+      const previousQuestions = currentChallengeId && currentStage
         ? queryClient.getQueryData(
-            QUERY_KEYS.byPhase(currentChallengeId, currentStage, currentPhase)
+            QUERY_KEYS.byStage(currentChallengeId, currentStage)
           )
         : undefined;
 
@@ -44,7 +43,6 @@ export const useCreateQuestion = (type: QuestionType) => {
         id: `temp-${Date.now()}`,
         challengeId: currentChallengeId || '',
         stage: currentStage!,
-        phase: currentPhase!,
         position: 0, // Backend will assign actual position
         type,
         points: 0, // Will be set from data
@@ -75,12 +73,11 @@ export const useCreateQuestion = (type: QuestionType) => {
       store.addQuestionToCache(serverQuestion);
 
       // Invalidate to re-fetch fresh data
-      if (currentChallengeId && currentStage && currentPhase) {
+      if (currentChallengeId && currentStage) {
         queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.byPhase(
+          queryKey: QUERY_KEYS.byStage(
             currentChallengeId,
-            currentStage,
-            currentPhase
+            currentStage
           ),
         });
       }
@@ -96,11 +93,10 @@ export const useCreateQuestion = (type: QuestionType) => {
       }
 
       // Restore previous state in React Query cache
-      if (context?.previousQuestions && currentChallengeId && currentStage && currentPhase) {
-        const queryKey = QUERY_KEYS.byPhase(
+      if (context?.previousQuestions && currentChallengeId && currentStage) {
+        const queryKey = QUERY_KEYS.byStage(
           currentChallengeId,
-          currentStage,
-          currentPhase
+          currentStage
         );
         queryClient.setQueryData(queryKey, context.previousQuestions);
       }

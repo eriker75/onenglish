@@ -17,7 +17,6 @@ const client_1 = require("@prisma/client");
 class BaseCreateQuestionDto {
     challengeId;
     stage;
-    phase;
     points;
     timeLimit = 60;
     maxAttempts = 1;
@@ -42,14 +41,6 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.QuestionStage),
     __metadata("design:type", String)
 ], BaseCreateQuestionDto.prototype, "stage", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Phase identifier (format: phase_1, phase_2, etc.)',
-        example: 'phase_1',
-    }),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], BaseCreateQuestionDto.prototype, "phase", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: 'Points value for correct answer',

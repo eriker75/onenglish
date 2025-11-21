@@ -22,13 +22,7 @@ export class Question {
   stage: QuestionStage;
 
   @ApiProperty({
-    description: 'Phase identifier',
-    example: 'phase_1_1',
-  })
-  phase: string;
-
-  @ApiProperty({
-    description: 'Position/order within the phase',
+    description: 'Position/order within the challenge',
     example: 1,
   })
   position: number;

@@ -20,13 +20,6 @@ export class BaseCreateQuestionDto {
   stage: QuestionStage;
 
   @ApiProperty({
-    description: 'Phase identifier (format: phase_1, phase_2, etc.)',
-    example: 'phase_1',
-  })
-  @IsString()
-  phase: string;
-
-  @ApiProperty({
     description: 'Points value for correct answer',
     example: 10,
     minimum: 0,

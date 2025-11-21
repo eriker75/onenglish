@@ -37,7 +37,7 @@ destroy-dev:
 
 # Commands for services (infrastructure only - for local development)
 up-services:
-	@echo "Starting services (PostgreSQL, MongoDB, Redis, PgAdmin, Mongo Express)..."
+	@echo "Starting services (PostgreSQL, Redis, PgAdmin)..."
 	docker-compose -f $(COMPOSE_SERVICES_FILE) -p $(PROJECT_NAME)_services up
 
 down-services:
@@ -132,9 +132,6 @@ shell-postgres-dev:
 	@echo "Accessing PostgreSQL shell in development..."
 	docker exec -it postgres psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
-shell-mongo-dev:
-	@echo "Accessing MongoDB shell in development..."
-	docker exec -it mongo mongosh -u $(MONGO_USERNAME) -p $(MONGO_PASSWORD)
 
 shell-redis-dev:
 	@echo "Accessing Redis shell in development..."
@@ -149,10 +146,6 @@ logs-postgres-dev:
 	@echo "Showing PostgreSQL logs in development..."
 	docker-compose -f $(COMPOSE_DEV_FILE) -p $(PROJECT_NAME)_dev logs -f postgres
 
-logs-mongo-dev:
-	@echo "Showing MongoDB logs in development..."
-	docker-compose -f $(COMPOSE_DEV_FILE) -p $(PROJECT_NAME)_dev logs -f mongo
-
 logs-redis-dev:
 	@echo "Showing Redis logs in development..."
 	docker-compose -f $(COMPOSE_DEV_FILE) -p $(PROJECT_NAME)_dev logs -f redis
@@ -165,10 +158,6 @@ logs-backend-prod:
 logs-postgres-prod:
 	@echo "Showing PostgreSQL logs in production..."
 	docker-compose -f $(COMPOSE_PROD_FILE) -p $(PROJECT_NAME)_prod logs -f postgres
-
-logs-mongo-prod:
-	@echo "Showing MongoDB logs in production..."
-	docker-compose -f $(COMPOSE_PROD_FILE) -p $(PROJECT_NAME)_prod logs -f mongo
 
 # Useful commands
 ps-dev:
@@ -261,19 +250,16 @@ help:
 	@echo "🐚 Shell Commands (Development):"
 	@echo "  make shell-backend-dev   - Access backend shell"
 	@echo "  make shell-postgres-dev  - Access PostgreSQL shell"
-	@echo "  make shell-mongo-dev     - Access MongoDB shell"
 	@echo "  make shell-redis-dev     - Access Redis shell"
 	@echo ""
 	@echo "📝 Specific Logs (Development):"
 	@echo "  make logs-backend-dev    - Backend logs"
 	@echo "  make logs-postgres-dev   - PostgreSQL logs"
-	@echo "  make logs-mongo-dev      - MongoDB logs"
 	@echo "  make logs-redis-dev      - Redis logs"
 	@echo ""
 	@echo "📝 Specific Logs (Production):"
 	@echo "  make logs-backend-prod   - Backend logs"
 	@echo "  make logs-postgres-prod  - PostgreSQL logs"
-	@echo "  make logs-mongo-prod     - MongoDB logs"
 	@echo ""
 	@echo "🛠️  Utilities:"
 	@echo "  make stats               - View Docker resource usage statistics"

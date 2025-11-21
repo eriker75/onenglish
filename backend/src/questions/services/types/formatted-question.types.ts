@@ -28,7 +28,6 @@ export interface BaseQuestionFields {
   id: string;
   type: string;
   stage: QuestionStage;
-  phase: string;
   position: number;
   points: number;
   timeLimit: number;

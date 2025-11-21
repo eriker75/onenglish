@@ -26,13 +26,11 @@ export class QuestionsService {
   private async calculateNextPosition(
     challengeId: string,
     stage: QuestionStage,
-    phase: string,
   ): Promise<number> {
     const maxPosition = await this.prisma.question.findFirst({
       where: {
         challengeId,
         stage,
-        phase,
         parentQuestionId: null, // Only count root questions, not sub-questions
         deletedAt: null, // Exclude deleted questions
       },
@@ -118,7 +116,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload single image file
@@ -131,7 +128,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -184,14 +180,12 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -228,7 +222,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the file
@@ -241,7 +234,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -281,7 +273,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload optional media file if provided
@@ -299,7 +290,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -345,14 +335,12 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -379,14 +367,12 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -414,7 +400,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload optional media file if provided
@@ -432,7 +417,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -469,7 +453,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload optional media file if provided
@@ -487,7 +470,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -542,7 +524,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     return this.prisma.$transaction(async (tx) => {
@@ -556,7 +537,6 @@ export class QuestionsService {
         data: {
           challengeId: dto.challengeId,
           stage: dto.stage,
-          phase: dto.phase,
           position,
           type: questionType,
           points: totalPoints, // Auto-calculated from sub-questions
@@ -575,7 +555,6 @@ export class QuestionsService {
         data: dto.subQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
           stage: dto.stage,
-          phase: dto.phase,
           position: index + 1,
           type: 'true_false',
           points: sub.points, // Use points from DTO
@@ -612,7 +591,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload all files
@@ -625,7 +603,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -665,7 +642,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the file
@@ -678,7 +654,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -766,7 +741,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the file
@@ -785,7 +759,6 @@ export class QuestionsService {
         data: {
           challengeId: dto.challengeId,
           stage: dto.stage,
-          phase: dto.phase,
           position,
           type: questionType,
           points: totalPoints, // Auto-calculated from sub-questions
@@ -813,7 +786,6 @@ export class QuestionsService {
         data: parsedSubQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
           stage: dto.stage,
-          phase: dto.phase,
           position: index + 1,
           type: 'topic_based_audio_subquestion',
           points: sub.points,
@@ -880,7 +852,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -983,7 +954,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the file
@@ -996,7 +966,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1029,7 +998,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload all files
@@ -1042,7 +1010,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1080,14 +1047,12 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1111,7 +1076,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload all files
@@ -1124,7 +1088,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1164,7 +1127,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the optional image if provided
@@ -1182,7 +1144,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1218,7 +1179,6 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     // Upload the optional image if provided
@@ -1236,7 +1196,6 @@ export class QuestionsService {
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1272,14 +1231,12 @@ export class QuestionsService {
     const position = await this.calculateNextPosition(
       dto.challengeId,
       dto.stage,
-      dto.phase,
     );
 
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage: dto.stage,
-        phase: dto.phase,
         position,
         type: questionType,
         points: dto.points,
@@ -1316,13 +1273,11 @@ export class QuestionsService {
   async findAll(filters?: {
     challengeId?: string;
     stage?: QuestionStage;
-    phase?: string;
   }) {
     const questions = await this.prisma.question.findMany({
       where: {
         challengeId: filters?.challengeId,
         stage: filters?.stage,
-        phase: filters?.phase,
         parentQuestionId: null,
       },
       include: {
@@ -1347,7 +1302,7 @@ export class QuestionsService {
         },
         challenge: true,
       },
-      orderBy: [{ stage: 'asc' }, { phase: 'asc' }, { position: 'asc' }],
+      orderBy: [{ stage: 'asc' }, { type: 'asc' }, { position: 'asc' }],
     });
 
     // Enrich all questions with media and configurations (including subQuestions recursively)
@@ -1363,7 +1318,6 @@ export class QuestionsService {
     challengeId: string,
     filters?: {
       stage?: QuestionStage;
-      phase?: string;
       type?: string;
     },
   ) {
@@ -1381,10 +1335,6 @@ export class QuestionsService {
     // Apply filters only if they have valid values - all filters use AND logic
     if (filters?.stage) {
       where.stage = filters.stage;
-    }
-
-    if (filters?.phase && filters.phase.trim() !== '') {
-      where.phase = filters.phase;
     }
 
     if (filters?.type && filters.type.trim() !== '') {

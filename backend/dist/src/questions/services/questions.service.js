@@ -23,12 +23,11 @@ let QuestionsService = class QuestionsService {
         this.questionMediaService = questionMediaService;
         this.questionFormatterService = questionFormatterService;
     }
-    async calculateNextPosition(challengeId, stage, phase) {
+    async calculateNextPosition(challengeId, stage) {
         const maxPosition = await this.prisma.question.findFirst({
             where: {
                 challengeId,
                 stage,
-                phase,
                 parentQuestionId: null,
                 deletedAt: null,
             },
@@ -79,13 +78,12 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException(`Answer "${dto.answer}" must be one of the options: ${dto.options.join(', ')}`);
         }
         const questionType = 'image_to_multiple_choices';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -117,12 +115,11 @@ let QuestionsService = class QuestionsService {
         }
         this.validateWordboxGrid(dto.content);
         const questionType = 'wordbox';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -148,13 +145,12 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be a non-empty string');
         }
         const questionType = 'spelling';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -180,7 +176,7 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Configuration must include totalAssociations');
         }
         const questionType = 'word_associations';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -189,7 +185,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -219,12 +214,11 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Content and answer must have the same number of words');
         }
         const questionType = 'unscramble';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         return this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -244,12 +238,11 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
         const questionType = 'tenses';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         return this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -270,7 +263,7 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Must provide at least one valid answer');
         }
         const questionType = 'tag_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -279,7 +272,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -305,7 +297,7 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
         const questionType = 'report_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -314,7 +306,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -350,14 +341,13 @@ let QuestionsService = class QuestionsService {
             }
         }
         const questionType = 'read_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         return this.prisma.$transaction(async (tx) => {
             const totalPoints = dto.subQuestions.reduce((sum, sub) => sum + sub.points, 0);
             const parent = await tx.question.create({
                 data: {
                     challengeId: dto.challengeId,
                     stage: dto.stage,
-                    phase: dto.phase,
                     position,
                     type: questionType,
                     points: totalPoints,
@@ -374,7 +364,6 @@ let QuestionsService = class QuestionsService {
                 data: dto.subQuestions.map((sub, index) => ({
                     challengeId: dto.challengeId,
                     stage: dto.stage,
-                    phase: dto.phase,
                     position: index + 1,
                     type: 'true_false',
                     points: sub.points,
@@ -401,13 +390,12 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
         const questionType = 'word_match';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFiles = await Promise.all(dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)));
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -433,13 +421,12 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be a non-empty string');
         }
         const questionType = 'gossip';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -495,7 +482,7 @@ let QuestionsService = class QuestionsService {
             }
         }
         const questionType = 'topic_based_audio';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         return this.prisma.$transaction(async (tx) => {
             const totalPoints = parsedSubQuestions.reduce((sum, sub) => sum + sub.points, 0);
@@ -503,7 +490,6 @@ let QuestionsService = class QuestionsService {
                 data: {
                     challengeId: dto.challengeId,
                     stage: dto.stage,
-                    phase: dto.phase,
                     position,
                     type: questionType,
                     points: totalPoints,
@@ -527,7 +513,6 @@ let QuestionsService = class QuestionsService {
                 data: parsedSubQuestions.map((sub, index) => ({
                     challengeId: dto.challengeId,
                     stage: dto.stage,
-                    phase: dto.phase,
                     position: index + 1,
                     type: 'topic_based_audio_subquestion',
                     points: sub.points,
@@ -574,7 +559,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -646,13 +630,12 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
         const questionType = 'lyrics_training';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -673,13 +656,12 @@ let QuestionsService = class QuestionsService {
     async createSentenceMaker(dto) {
         await this.validateChallenge(dto.challengeId);
         const questionType = 'sentence_maker';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFiles = await Promise.all(dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)));
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -703,12 +685,11 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Answer must be one of the options');
         }
         const questionType = 'fast_test';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         return this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -726,13 +707,12 @@ let QuestionsService = class QuestionsService {
     async createTales(dto) {
         await this.validateChallenge(dto.challengeId);
         const questionType = 'tales';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const uploadedFiles = await Promise.all(dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)));
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -756,7 +736,7 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
         const questionType = 'superbrain';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -765,7 +745,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -790,7 +769,7 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
         const questionType = 'tell_me_about_it';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         let uploadedFile = null;
         if (dto.media) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
@@ -799,7 +778,6 @@ let QuestionsService = class QuestionsService {
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -824,12 +802,11 @@ let QuestionsService = class QuestionsService {
             throw new common_1.BadRequestException('Content must be a non-empty string');
         }
         const questionType = 'debate';
-        const position = await this.calculateNextPosition(dto.challengeId, dto.stage, dto.phase);
+        const position = await this.calculateNextPosition(dto.challengeId, dto.stage);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage: dto.stage,
-                phase: dto.phase,
                 position,
                 type: questionType,
                 points: dto.points,
@@ -860,7 +837,6 @@ let QuestionsService = class QuestionsService {
             where: {
                 challengeId: filters?.challengeId,
                 stage: filters?.stage,
-                phase: filters?.phase,
                 parentQuestionId: null,
             },
             include: {
@@ -885,7 +861,7 @@ let QuestionsService = class QuestionsService {
                 },
                 challenge: true,
             },
-            orderBy: [{ stage: 'asc' }, { phase: 'asc' }, { position: 'asc' }],
+            orderBy: [{ stage: 'asc' }, { type: 'asc' }, { position: 'asc' }],
         });
         const enrichedQuestions = questions.map((question) => this.questionMediaService.enrichQuestionWithMedia(question));
         return this.questionFormatterService.formatQuestions(enrichedQuestions);
@@ -899,9 +875,6 @@ let QuestionsService = class QuestionsService {
         };
         if (filters?.stage) {
             where.stage = filters.stage;
-        }
-        if (filters?.phase && filters.phase.trim() !== '') {
-            where.phase = filters.phase;
         }
         if (filters?.type && filters.type.trim() !== '') {
             where.type = filters.type;

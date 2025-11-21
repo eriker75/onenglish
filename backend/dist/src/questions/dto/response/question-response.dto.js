@@ -16,7 +16,6 @@ class QuestionResponseDto {
     id;
     challengeId;
     stage;
-    phase;
     position;
     type;
     points;
@@ -59,14 +58,7 @@ __decorate([
 ], QuestionResponseDto.prototype, "stage", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Phase identifier',
-        example: 'phase_1',
-    }),
-    __metadata("design:type", String)
-], QuestionResponseDto.prototype, "phase", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Position within phase',
+        description: 'Position within challenge',
         example: 1,
     }),
     __metadata("design:type", Number)

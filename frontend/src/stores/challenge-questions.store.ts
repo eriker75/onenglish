@@ -21,14 +21,13 @@ import type {
 
 interface ChallengeQuestionsState {
   // ============ DATA CACHE ============
-  // Key format: "challengeId:stage:phase"
+  // Key format: "challengeId:stage"
   questionsCache: Map<string, Question[]>;
   lastSync: Map<string, number>; // Timestamp of last sync
 
   // ============ UI STATE ============
   currentChallengeId: string | null;
   currentStage: QuestionStage | null;
-  currentPhase: string | null;
 
   // Filters (client-side)
   searchFilter: string;
@@ -50,18 +49,15 @@ interface ChallengeQuestionsState {
   // ============ GETTERS ============
   getQuestions: (
     challengeId: string,
-    stage: QuestionStage,
-    phase: string
+    stage: QuestionStage
   ) => Question[];
   getFilteredQuestions: (
     challengeId: string,
-    stage: QuestionStage,
-    phase: string
+    stage: QuestionStage
   ) => Question[];
   isCacheValid: (
     challengeId: string,
     stage: QuestionStage,
-    phase: string,
     maxAge?: number
   ) => boolean;
 
@@ -69,7 +65,6 @@ interface ChallengeQuestionsState {
   hydrateFromServer: (
     challengeId: string,
     stage: QuestionStage,
-    phase: string,
     questions: Question[]
   ) => void;
   addQuestionToCache: (question: Question) => void;
@@ -77,14 +72,12 @@ interface ChallengeQuestionsState {
   removeQuestionFromCache: (questionId: string) => void;
   invalidateCache: (
     challengeId: string,
-    stage?: QuestionStage,
-    phase?: string
+    stage?: QuestionStage
   ) => void;
 
   // ============ UI ACTIONS ============
   setCurrentChallengeId: (id: string | null) => void;
   setCurrentStage: (stage: QuestionStage | null) => void;
-  setCurrentPhase: (phase: string | null) => void;
   setSearchFilter: (search: string) => void;
   setTypeFilter: (type: QuestionType | null) => void;
   setSortBy: (sort: 'position' | 'createdAt' | 'points') => void;
@@ -114,9 +107,8 @@ interface ChallengeQuestionsState {
 
 const getCacheKey = (
   challengeId: string,
-  stage: QuestionStage,
-  phase: string
-) => `${challengeId}:${stage}:${phase}`;
+  stage: QuestionStage
+) => `${challengeId}:${stage}`;
 
 // ==================== STORE ====================
 
@@ -129,7 +121,6 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
         lastSync: new Map(),
         currentChallengeId: null,
         currentStage: null,
-        currentPhase: null,
         searchFilter: '',
         typeFilter: null,
         sortBy: 'position',
@@ -142,13 +133,13 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
 
         // ============ GETTERS ============
 
-        getQuestions: (challengeId, stage, phase) => {
-          const key = getCacheKey(challengeId, stage, phase);
+        getQuestions: (challengeId, stage) => {
+          const key = getCacheKey(challengeId, stage);
           return get().questionsCache.get(key) || [];
         },
 
-        getFilteredQuestions: (challengeId, stage, phase) => {
-          const questions = get().getQuestions(challengeId, stage, phase);
+        getFilteredQuestions: (challengeId, stage) => {
+          const questions = get().getQuestions(challengeId, stage);
           const { searchFilter, typeFilter, sortBy } = get();
 
           let filtered = [...questions];
@@ -181,8 +172,8 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
           return filtered;
         },
 
-        isCacheValid: (challengeId, stage, phase, maxAge = 5 * 60 * 1000) => {
-          const key = getCacheKey(challengeId, stage, phase);
+        isCacheValid: (challengeId, stage, maxAge = 5 * 60 * 1000) => {
+          const key = getCacheKey(challengeId, stage);
           const lastSync = get().lastSync.get(key);
 
           if (!lastSync) return false;
@@ -193,9 +184,9 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
 
         // ============ CACHE ACTIONS ============
 
-        hydrateFromServer: (challengeId, stage, phase, questions) =>
+        hydrateFromServer: (challengeId, stage, questions) =>
           set((state) => {
-            const key = getCacheKey(challengeId, stage, phase);
+            const key = getCacheKey(challengeId, stage);
             state.questionsCache.set(key, questions);
             state.lastSync.set(key, Date.now());
           }),
@@ -204,8 +195,7 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
           set((state) => {
             const key = getCacheKey(
               question.challengeId,
-              question.stage,
-              question.phase
+              question.stage
             );
             const existing = state.questionsCache.get(key) || [];
             state.questionsCache.set(key, [...existing, question]);
@@ -234,9 +224,9 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
             }
           }),
 
-        invalidateCache: (challengeId, stage, phase) =>
+        invalidateCache: (challengeId, stage) =>
           set((state) => {
-            if (!stage && !phase) {
+            if (!stage) {
               // Invalidate entire challenge
               const keysToRemove: string[] = [];
               for (const key of state.questionsCache.keys()) {
@@ -248,22 +238,9 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
                 state.questionsCache.delete(key);
                 state.lastSync.delete(key);
               });
-            } else if (stage && !phase) {
-              // Invalidate entire stage
-              const keyPrefix = `${challengeId}:${stage}:`;
-              const keysToRemove: string[] = [];
-              for (const key of state.questionsCache.keys()) {
-                if (key.startsWith(keyPrefix)) {
-                  keysToRemove.push(key);
-                }
-              }
-              keysToRemove.forEach((key) => {
-                state.questionsCache.delete(key);
-                state.lastSync.delete(key);
-              });
-            } else if (stage && phase) {
-              // Invalidate specific phase
-              const key = getCacheKey(challengeId, stage, phase);
+            } else {
+              // Invalidate specific stage
+              const key = getCacheKey(challengeId, stage);
               state.questionsCache.delete(key);
               state.lastSync.delete(key);
             }
@@ -273,7 +250,6 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
 
         setCurrentChallengeId: (id) => set({ currentChallengeId: id }),
         setCurrentStage: (stage) => set({ currentStage: stage }),
-        setCurrentPhase: (phase) => set({ currentPhase: phase }),
         setSearchFilter: (search) => set({ searchFilter: search }),
         setTypeFilter: (type) => set({ typeFilter: type }),
         setSortBy: (sort) => set({ sortBy: sort }),

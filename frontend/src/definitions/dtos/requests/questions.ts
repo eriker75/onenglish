@@ -14,7 +14,6 @@ import {
 export interface BaseCreateQuestionDto {
   challengeId: string;
   stage: QuestionStage;
-  phase: string;
   points: number;
   timeLimit?: number; // Default: 60
   maxAttempts?: number; // Default: 1
@@ -177,7 +176,6 @@ export interface UpdateQuestionDto {
   instructions?: string;
   timeLimit?: number;
   points?: number;
-  phase?: string;
   content?: unknown;
   options?: unknown;
   answer?: unknown;
@@ -254,6 +252,5 @@ export interface BulkUpdateQuestionsDto {
 export interface GetQuestionsFilters {
   challengeId?: string;
   stage?: QuestionStage;
-  phase?: string;
   type?: QuestionType;
 }

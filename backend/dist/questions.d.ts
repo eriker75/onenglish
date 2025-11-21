@@ -24,7 +24,6 @@ export declare const IMAGE_TO_MULTIPLE_CHOICES: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -65,7 +64,6 @@ export declare const WORDBOX: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -96,7 +94,6 @@ export declare const SPELLING: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -122,7 +119,6 @@ export declare const WORD_ASSOCIATIONS: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -150,7 +146,6 @@ export declare const UNSCRAMBLE: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -174,7 +169,6 @@ export declare const TENSES: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -198,7 +192,6 @@ export declare const TAG_IT: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -224,7 +217,6 @@ export declare const REPORT_IT: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -251,7 +243,6 @@ export declare const READ_IT: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: string;
@@ -284,7 +275,6 @@ export declare const WORD_MATCH: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -311,7 +301,6 @@ export declare const GOSSIP: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -338,7 +327,6 @@ export declare const TOPIC_BASED_AUDIO: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: string;
@@ -371,7 +359,6 @@ export declare const LYRICS_TRAINING: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -398,7 +385,6 @@ export declare const SENTENCE_MAKER: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -424,7 +410,6 @@ export declare const FAST_TEST: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -451,7 +436,6 @@ export declare const TALES: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -478,7 +462,6 @@ export declare const SUPERBRAIN: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -500,7 +483,6 @@ export declare const TELL_ME_ABOUT_IT: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -524,7 +506,6 @@ export declare const DEBATE: {
     example: {
         challengeId: string;
         stage: string;
-        phase: string;
         position: number;
         type: string;
         points: number;
@@ -542,7 +523,6 @@ export declare const DEBATE: {
 export interface QuestionTemplate {
     challengeId: string;
     stage: QuestionStage;
-    phase: string;
     position: number;
     type: string;
     points: number;

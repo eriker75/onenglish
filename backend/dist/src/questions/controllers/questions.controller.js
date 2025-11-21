@@ -115,13 +115,13 @@ let QuestionsController = class QuestionsController {
     createDebate(dto) {
         return this.questionsService.createDebate(dto);
     }
-    findAll(challengeId, stage, phase) {
-        return this.questionsService.findAll({ challengeId, stage, phase });
+    findAll(challengeId, stage) {
+        return this.questionsService.findAll({ challengeId, stage });
     }
-    findByChallengeId(challengeId, stage, phase) {
+    findByChallengeId(challengeId, stage, type) {
         return this.questionsService.findByChallengeId(challengeId, {
             stage,
-            phase,
+            type,
         });
     }
     getSchoolStats(schoolId, questionId) {
@@ -518,7 +518,7 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all questions with optional filters',
-        description: 'Retrieves all root-level questions (without parent) with optional filters by challengeId, stage, or phase.',
+        description: 'Retrieves all root-level questions (without parent) with optional filters by challengeId or stage.',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'challengeId',
@@ -531,11 +531,6 @@ __decorate([
         enum: client_1.QuestionStage,
         description: 'Filter by question stage',
     }),
-    (0, swagger_1.ApiQuery)({
-        name: 'phase',
-        required: false,
-        description: 'Filter by phase identifier',
-    }),
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'Returns filtered questions with sub-questions included',
@@ -543,16 +538,15 @@ __decorate([
     }),
     __param(0, (0, common_1.Query)('challengeId')),
     __param(1, (0, common_1.Query)('stage')),
-    __param(2, (0, common_1.Query)('phase')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], QuestionsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('challenge/:challengeId'),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all questions for a specific challenge',
-        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or phase. Each question is formatted according to its type for optimal frontend consumption.',
+        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or type. Each question is formatted according to its type for optimal frontend consumption.',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'stage',
@@ -561,9 +555,9 @@ __decorate([
         description: 'Filter by question stage (optional)',
     }),
     (0, swagger_1.ApiQuery)({
-        name: 'phase',
+        name: 'type',
         required: false,
-        description: 'Filter by phase identifier (optional)',
+        description: 'Filter by question type (optional)',
     }),
     (0, swagger_1.ApiResponse)({
         status: 200,
@@ -576,7 +570,7 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('challengeId')),
     __param(1, (0, common_1.Query)('stage')),
-    __param(2, (0, common_1.Query)('phase')),
+    __param(2, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)

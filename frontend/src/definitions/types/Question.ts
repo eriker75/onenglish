@@ -76,7 +76,6 @@ export interface Question {
   id: string;
   challengeId: string;
   stage: QuestionStage;
-  phase: string;
   position: number;
   type: QuestionType;
   points: number;

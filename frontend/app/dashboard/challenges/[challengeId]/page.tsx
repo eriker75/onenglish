@@ -8,7 +8,7 @@ import OlympicStepper from "@/components/OlympicStepper";
 import ChallengeForm, {
   Question,
 } from "@/app/dashboard/challenges/[challengeId]/components/ChallengeForm";
-import StagePhaseNavigation from "@/app/dashboard/challenges/[challengeId]/components/StagePhaseNavigation";
+import QuestionTypeNavigation from "./components/QuestionTypeNavigation";
 import { QuestionType } from "./components/questionTypes";
 import { getDemoChallenges } from "@/src/data/demo-data";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
@@ -92,14 +92,14 @@ export default function ChallengeEditPage() {
   }, [isLoading, stages.length, addStage]);
 
   const handleAddQuestion = (area: string, questionType?: QuestionType) => {
-    const { currentStage, currentPhase } = useChallengeFormUIStore.getState();
-    
+    const { currentStage } = useChallengeFormUIStore.getState();
+
     // Default question text based on question type
     let defaultQuestionText = "";
     if (questionType?.id === "image_to_multiple_choice_text") {
       defaultQuestionText = "Select the correct word for the image";
     }
-    
+
     const newQuestion: Question = {
       id: `q-${Date.now()}-${Math.random()}`,
       question: defaultQuestionText,
@@ -107,7 +107,6 @@ export default function ChallengeEditPage() {
       questionTypeName: questionType?.name || "Multiple Choice",
       options: ["", "", "", ""],
       correctAnswer: "",
-      phase: currentPhase || undefined,
       stage: currentStage || undefined,
     };
 
@@ -219,8 +218,8 @@ export default function ChallengeEditPage() {
           <OlympicStepper />
         </div>
 
-        {/* Stage and Phase Navigation */}
-        <StagePhaseNavigation />
+        {/* Question Type Navigation */}
+        <QuestionTypeNavigation questionsByArea={questionsByArea} />
 
         {/* Form Content */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">

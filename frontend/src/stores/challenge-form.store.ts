@@ -37,7 +37,6 @@ export interface Question {
   id?: string;
   challengeId?: string;
   stage: QuestionStage;
-  phase: string;
   position: number;
   type: string;
   points: number;
@@ -83,9 +82,8 @@ export const STAGES_CONFIG: Record<
 interface ChallengeFormState {
   // Core state
   challenge: Partial<Challenge>;
-  stages: Map<QuestionStage, Map<string, Question[]>>;
+  stages: Map<QuestionStage, Question[]>;
   currentStage: QuestionStage | null;
-  currentPhase: string | null;
   isDirty: boolean;
   validationErrors: Record<string, string[]>;
   mediaPreviewCache: Map<string, MediaPreview>;
@@ -101,145 +99,107 @@ interface ChallengeFormActions {
 
   // ==================== NAVIGATION ====================
   setCurrentStage: (stage: QuestionStage) => void;
-  setCurrentPhase: (phase: string) => void;
 
   // ==================== QUESTION CRUD ====================
-  addQuestion: (
-    stage: QuestionStage,
-    phase: string,
-    question: Question,
-  ) => void;
+  addQuestion: (stage: QuestionStage, question: Question) => void;
   updateQuestion: (
     stage: QuestionStage,
-    phase: string,
     questionIndex: number,
     updates: Partial<Question>,
   ) => void;
-  removeQuestion: (
-    stage: QuestionStage,
-    phase: string,
-    questionIndex: number,
-  ) => void;
+  removeQuestion: (stage: QuestionStage, questionIndex: number) => void;
   moveQuestion: (
     stage: QuestionStage,
-    phase: string,
     fromIndex: number,
     toIndex: number,
   ) => void;
-
-  // ==================== PHASE MANAGEMENT ====================
-  addPhase: (stage: QuestionStage, phase: string) => void;
-  removePhase: (stage: QuestionStage, phase: string) => void;
-  bulkAddQuestions: (
-    stage: QuestionStage,
-    phase: string,
-    questions: Question[],
-  ) => void;
+  bulkAddQuestions: (stage: QuestionStage, questions: Question[]) => void;
 
   // ==================== SPECIALIZED QUESTION METHODS ====================
   // VOCABULARY
   addImageToMultipleChoices: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addWordbox: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addSpelling: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addWordAssociations: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
 
   // GRAMMAR
   addUnscramble: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addTenses: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addTagIt: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addReportIt: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addReadIt: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
 
   // LISTENING
   addWordMatch: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addGossip: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addTopicBasedAudio: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addLyricsTraining: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
 
   // WRITING
   addSentenceMaker: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addFastTest: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addTales: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
 
   // SPEAKING
   addSuperbrain: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addTellMeAboutIt: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
   addDebate: (
     stage: QuestionStage,
-    phase: string,
-    data: Omit<Question, "type" | "stage" | "phase" | "position">,
+    data: Omit<Question, "type" | "stage" | "position">,
   ) => void;
 
   // ==================== MEDIA MANAGEMENT ====================
@@ -254,13 +214,11 @@ interface ChallengeFormActions {
   clearAllMediaPreviews: () => void;
 
   // ==================== GETTERS ====================
-  getStageQuestions: (stage: QuestionStage) => Map<string, Question[]>;
-  getPhaseQuestions: (stage: QuestionStage, phase: string) => Question[];
+  getStageQuestions: (stage: QuestionStage) => Question[];
+  getQuestionsByType: (stage: QuestionStage, type: string) => Question[];
   getAllQuestions: () => Question[];
   getQuestionCount: () => number;
   getTotalPoints: () => number;
-  getPhaseCount: (stage: QuestionStage) => number;
-  getAllPhases: (stage: QuestionStage) => string[];
 
   // ==================== VALIDATION ====================
   validateChallenge: () => boolean;
@@ -289,9 +247,8 @@ const initialState: ChallengeFormState = {
     isPublished: false,
     isActive: true,
   },
-  stages: new Map<QuestionStage, Map<string, Question[]>>(),
+  stages: new Map<QuestionStage, Question[]>(),
   currentStage: null,
-  currentPhase: null,
   isDirty: false,
   validationErrors: {},
   mediaPreviewCache: new Map<string, MediaPreview>(),
@@ -329,36 +286,20 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         set((state) => {
           state.currentStage = stage;
           if (!state.stages.has(stage)) {
-            state.stages.set(stage, new Map<string, Question[]>());
+            state.stages.set(stage, []);
           }
-        });
-      },
-
-      setCurrentPhase: (phase: string) => {
-        set((state) => {
-          state.currentPhase = phase;
         });
       },
 
       // ==================== QUESTION CRUD ====================
 
-      addQuestion: (
-        stage: QuestionStage,
-        phase: string,
-        question: Question,
-      ) => {
+      addQuestion: (stage: QuestionStage, question: Question) => {
         set((state) => {
           if (!state.stages.has(stage)) {
-            state.stages.set(stage, new Map<string, Question[]>());
+            state.stages.set(stage, []);
           }
 
-          const stageMap = state.stages.get(stage)!;
-
-          if (!stageMap.has(phase)) {
-            stageMap.set(phase, []);
-          }
-
-          const questions = stageMap.get(phase)!;
+          const questions = state.stages.get(stage)!;
           const maxPosition = questions.reduce(
             (max: number, q: Question) => Math.max(max, q.position),
             0,
@@ -367,7 +308,6 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
           questions.push({
             ...question,
             stage,
-            phase,
             position: maxPosition + 1,
           });
 
@@ -375,9 +315,9 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         });
       },
 
-      updateQuestion: (stage, phase, questionIndex, updates) => {
+      updateQuestion: (stage, questionIndex, updates) => {
         set((state) => {
-          const questions = state.stages.get(stage)?.get(phase);
+          const questions = state.stages.get(stage);
           if (questions && questions[questionIndex]) {
             questions[questionIndex] = {
               ...questions[questionIndex],
@@ -388,9 +328,9 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         });
       },
 
-      removeQuestion: (stage, phase, questionIndex) => {
+      removeQuestion: (stage, questionIndex) => {
         set((state) => {
-          const questions = state.stages.get(stage)?.get(phase);
+          const questions = state.stages.get(stage);
           if (questions) {
             questions.splice(questionIndex, 1);
             questions.forEach((q: Question, idx: number) => {
@@ -401,9 +341,9 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         });
       },
 
-      moveQuestion: (stage, phase, fromIndex, toIndex) => {
+      moveQuestion: (stage, fromIndex, toIndex) => {
         set((state) => {
-          const questions = state.stages.get(stage)?.get(phase);
+          const questions = state.stages.get(stage);
           if (
             questions &&
             fromIndex >= 0 &&
@@ -421,43 +361,13 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         });
       },
 
-      // ==================== PHASE MANAGEMENT ====================
-
-      addPhase: (stage: QuestionStage, phase: string) => {
+      bulkAddQuestions: (stage, questions) => {
         set((state) => {
           if (!state.stages.has(stage)) {
-            state.stages.set(stage, new Map<string, Question[]>());
-          }
-          const stageMap = state.stages.get(stage)!;
-          if (!stageMap.has(phase)) {
-            stageMap.set(phase, []);
-            state.isDirty = true;
-          }
-        });
-      },
-
-      removePhase: (stage: QuestionStage, phase: string) => {
-        set((state) => {
-          const stageMap = state.stages.get(stage);
-          if (stageMap?.has(phase)) {
-            stageMap.delete(phase);
-            state.isDirty = true;
-          }
-        });
-      },
-
-      bulkAddQuestions: (stage, phase, questions) => {
-        set((state) => {
-          if (!state.stages.has(stage)) {
-            state.stages.set(stage, new Map<string, Question[]>());
+            state.stages.set(stage, []);
           }
 
-          const stageMap = state.stages.get(stage)!;
-          if (!stageMap.has(phase)) {
-            stageMap.set(phase, []);
-          }
-
-          const existingQuestions = stageMap.get(phase)!;
+          const existingQuestions = state.stages.get(stage)!;
           const maxPosition = existingQuestions.reduce(
             (max: number, q: Question) => Math.max(max, q.position),
             0,
@@ -467,7 +377,6 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
             existingQuestions.push({
               ...q,
               stage,
-              phase,
               position: maxPosition + idx + 1,
             });
           });
@@ -479,135 +388,135 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
       // ==================== SPECIALIZED QUESTION METHODS ====================
 
       // VOCABULARY
-      addImageToMultipleChoices: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addImageToMultipleChoices: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "image_to_multiple_choices",
         } as Question);
       },
 
-      addWordbox: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addWordbox: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "wordbox",
         } as Question);
       },
 
-      addSpelling: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addSpelling: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "spelling",
         } as Question);
       },
 
-      addWordAssociations: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addWordAssociations: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "word_associations",
         } as Question);
       },
 
       // GRAMMAR
-      addUnscramble: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addUnscramble: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "unscramble",
         } as Question);
       },
 
-      addTenses: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addTenses: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "tenses",
         } as Question);
       },
 
-      addTagIt: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addTagIt: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "tag_it",
         } as Question);
       },
 
-      addReportIt: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addReportIt: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "report_it",
         } as Question);
       },
 
-      addReadIt: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addReadIt: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "read_it",
         } as Question);
       },
 
       // LISTENING
-      addWordMatch: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addWordMatch: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "word_match",
         } as Question);
       },
 
-      addGossip: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addGossip: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "gossip",
         } as Question);
       },
 
-      addTopicBasedAudio: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addTopicBasedAudio: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "topic_based_audio",
         } as Question);
       },
 
-      addLyricsTraining: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addLyricsTraining: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "lyrics_training",
         } as Question);
       },
 
       // WRITING
-      addSentenceMaker: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addSentenceMaker: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "sentence_maker",
         } as Question);
       },
 
-      addFastTest: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addFastTest: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "fast_test",
         } as Question);
       },
 
-      addTales: (stage, phase, data) => {
-        get().addQuestion(stage, phase, { ...data, type: "tales" } as Question);
+      addTales: (stage, data) => {
+        get().addQuestion(stage, { ...data, type: "tales" } as Question);
       },
 
       // SPEAKING
-      addSuperbrain: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addSuperbrain: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "superbrain",
         } as Question);
       },
 
-      addTellMeAboutIt: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addTellMeAboutIt: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "tell_me_about_it",
         } as Question);
       },
 
-      addDebate: (stage, phase, data) => {
-        get().addQuestion(stage, phase, {
+      addDebate: (stage, data) => {
+        get().addQuestion(stage, {
           ...data,
           type: "debate",
         } as Question);
@@ -658,29 +567,25 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
       // ==================== GETTERS ====================
 
       getStageQuestions: (stage: QuestionStage) => {
-        return get().stages.get(stage) || new Map<string, Question[]>();
+        return get().stages.get(stage) || [];
       },
 
-      getPhaseQuestions: (stage: QuestionStage, phase: string) => {
-        return get().stages.get(stage)?.get(phase) || [];
+      getQuestionsByType: (stage: QuestionStage, type: string) => {
+        const questions = get().stages.get(stage) || [];
+        return questions.filter((q) => q.type === type);
       },
 
       getAllQuestions: () => {
         const allQuestions: Question[] = [];
         const { stages } = get();
 
-        stages.forEach((phaseMap) => {
-          phaseMap.forEach((questions) => {
-            allQuestions.push(...questions);
-          });
+        stages.forEach((questions) => {
+          allQuestions.push(...questions);
         });
 
         return allQuestions.sort((a, b) => {
           if (a.stage !== b.stage) {
             return STAGES_CONFIG[a.stage].order - STAGES_CONFIG[b.stage].order;
-          }
-          if (a.phase !== b.phase) {
-            return a.phase.localeCompare(b.phase);
           }
           return a.position - b.position;
         });
@@ -694,15 +599,6 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
         return get()
           .getAllQuestions()
           .reduce((sum, q) => sum + q.points, 0);
-      },
-
-      getPhaseCount: (stage: QuestionStage) => {
-        return get().stages.get(stage)?.size || 0;
-      },
-
-      getAllPhases: (stage: QuestionStage) => {
-        const stageMap = get().stages.get(stage);
-        return stageMap ? Array.from(stageMap.keys()) : [];
       },
 
       // ==================== VALIDATION ====================
@@ -740,7 +636,7 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
 
       validateStage: (stage: QuestionStage) => {
         const stageQuestions = get().getStageQuestions(stage);
-        return stageQuestions.size > 0;
+        return stageQuestions.length > 0;
       },
 
       clearValidationErrors: () => {
@@ -754,9 +650,8 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
       reset: () => {
         set((state) => {
           state.challenge = initialState.challenge;
-          state.stages = new Map<QuestionStage, Map<string, Question[]>>();
+          state.stages = new Map<QuestionStage, Question[]>();
           state.currentStage = null;
-          state.currentPhase = null;
           state.isDirty = false;
           state.validationErrors = {};
           state.mediaPreviewCache = new Map<string, MediaPreview>();
@@ -770,23 +665,14 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
 
           questions.forEach((q) => {
             if (!state.stages.has(q.stage)) {
-              state.stages.set(q.stage, new Map<string, Question[]>());
+              state.stages.set(q.stage, []);
             }
 
-            const stageMap = state.stages.get(q.stage)!;
-            if (!stageMap.has(q.phase)) {
-              stageMap.set(q.phase, []);
-            }
-
-            stageMap.get(q.phase)!.push(q);
+            state.stages.get(q.stage)!.push(q);
           });
 
-          state.stages.forEach((phaseMap: Map<string, Question[]>) => {
-            phaseMap.forEach((questions: Question[]) => {
-              questions.sort(
-                (a: Question, b: Question) => a.position - b.position,
-              );
-            });
+          state.stages.forEach((questions: Question[]) => {
+            questions.sort((a: Question, b: Question) => a.position - b.position);
           });
 
           state.isDirty = false;
@@ -815,17 +701,8 @@ export const useChallengeFormStore = create<ChallengeFormStore>()(
 export const useStageState = (stage: QuestionStage) => {
   return useChallengeFormStore((state) => ({
     questions: state.getStageQuestions(stage),
-    phases: state.getAllPhases(stage),
-    phaseCount: state.getPhaseCount(stage),
+    questionCount: state.getStageQuestions(stage).length,
     isCurrentStage: state.currentStage === stage,
-  }));
-};
-
-// Hook para obtener el estado de una fase específica
-export const usePhaseState = (stage: QuestionStage, phase: string) => {
-  return useChallengeFormStore((state) => ({
-    questions: state.getPhaseQuestions(stage, phase),
-    isCurrentPhase: state.currentPhase === phase,
   }));
 };
 

@@ -18,7 +18,6 @@ export declare class QuestionUpdateService {
     updateQuestionOptions(questionId: string, options: any): Promise<any>;
     updateQuestionAnswer(questionId: string, answer: any): Promise<any>;
     updateQuestionPosition(questionId: string, position: number): Promise<any>;
-    updateQuestionPhase(questionId: string, phase: string): Promise<any>;
     bulkUpdateQuestions(updates: {
         questionId: string;
         data: any;

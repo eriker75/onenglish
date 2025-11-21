@@ -20,7 +20,7 @@ export class QuestionsQueryController {
   @ApiOperation({
     summary: 'Get all questions with optional filters',
     description:
-      'Retrieves all root-level questions (without parent) with optional filters by challengeId, stage, or phase.',
+      'Retrieves all root-level questions (without parent) with optional filters by challengeId or stage.',
   })
   @ApiQuery({
     name: 'challengeId',
@@ -33,11 +33,6 @@ export class QuestionsQueryController {
     enum: QuestionStage,
     description: 'Filter by question stage',
   })
-  @ApiQuery({
-    name: 'phase',
-    required: false,
-    description: 'Filter by phase identifier (e.g., "phase_1", "phase_2")',
-  })
   @ApiResponse({
     status: 200,
     description: 'Returns filtered questions with sub-questions included',
@@ -46,27 +41,21 @@ export class QuestionsQueryController {
   findAll(
     @Query('challengeId') challengeId?: string,
     @Query('stage') stage?: QuestionStage,
-    @Query('phase') phase?: string,
   ) {
-    return this.questionsService.findAll({ challengeId, stage, phase });
+    return this.questionsService.findAll({ challengeId, stage });
   }
 
   @Get('challenge/:challengeId')
   @ApiOperation({
     summary: 'Get all questions for a specific challenge',
     description:
-      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage, phase, or type. Each question is formatted according to its type for optimal frontend consumption.',
+      'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or type. Each question is formatted according to its type for optimal frontend consumption.',
   })
   @ApiQuery({
     name: 'stage',
     required: false,
     enum: QuestionStage,
     description: 'Filter by question stage (optional)',
-  })
-  @ApiQuery({
-    name: 'phase',
-    required: false,
-    description: 'Filter by phase identifier (optional)',
   })
   @ApiQuery({
     name: 'type',
@@ -85,21 +74,16 @@ export class QuestionsQueryController {
   findByChallengeId(
     @Param('challengeId') challengeId: string,
     @Query('stage') stage?: QuestionStage,
-    @Query('phase') phase?: string,
     @Query('type') type?: string,
   ) {
     const filters: {
       stage?: QuestionStage;
-      phase?: string;
       type?: string;
     } = {};
 
     // Only add filters if they have valid non-empty values
     if (stage) {
       filters.stage = stage;
-    }
-    if (phase && phase.trim() !== '') {
-      filters.phase = phase;
     }
     if (type && type.trim() !== '') {
       filters.type = type;

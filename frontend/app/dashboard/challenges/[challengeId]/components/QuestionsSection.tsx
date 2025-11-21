@@ -35,7 +35,6 @@ export interface Question {
   questionTypeName?: string;
   options?: string[];
   correctAnswer?: string;
-  phase?: string; // Phase within the stage
   stage?: string; // Stage name
 }
 
@@ -92,28 +91,28 @@ export default function QuestionsSection({
   onQuestionChange,
   onOptionChange,
 }: QuestionsSectionProps) {
-  const { currentStage, currentPhase } = useChallengeFormUIStore();
+  const { currentStage, currentQuestionType, setCurrentQuestionType } = useChallengeFormUIStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedQuestionType, setSelectedQuestionType] = useState<QuestionType | null>(null);
   const [newQuestionData, setNewQuestionData] = useState<any>({});
   const [pendingQuestionData, setPendingQuestionData] = useState<{data: any, previousLength: number} | null>(null);
-  
-  // Filter questions by current phase if phase is set
+
+  // Filter questions by selected type from store
   const filteredQuestions = React.useMemo(() => {
-    if (!currentPhase) {
-      // If no phase selected, return empty (should always have a phase)
-      return [];
+    if (!currentQuestionType) {
+      return questions; // Show all questions if no type filter selected
     }
-    // Filter questions by phase - questions must match current phase
-    return questions.filter((q: Question) => {
-      // Question must match current phase
-      return q.phase === currentPhase;
-    });
-  }, [questions, currentPhase]);
+    return questions.filter((q) => q.type === currentQuestionType);
+  }, [questions, currentQuestionType]);
   
   const previousQuestionsLengthRef = React.useRef(filteredQuestions.length);
-  
+
   const totalPages = filteredQuestions.length || 1;
+
+  // Reset to page 1 when question type filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentQuestionType]);
 
   // When a new question is added and we have pending data, update it
   useEffect(() => {
@@ -187,18 +186,16 @@ export default function QuestionsSection({
       // Store the data and previous length before adding
       const dataToSave = { ...newQuestionData };
       const currentQuestionsLength = filteredQuestions.length;
-      
+
       // Set pending data to be applied when question is added
       setPendingQuestionData({
         data: dataToSave,
         previousLength: currentQuestionsLength
       });
-      
+
       // Add question via the parent handler (this creates the question in state)
-      // Include phase information if available
-      const questionData = currentPhase ? { phase: currentPhase, ...dataToSave } : dataToSave;
       onAddQuestion(area, selectedQuestionType);
-      
+
       // The useEffect will handle updating the question data and navigating to grid
     }
   };
@@ -229,28 +226,46 @@ export default function QuestionsSection({
     <div className="space-y-6">
       {/* Header with Title and Pagination */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">{area} Questions</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-gray-900">{area} Questions</h2>
+            
+            {/* Close button (X) - show when viewing a specific question */}
+            {!isShowingQuestionForm && !isShowingGrid && currentQuestion && (
+              <button
+                onClick={() => {
+                  // Clear question type filter and navigate to grid
+                  setCurrentQuestionType(null);
+                  setCurrentPage(filteredQuestions.length + 1);
+                }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                title="Close question view and return to grid"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
           <p className="text-gray-600 mt-1">
-            {(() => {
-              const formatPhaseName = (phaseName: string | null): string => {
-                if (!phaseName) return "";
-                if (phaseName.startsWith("phase_")) {
-                  const number = phaseName.replace("phase_", "");
-                  return `Phase ${number}`;
-                }
-                return phaseName;
-              };
-              const phaseDisplay = currentPhase ? formatPhaseName(currentPhase) : "";
-              
-              return isShowingQuestionForm 
-                ? `Creating new ${selectedQuestionType?.name || "question"}${phaseDisplay ? ` in ${phaseDisplay}` : ""}`
-                : isShowingGrid
-                ? filteredQuestions.length === 0
-                  ? `Start building your question set by selecting a type${phaseDisplay ? ` for ${phaseDisplay}` : ""}`
-                  : `Select a question type to add another question${phaseDisplay ? ` to ${phaseDisplay}` : ""}`
-                : `Manage and edit your ${filteredQuestions.length} ${filteredQuestions.length === 1 ? "question" : "questions"}${phaseDisplay ? ` in ${phaseDisplay}` : ""}`;
-            })()}
+            {isShowingQuestionForm
+              ? `Creating new ${selectedQuestionType?.name || "question"}`
+              : isShowingGrid
+              ? filteredQuestions.length === 0
+                ? `Start building your question set by selecting a type`
+                : `Select a question type to add another question`
+              : `Manage and edit your ${filteredQuestions.length} ${filteredQuestions.length === 1 ? "question" : "questions"}`}
           </p>
         </div>
         

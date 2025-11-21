@@ -23,16 +23,13 @@ let QuestionsQueryController = class QuestionsQueryController {
     constructor(questionsService) {
         this.questionsService = questionsService;
     }
-    findAll(challengeId, stage, phase) {
-        return this.questionsService.findAll({ challengeId, stage, phase });
+    findAll(challengeId, stage) {
+        return this.questionsService.findAll({ challengeId, stage });
     }
-    findByChallengeId(challengeId, stage, phase, type) {
+    findByChallengeId(challengeId, stage, type) {
         const filters = {};
         if (stage) {
             filters.stage = stage;
-        }
-        if (phase && phase.trim() !== '') {
-            filters.phase = phase;
         }
         if (type && type.trim() !== '') {
             filters.type = type;
@@ -51,7 +48,7 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all questions with optional filters',
-        description: 'Retrieves all root-level questions (without parent) with optional filters by challengeId, stage, or phase.',
+        description: 'Retrieves all root-level questions (without parent) with optional filters by challengeId or stage.',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'challengeId',
@@ -64,11 +61,6 @@ __decorate([
         enum: client_1.QuestionStage,
         description: 'Filter by question stage',
     }),
-    (0, swagger_1.ApiQuery)({
-        name: 'phase',
-        required: false,
-        description: 'Filter by phase identifier (e.g., "phase_1", "phase_2")',
-    }),
     (0, swagger_1.ApiResponse)({
         status: 200,
         description: 'Returns filtered questions with sub-questions included',
@@ -76,27 +68,21 @@ __decorate([
     }),
     __param(0, (0, common_1.Query)('challengeId')),
     __param(1, (0, common_1.Query)('stage')),
-    __param(2, (0, common_1.Query)('phase')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], QuestionsQueryController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('challenge/:challengeId'),
     (0, swagger_1.ApiOperation)({
         summary: 'Get all questions for a specific challenge',
-        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage, phase, or type. Each question is formatted according to its type for optimal frontend consumption.',
+        description: 'Retrieves all active, non-deleted questions for a challenge with optional filters by stage or type. Each question is formatted according to its type for optimal frontend consumption.',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'stage',
         required: false,
         enum: client_1.QuestionStage,
         description: 'Filter by question stage (optional)',
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'phase',
-        required: false,
-        description: 'Filter by phase identifier (optional)',
     }),
     (0, swagger_1.ApiQuery)({
         name: 'type',
@@ -114,10 +100,9 @@ __decorate([
     }),
     __param(0, (0, common_1.Param)('challengeId')),
     __param(1, (0, common_1.Query)('stage')),
-    __param(2, (0, common_1.Query)('phase')),
-    __param(3, (0, common_1.Query)('type')),
+    __param(2, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], QuestionsQueryController.prototype, "findByChallengeId", null);
 __decorate([

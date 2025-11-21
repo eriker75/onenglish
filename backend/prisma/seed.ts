@@ -1015,7 +1015,6 @@ async function seedPostgreSQL() {
         data: {
           challengeId,
           stage,
-          phase: `phase_1_${faker.number.int({ min: 1, max: 5 })}`,
           position: i + 1,
           type,
           points: faker.number.int({ min: 8, max: 15 }),
@@ -1069,7 +1068,6 @@ async function seedPostgreSQL() {
         data: {
           challengeId,
           stage,
-          phase: `phase_2_${faker.number.int({ min: 1, max: 5 })}`,
           position: i + 1,
           type,
           points: faker.number.int({ min: 10, max: 18 }),
@@ -1120,7 +1118,6 @@ async function seedPostgreSQL() {
         data: {
           challengeId,
           stage,
-          phase: `phase_3_${faker.number.int({ min: 1, max: 4 })}`,
           position: i + 1,
           type,
           points: faker.number.int({ min: 12, max: 20 }),
@@ -1169,7 +1166,6 @@ async function seedPostgreSQL() {
         data: {
           challengeId,
           stage,
-          phase: `phase_4_${faker.number.int({ min: 1, max: 3 })}`,
           position: i + 1,
           type,
           points: faker.number.int({ min: 15, max: 25 }),
@@ -1213,7 +1209,6 @@ async function seedPostgreSQL() {
         data: {
           challengeId,
           stage,
-          phase: `phase_5_${faker.number.int({ min: 1, max: 3 })}`,
           position: i + 1,
           type,
           points: faker.number.int({ min: 18, max: 25 }),

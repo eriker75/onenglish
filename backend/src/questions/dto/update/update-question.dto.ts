@@ -68,19 +68,7 @@ export class UpdateQuestionDto {
   stage?: QuestionStage;
 
   @ApiPropertyOptional({
-    description: 'Phase identifier (e.g., "phase_1", "phase_2")',
-    example: 'phase_1',
-    pattern: '^phase_\\d+$',
-  })
-  @IsOptional()
-  @IsString()
-  @Matches(/^phase_\d+$/, {
-    message: 'Phase must follow format: phase_1, phase_2, etc.',
-  })
-  phase?: string;
-
-  @ApiPropertyOptional({
-    description: 'Position within the phase',
+    description: 'Position within the challenge',
     example: 1,
     minimum: 1,
   })
@@ -154,19 +142,6 @@ export class UpdateQuestionPointsDto {
   @IsInt()
   @Min(0)
   points: number;
-}
-
-export class UpdateQuestionPhaseDto {
-  @ApiPropertyOptional({
-    description: 'New phase identifier',
-    example: 'phase_2',
-    pattern: '^phase_\\d+$',
-  })
-  @IsString()
-  @Matches(/^phase_\d+$/, {
-    message: 'Phase must follow format: phase_1, phase_2, etc.',
-  })
-  phase: string;
 }
 
 export class BulkUpdateQuestionsDto {

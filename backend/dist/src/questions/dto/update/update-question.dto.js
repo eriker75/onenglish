@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BulkUpdateQuestionsDto = exports.UpdateQuestionPhaseDto = exports.UpdateQuestionPointsDto = exports.UpdateQuestionTimeLimitDto = exports.UpdateQuestionInstructionsDto = exports.UpdateQuestionTextDto = exports.UpdateQuestionDto = void 0;
+exports.BulkUpdateQuestionsDto = exports.UpdateQuestionPointsDto = exports.UpdateQuestionTimeLimitDto = exports.UpdateQuestionInstructionsDto = exports.UpdateQuestionTextDto = exports.UpdateQuestionDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
@@ -20,7 +20,6 @@ class UpdateQuestionDto {
     maxAttempts;
     points;
     stage;
-    phase;
     position;
     content;
     options;
@@ -90,20 +89,7 @@ __decorate([
 ], UpdateQuestionDto.prototype, "stage", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Phase identifier (e.g., "phase_1", "phase_2")',
-        example: 'phase_1',
-        pattern: '^phase_\\d+$',
-    }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^phase_\d+$/, {
-        message: 'Phase must follow format: phase_1, phase_2, etc.',
-    }),
-    __metadata("design:type", String)
-], UpdateQuestionDto.prototype, "phase", void 0);
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: 'Position within the phase',
+        description: 'Position within the challenge',
         example: 1,
         minimum: 1,
     }),
@@ -193,22 +179,6 @@ __decorate([
     (0, class_validator_1.Min)(0),
     __metadata("design:type", Number)
 ], UpdateQuestionPointsDto.prototype, "points", void 0);
-class UpdateQuestionPhaseDto {
-    phase;
-}
-exports.UpdateQuestionPhaseDto = UpdateQuestionPhaseDto;
-__decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: 'New phase identifier',
-        example: 'phase_2',
-        pattern: '^phase_\\d+$',
-    }),
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^phase_\d+$/, {
-        message: 'Phase must follow format: phase_1, phase_2, etc.',
-    }),
-    __metadata("design:type", String)
-], UpdateQuestionPhaseDto.prototype, "phase", void 0);
 class BulkUpdateQuestionsDto {
     updates;
 }

@@ -2,16 +2,10 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-# Install system dependencies (PostgreSQL client, MongoDB shell, Redis CLI)
+# Install system dependencies (PostgreSQL client, Redis CLI)
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     redis-tools \
-    wget \
-    gnupg \
-    && wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | apt-key add - \
-    && echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
-    && apt-get update \
-    && apt-get install -y mongodb-mongosh \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install dependencies

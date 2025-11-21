@@ -527,7 +527,6 @@ __decorate([
                 id: { type: 'string', example: 'ee6d6331-e681-4a50-a607-19f9b7ffbdd1' },
                 type: { type: 'string', example: 'debate' },
                 stage: { type: 'string', example: 'SPEAKING' },
-                phase: { type: 'string', example: 'phase_3' },
                 position: { type: 'number', example: 1 },
                 points: { type: 'number', example: 20 },
                 timeLimit: { type: 'number', example: 240 },

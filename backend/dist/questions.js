@@ -26,7 +26,6 @@ exports.IMAGE_TO_MULTIPLE_CHOICES = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'VOCABULARY',
-        phase: 'phase_1',
         position: 1,
         type: 'image_to_multiple_choices',
         points: 10,
@@ -67,7 +66,6 @@ exports.WORDBOX = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'VOCABULARY',
-        phase: 'phase_1',
         position: 2,
         type: 'wordbox',
         points: 15,
@@ -102,7 +100,6 @@ exports.SPELLING = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'VOCABULARY',
-        phase: 'phase_1',
         position: 3,
         type: 'spelling',
         points: 10,
@@ -128,7 +125,6 @@ exports.WORD_ASSOCIATIONS = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'VOCABULARY',
-        phase: 'phase_1',
         position: 4,
         type: 'word_associations',
         points: 15,
@@ -156,7 +152,6 @@ exports.UNSCRAMBLE = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'GRAMMAR',
-        phase: 'phase_1',
         position: 1,
         type: 'unscramble',
         points: 10,
@@ -180,7 +175,6 @@ exports.TENSES = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'GRAMMAR',
-        phase: 'phase_1',
         position: 2,
         type: 'tenses',
         points: 10,
@@ -208,7 +202,6 @@ exports.TAG_IT = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'GRAMMAR',
-        phase: 'phase_1',
         position: 3,
         type: 'tag_it',
         points: 10,
@@ -234,7 +227,6 @@ exports.REPORT_IT = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'GRAMMAR',
-        phase: 'phase_2',
         position: 4,
         type: 'report_it',
         points: 15,
@@ -261,7 +253,6 @@ exports.READ_IT = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'GRAMMAR',
-        phase: 'phase_2',
         position: 5,
         type: 'read_it',
         points: 'AUTO-CALCULATED',
@@ -304,7 +295,6 @@ exports.WORD_MATCH = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'LISTENING',
-        phase: 'phase_1',
         position: 1,
         type: 'word_match',
         points: 10,
@@ -331,7 +321,6 @@ exports.GOSSIP = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'LISTENING',
-        phase: 'phase_2',
         position: 2,
         type: 'gossip',
         points: 15,
@@ -358,7 +347,6 @@ exports.TOPIC_BASED_AUDIO = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'LISTENING',
-        phase: 'phase_2',
         position: 3,
         type: 'topic_based_audio',
         points: 'AUTO-CALCULATED',
@@ -404,7 +392,6 @@ exports.LYRICS_TRAINING = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'LISTENING',
-        phase: 'phase_3',
         position: 4,
         type: 'lyrics_training',
         points: 10,
@@ -431,7 +418,6 @@ exports.SENTENCE_MAKER = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'WRITING',
-        phase: 'phase_2',
         position: 1,
         type: 'sentence_maker',
         points: 15,
@@ -453,11 +439,10 @@ exports.FAST_TEST = {
     contentStructure: 'array of sentence parts',
     hasOptions: true,
     hasFixedAnswer: true,
-    note: 'Create multiple independent questions grouped by phase (no sub-questions)',
+    note: 'Create multiple independent questions (no sub-questions)',
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'WRITING',
-        phase: 'phase_1',
         position: 1,
         type: 'fast_test',
         points: 5,
@@ -484,7 +469,6 @@ exports.TALES = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'WRITING',
-        phase: 'phase_3',
         position: 2,
         type: 'tales',
         points: 20,
@@ -511,7 +495,6 @@ exports.SUPERBRAIN = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'SPEAKING',
-        phase: 'phase_2',
         position: 1,
         type: 'superbrain',
         points: 20,
@@ -533,7 +516,6 @@ exports.TELL_ME_ABOUT_IT = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'SPEAKING',
-        phase: 'phase_3',
         position: 2,
         type: 'tell_me_about_it',
         points: 25,
@@ -557,7 +539,6 @@ exports.DEBATE = {
     example: {
         challengeId: 'uuid-challenge-1',
         stage: 'SPEAKING',
-        phase: 'phase_3',
         position: 3,
         type: 'debate',
         points: 30,

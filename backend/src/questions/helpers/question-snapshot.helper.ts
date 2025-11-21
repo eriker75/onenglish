@@ -12,7 +12,6 @@ export interface QuestionSnapshot {
   timeLimit: number;
   maxAttempts: number;
   stage: string;
-  phase: string;
   // Optional fields that may exist depending on question type
   content?: any;
   options?: any;
@@ -35,7 +34,6 @@ export function createQuestionSnapshot(question: Question): QuestionSnapshot {
     timeLimit: question.timeLimit,
     maxAttempts: question.maxAttempts,
     stage: question.stage,
-    phase: question.phase,
     // Only include these if they exist
     ...(question.content && { content: question.content }),
     ...(question.options && { options: question.options }),
@@ -61,8 +59,7 @@ export function isValidQuestionSnapshot(
     typeof snapshot.points === 'number' &&
     typeof snapshot.timeLimit === 'number' &&
     typeof snapshot.maxAttempts === 'number' &&
-    typeof snapshot.stage === 'string' &&
-    typeof snapshot.phase === 'string'
+    typeof snapshot.stage === 'string'
   );
 }
 
@@ -82,7 +79,6 @@ export function reconstructQuestionFromSnapshot(snapshot: QuestionSnapshot) {
     timeLimit: snapshot.timeLimit,
     maxAttempts: snapshot.maxAttempts,
     stage: snapshot.stage,
-    phase: snapshot.phase,
     content: snapshot.content,
     options: snapshot.options,
     // Note: We don't expose the answer in the reconstruction

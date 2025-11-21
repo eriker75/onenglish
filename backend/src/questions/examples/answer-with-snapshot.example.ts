@@ -128,7 +128,6 @@ export class ExampleAnswerService {
           select: {
             id: true,
             stage: true,
-            phase: true,
             isActive: true,
             deletedAt: true,
           },

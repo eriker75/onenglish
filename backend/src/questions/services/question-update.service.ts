@@ -340,7 +340,7 @@ export class QuestionUpdateService {
   }
 
   /**
-   * Update question position within phase
+   * Update question position within challenge
    */
   async updateQuestionPosition(
     questionId: string,
@@ -350,20 +350,6 @@ export class QuestionUpdateService {
       throw new BadRequestException('Position must be at least 1');
     }
     return this.updateQuestion(questionId, { position });
-  }
-
-  /**
-   * Update question phase
-   */
-  async updateQuestionPhase(questionId: string, phase: string): Promise<any> {
-    // Validate phase format (should be "phase_1", "phase_2", etc.)
-    const phaseRegex = /^phase_\d+$/;
-    if (!phaseRegex.test(phase)) {
-      throw new BadRequestException(
-        'Phase must follow format: phase_1, phase_2, etc.',
-      );
-    }
-    return this.updateQuestion(questionId, { phase });
   }
 
   /**

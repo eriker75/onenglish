@@ -3,9 +3,8 @@ import { PrismaService } from './prisma.service';
 
 /**
  * Global Database Module
- * Provides access to both databases:
- * - PrismaService: PostgreSQL (structured data - users, challenges, progress)
- * - MongooseModule: MongoDB (flexible data - questions, chat, analytics)
+ * Provides access to PostgreSQL database:
+ * - PrismaService: PostgreSQL (structured data - users, challenges, progress, questions)
  */
 @Global()
 @Module({

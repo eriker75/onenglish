@@ -213,13 +213,6 @@ let QuestionUpdateService = class QuestionUpdateService {
         }
         return this.updateQuestion(questionId, { position });
     }
-    async updateQuestionPhase(questionId, phase) {
-        const phaseRegex = /^phase_\d+$/;
-        if (!phaseRegex.test(phase)) {
-            throw new common_1.BadRequestException('Phase must follow format: phase_1, phase_2, etc.');
-        }
-        return this.updateQuestion(questionId, { phase });
-    }
     async bulkUpdateQuestions(updates) {
         const results = [];
         for (const update of updates) {

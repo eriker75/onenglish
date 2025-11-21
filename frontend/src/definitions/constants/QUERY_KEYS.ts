@@ -16,8 +16,8 @@ export const QUERY_KEYS = {
     [QUERY_KEYS.QUESTIONS, "challenge", challengeId] as const,
   byStage: (challengeId: string, stage: QuestionStage) =>
     [...QUERY_KEYS.byChallengeId(challengeId), "stage", stage] as const,
-  byPhase: (challengeId: string, stage: QuestionStage, phase: string) =>
-    [...QUERY_KEYS.byStage(challengeId, stage), "phase", phase] as const,
+  byType: (challengeId: string, stage: QuestionStage, type: string) =>
+    [...QUERY_KEYS.byStage(challengeId, stage), "type", type] as const,
 } as const;
 
 export type QueryKey = (typeof QUERY_KEYS)[keyof typeof QUERY_KEYS];

@@ -16,7 +16,6 @@ import { QUESTION_TYPE_ENDPOINTS } from '@/src/definitions/types/Question';
  * const formData = new FormData();
  * formData.append('challengeId', challengeId);
  * formData.append('stage', 'VOCABULARY');
- * formData.append('phase', 'phase_1');
  * formData.append('points', '10');
  * formData.append('media', imageFile);
  * formData.append('options', 'cat,dog,bird,fish');
@@ -29,7 +28,6 @@ import { QUESTION_TYPE_ENDPOINTS } from '@/src/definitions/types/Question';
  * await createQuestion('wordbox', {
  *   challengeId: 'uuid',
  *   stage: 'VOCABULARY',
- *   phase: 'phase_1',
  *   points: 15,
  *   content: [['C', 'A', 'T'], ['R', 'O', 'D'], ['E', 'A', 'T']]
  * });

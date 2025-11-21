@@ -20,27 +20,6 @@ wait_for_postgres() {
   echo -e "${GREEN}✓ PostgreSQL is ready!${NC}"
 }
 
-# Function to wait for MongoDB
-wait_for_mongo() {
-  echo -e "${YELLOW}Waiting for MongoDB to be ready...${NC}"
-  until mongosh --host mongo --username ${MONGO_USERNAME} --password ${MONGO_PASSWORD} --authenticationDatabase admin --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
-    echo -e "${YELLOW}MongoDB is unavailable - sleeping${NC}"
-    sleep 2
-  done
-  echo -e "${GREEN}✓ MongoDB is ready!${NC}"
-}
-
-# Function to initialize MongoDB database
-init_mongo_database() {
-  echo -e "${YELLOW}Initializing MongoDB database...${NC}"
-  mongosh --host mongo --username ${MONGO_USERNAME} --password ${MONGO_PASSWORD} --authenticationDatabase admin <<EOF
-use onenglishdb
-db.createCollection('_init')
-print('✓ Database onenglishdb created/verified')
-EOF
-  echo -e "${GREEN}✓ MongoDB database initialized!${NC}"
-}
-
 # Function to wait for Redis
 wait_for_redis() {
   echo -e "${YELLOW}Waiting for Redis to be ready...${NC}"
@@ -79,13 +58,9 @@ run_prisma_operations() {
 # Main execution flow
 echo -e "${YELLOW}Step 1: Waiting for services...${NC}"
 wait_for_postgres
-wait_for_mongo
 wait_for_redis
 
-echo -e "${YELLOW}Step 2: Initializing MongoDB database...${NC}"
-init_mongo_database
-
-echo -e "${YELLOW}Step 3: Running Prisma operations...${NC}"
+echo -e "${YELLOW}Step 2: Running Prisma operations...${NC}"
 run_prisma_operations
 
 echo -e "${GREEN}========================================${NC}"

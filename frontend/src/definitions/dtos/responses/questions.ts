@@ -16,7 +16,6 @@ export interface QuestionResponseDto {
   id: string;
   challengeId: string;
   stage: QuestionStage;
-  phase: string;
   position: number;
   type: QuestionType;
   points: number;

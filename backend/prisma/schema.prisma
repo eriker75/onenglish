@@ -429,7 +429,6 @@ model Question {
   challengeId      String
   challenge        Challenge                 @relation(fields: [challengeId], references: [id], onDelete: Restrict)
   stage            QuestionStage
-  phase            String
   position         Int
   type             String
   points           Int
@@ -455,7 +454,7 @@ model Question {
   createdAt        DateTime                  @default(now())
   updatedAt        DateTime                  @updatedAt
 
-  @@index([challengeId, stage, phase])
+  @@index([challengeId, stage, type])
   @@index([parentQuestionId])
   @@index([type])
   @@index([isActive])

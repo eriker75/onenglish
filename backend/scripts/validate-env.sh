@@ -69,23 +69,6 @@ else
 fi
 echo ""
 
-# Check MongoDB variables
-echo -e "${BLUE}MongoDB Configuration:${NC}"
-check_var "MONGO_USERNAME" true
-check_var "MONGO_PASSWORD" true
-check_var "MONGO_URI" true
-echo ""
-
-# Validate MONGO_URI uses 'mongo' as host (for Docker)
-if [[ "$MONGO_URI" == *"@localhost:"* ]]; then
-    echo -e "${RED}✗ MONGO_URI uses 'localhost' instead of 'mongo'${NC}"
-    echo -e "${YELLOW}  For Docker, use: mongodb://user:password@mongo:27017/dbname${NC}"
-    ((ERRORS++))
-else
-    echo -e "${GREEN}✓ MONGO_URI uses correct host for Docker${NC}"
-fi
-echo ""
-
 # Check Redis variables
 echo -e "${BLUE}Redis Configuration:${NC}"
 check_var "REDIS_URL" true
@@ -109,12 +92,6 @@ echo ""
 # Check if using default passwords
 if [ "$POSTGRES_PASSWORD" = "onenglish_secure_password_2024" ]; then
     echo -e "${YELLOW}⚠ Warning: Using default PostgreSQL password${NC}"
-    echo -e "${YELLOW}  Change this in production!${NC}"
-    ((WARNINGS++))
-fi
-
-if [ "$MONGO_PASSWORD" = "mongo_secure_password_2024" ]; then
-    echo -e "${YELLOW}⚠ Warning: Using default MongoDB password${NC}"
     echo -e "${YELLOW}  Change this in production!${NC}"
     ((WARNINGS++))
 fi

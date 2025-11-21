@@ -16,7 +16,6 @@ class Question {
     id;
     challengeId;
     stage;
-    phase;
     position;
     type;
     points;
@@ -58,14 +57,7 @@ __decorate([
 ], Question.prototype, "stage", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: 'Phase identifier',
-        example: 'phase_1_1',
-    }),
-    __metadata("design:type", String)
-], Question.prototype, "phase", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({
-        description: 'Position/order within the phase',
+        description: 'Position/order within the challenge',
         example: 1,
     }),
     __metadata("design:type", Number)

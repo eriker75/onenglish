@@ -6,7 +6,6 @@ export declare class UpdateQuestionDto {
     maxAttempts?: number;
     points?: number;
     stage?: QuestionStage;
-    phase?: string;
     position?: number;
     content?: any;
     options?: any;
@@ -23,9 +22,6 @@ export declare class UpdateQuestionTimeLimitDto {
 }
 export declare class UpdateQuestionPointsDto {
     points: number;
-}
-export declare class UpdateQuestionPhaseDto {
-    phase: string;
 }
 export declare class BulkUpdateQuestionsDto {
     updates: Array<{
