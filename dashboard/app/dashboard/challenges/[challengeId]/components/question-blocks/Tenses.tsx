@@ -5,15 +5,19 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 interface TensesProps {
   question?: string;
+  instructions?: string;
   sentence?: string;
   correctAnswer?: string;
+  options?: string[];
   points?: number;
   timeMinutes?: number;
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
   onSentenceChange?: (sentence: string) => void;
   onCorrectAnswerChange?: (answer: string) => void;
+  onOptionsChange?: (options: string[]) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -21,36 +25,42 @@ interface TensesProps {
 }
 
 const verbTenses = [
-  "Present Simple",
-  "Present Continuous",
-  "Present Perfect",
-  "Past Simple",
-  "Past Continuous",
-  "Past Perfect",
-  "Future Simple",
-  "Future Continuous",
-  "Future Perfect",
+  { label: "Present Simple", value: "present_simple" },
+  { label: "Present Continuous", value: "present_continuous" },
+  { label: "Present Perfect", value: "present_perfect" },
+  { label: "Past Simple", value: "past_simple" },
+  { label: "Past Continuous", value: "past_continuous" },
+  { label: "Past Perfect", value: "past_perfect" },
+  { label: "Future Simple", value: "future_simple" },
+  { label: "Future Continuous", value: "future_continuous" },
+  { label: "Future Perfect", value: "future_perfect" },
 ];
 
 export default function Tenses({
   question = "",
+  instructions = "",
   sentence = "",
   correctAnswer = "",
+  options = [],
   points: initialPoints = 0,
   timeMinutes: initialTimeMinutes = 0,
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
   onSentenceChange,
   onCorrectAnswerChange,
+  onOptionsChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
 }: TensesProps) {
   const [questionText, setQuestionText] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
   const [sentenceText, setSentenceText] = useState(sentence);
-  const [selectedAnswer, setSelectedAnswer] = useState(correctAnswer);
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>(options);
+  const [correctAnswerValue, setCorrectAnswerValue] = useState(correctAnswer);
   const [pointsValue, setPointsValue] = useState(initialPoints);
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
@@ -61,15 +71,43 @@ export default function Tenses({
     onQuestionChange?.(value);
   };
 
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
+  };
+
   const handleSentenceChange = (value: string) => {
     setSentenceText(value);
     onSentenceChange?.(value);
   };
 
-  const handleTenseClick = (tense: string) => {
-    setSelectedAnswer(tense);
-    onCorrectAnswerChange?.(tense);
+  const handleTenseToggle = (tenseValue: string) => {
+    // Toggle selection for options array logic
+    // We track selected options to be presented to the student.
+    // If an option is deselected and it was the correct answer, we clear the correct answer.
+
+    const newSelection = selectedAnswers.includes(tenseValue)
+      ? selectedAnswers.filter((t) => t !== tenseValue)
+      : [...selectedAnswers, tenseValue];
+    
+    setSelectedAnswers(newSelection);
+    
+    // If the currently selected correct answer is removed from selection, clear it
+    if (correctAnswerValue === tenseValue && !newSelection.includes(tenseValue)) {
+      setCorrectAnswerValue("");
+      onCorrectAnswerChange?.("");
+    }
+    
+    onOptionsChange?.(newSelection);
   };
+
+  const handleSetCorrectAnswer = (tenseValue: string) => {
+    if (selectedAnswers.includes(tenseValue)) {
+        setCorrectAnswerValue(tenseValue);
+        onCorrectAnswerChange?.(tenseValue);
+    }
+  };
+
 
   const handlePointsChange = (value: number) => {
     const points = Math.max(0, value);
@@ -97,63 +135,107 @@ export default function Tenses({
 
   return (
     <div className="w-full space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Question Text *
-        </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the question text..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sentence *
-        </label>
-        <input
-          type="text"
-          value={sentenceText}
-          onChange={(e) => handleSentenceChange(e.target.value)}
-          placeholder="Enter the sentence (e.g., I go to school every day)"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Sentence *
+          </label>
+          <input
+            type="text"
+            value={sentenceText}
+            onChange={(e) => handleSentenceChange(e.target.value)}
+            placeholder="Enter the sentence..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Correct Answer *
+          </label>
+          <select
+            value={correctAnswerValue}
+            onChange={(e) => {
+              setCorrectAnswerValue(e.target.value);
+              onCorrectAnswerChange?.(e.target.value);
+            }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent bg-white"
+          >
+            <option value="">Select correct tense</option>
+            {selectedAnswers.map((tenseValue) => {
+              const tenseLabel = verbTenses.find((t) => t.value === tenseValue)?.label || tenseValue;
+              return (
+                <option key={tenseValue} value={tenseValue}>
+                  {tenseLabel}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          Select Correct Tense (Click to Select) *
+          Select Valid Options (At least 2) *
         </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Click to select the verb tenses that will be presented as options to the student. Make sure to select the correct answer above from these options.
+        </p>
         <div className="grid grid-cols-3 gap-4">
-          {verbTenses.map((tense, index) => (
-            <button
-              key={index}
-              onClick={() => handleTenseClick(tense)}
-              className={`
-                relative p-6 border-2 rounded-lg cursor-pointer transition-all duration-200
-                ${selectedAnswer === tense
-                  ? "border-[#33CC00] bg-[#33CC00]/10 shadow-lg transform scale-105"
-                  : "border-gray-300 hover:border-[#33CC00]/50 hover:shadow-md bg-white"
-                }
-              `}
-            >
-              <div className="text-center">
-                <p className={`text-sm font-medium ${
-                  selectedAnswer === tense ? "text-[#33CC00]" : "text-gray-700"
-                }`}>
-                  {tense}
-                </p>
-              </div>
-              {selectedAnswer === tense && (
-                <div className="absolute top-2 right-2">
-                  <CheckCircleIcon className="text-[#33CC00]" fontSize="small" />
+          {verbTenses.map((tense) => {
+            const isSelected = selectedAnswers.includes(tense.value);
+
+            return (
+              <div
+                key={tense.value}
+                onClick={() => handleTenseToggle(tense.value)}
+                className={`
+                  relative p-4 border-2 rounded-lg cursor-pointer transition-all duration-200
+                  ${isSelected
+                    ? "border-[#44b07f] bg-[#44b07f]/5 shadow-sm"
+                    : "border-gray-300 hover:border-gray-400 bg-white"
+                  }
+                `}
+              >
+                <div className="flex justify-between items-center">
+                  <span className={`text-sm font-medium ${isSelected ? "text-[#44b07f]" : "text-gray-700"}`}>
+                    {tense.label}
+                  </span>
+                  {isSelected && (
+                    <div className="text-[#44b07f]">
+                      <CheckCircleIcon fontSize="small" />
+                    </div>
+                  )}
                 </div>
-              )}
-            </button>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
 

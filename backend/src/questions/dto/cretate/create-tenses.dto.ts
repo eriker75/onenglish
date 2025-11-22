@@ -7,18 +7,7 @@ import {
   IsFile,
   MaxFileSize,
 } from 'nestjs-form-data';
-
-enum ValidTenses {
-  PRESENT_SIMPLE = 'present_simple',
-  PAST_SIMPLE = 'past_simple',
-  FUTURE_SIMPLE = 'future_simple',
-  PRESENT_CONTINUOUS = 'present_continuous',
-  PAST_CONTINUOUS = 'past_continuous',
-  FUTURE_CONTINUOUS = 'future_continuous',
-  PRESENT_PERFECT = 'present_perfect',
-  PAST_PERFECT = 'past_perfect',
-  FUTURE_PERFECT = 'future_perfect',
-}
+import { VERB_TENSES } from '../../definitions/constants';
 
 export class CreateTensesDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
@@ -29,28 +18,28 @@ export class CreateTensesDto extends BaseCreateQuestionWithoutStageDto {
   content: string;
 
   @ApiProperty({
-    enum: ValidTenses,
+    enum: VERB_TENSES,
     isArray: true,
     example: [
-      ValidTenses.FUTURE_CONTINUOUS,
-      ValidTenses.PAST_CONTINUOUS,
-      ValidTenses.PAST_PERFECT,
-      ValidTenses.PRESENT_CONTINUOUS,
+      VERB_TENSES.FUTURE_CONTINUOUS,
+      VERB_TENSES.PAST_CONTINUOUS,
+      VERB_TENSES.PAST_PERFECT,
+      VERB_TENSES.PRESENT_CONTINUOUS,
     ],
     description: 'Tense options for multiple choice',
   })
   @IsArray()
   @ArrayMinSize(2)
-  @IsEnum(ValidTenses, { each: true })
-  options: ValidTenses[];
+  @IsEnum(VERB_TENSES, { each: true })
+  options: VERB_TENSES[];
 
   @ApiProperty({
-    enum: ValidTenses,
-    example: ValidTenses.PRESENT_SIMPLE,
+    enum: VERB_TENSES,
+    example: VERB_TENSES.PRESENT_SIMPLE,
     description: 'Correct tense',
   })
-  @IsEnum(ValidTenses)
-  answer: ValidTenses;
+  @IsEnum(VERB_TENSES)
+  answer: VERB_TENSES;
 
   @ApiPropertyOptional({
     type: 'string',

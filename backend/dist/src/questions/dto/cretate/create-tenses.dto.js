@@ -14,18 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-var ValidTenses;
-(function (ValidTenses) {
-    ValidTenses["PRESENT_SIMPLE"] = "present_simple";
-    ValidTenses["PAST_SIMPLE"] = "past_simple";
-    ValidTenses["FUTURE_SIMPLE"] = "future_simple";
-    ValidTenses["PRESENT_CONTINUOUS"] = "present_continuous";
-    ValidTenses["PAST_CONTINUOUS"] = "past_continuous";
-    ValidTenses["FUTURE_CONTINUOUS"] = "future_continuous";
-    ValidTenses["PRESENT_PERFECT"] = "present_perfect";
-    ValidTenses["PAST_PERFECT"] = "past_perfect";
-    ValidTenses["FUTURE_PERFECT"] = "future_perfect";
-})(ValidTenses || (ValidTenses = {}));
+const constants_1 = require("../../definitions/constants");
 class CreateTensesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     options;
@@ -43,28 +32,28 @@ __decorate([
 ], CreateTensesDto.prototype, "content", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        enum: ValidTenses,
+        enum: constants_1.VERB_TENSES,
         isArray: true,
         example: [
-            ValidTenses.FUTURE_CONTINUOUS,
-            ValidTenses.PAST_CONTINUOUS,
-            ValidTenses.PAST_PERFECT,
-            ValidTenses.PRESENT_CONTINUOUS,
+            constants_1.VERB_TENSES.FUTURE_CONTINUOUS,
+            constants_1.VERB_TENSES.PAST_CONTINUOUS,
+            constants_1.VERB_TENSES.PAST_PERFECT,
+            constants_1.VERB_TENSES.PRESENT_CONTINUOUS,
         ],
         description: 'Tense options for multiple choice',
     }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(2),
-    (0, class_validator_1.IsEnum)(ValidTenses, { each: true }),
+    (0, class_validator_1.IsEnum)(constants_1.VERB_TENSES, { each: true }),
     __metadata("design:type", Array)
 ], CreateTensesDto.prototype, "options", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
-        enum: ValidTenses,
-        example: ValidTenses.PRESENT_SIMPLE,
+        enum: constants_1.VERB_TENSES,
+        example: constants_1.VERB_TENSES.PRESENT_SIMPLE,
         description: 'Correct tense',
     }),
-    (0, class_validator_1.IsEnum)(ValidTenses),
+    (0, class_validator_1.IsEnum)(constants_1.VERB_TENSES),
     __metadata("design:type", String)
 ], CreateTensesDto.prototype, "answer", void 0);
 __decorate([

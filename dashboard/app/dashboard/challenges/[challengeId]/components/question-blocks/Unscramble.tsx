@@ -229,59 +229,6 @@ export default function Unscramble({
     }
   };
 
-  const handleImageUpload = (file: File) => {
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImageUrl(result);
-        onImageChange?.(result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDragOverImage = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeaveImage = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDropImage = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleImageUpload(file);
-    }
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImageUrl(null);
-    onImageChange?.(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleDropZoneClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handlePointsChange = (value: number) => {
     const points = Math.max(0, value);
     setPointsValue(points);
@@ -339,59 +286,13 @@ export default function Unscramble({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Image (Optional)
         </label>
-        {!imageUrl ? (
-          <div
-            onDragOver={handleDragOverImage}
-            onDragLeave={handleDragLeaveImage}
-            onDrop={handleDropImage}
-            onClick={handleDropZoneClick}
-            className={`
-              relative w-full h-48 border-2 border-dashed rounded-lg cursor-pointer
-              transition-all duration-200
-              ${isDragging
-                ? "border-[#44b07f] bg-[#44b07f]/5"
-                : "border-gray-300 hover:border-gray-400 bg-gray-50"
-              }
-              flex flex-col items-center justify-center gap-3
-            `}
-          >
-            <CloudUploadIcon
-              className={`text-4xl ${isDragging ? "text-[#44b07f]" : "text-gray-400"}`}
-            />
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">
-                Drag and drop an image here
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                or click to browse
-              </p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileInputChange}
-              className="hidden"
-            />
-          </div>
-        ) : (
-          <div className="relative w-full">
-            <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
-              <img
-                src={imageUrl}
-                alt="Question"
-                className="w-full h-auto max-h-64 object-contain bg-gray-50"
-              />
-            </div>
-            <button
-              onClick={handleRemoveImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-              title="Remove image"
-            >
-              <DeleteIcon fontSize="small" />
-            </button>
-          </div>
-        )}
+        <ImageUpload
+          imageUrl={imageUrl}
+          onImageChange={(url) => {
+            setImageUrl(url);
+            onImageChange?.(url);
+          }}
+        />
       </div>
 
       {/* Visual Word Editor Section */}
