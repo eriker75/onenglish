@@ -662,10 +662,12 @@ export class QuestionsService {
     }
 
     const questionType = 'word_match';
+    // word_match is always LISTENING stage
+    const stage = QuestionStage.LISTENING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload all files
@@ -677,7 +679,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -713,10 +715,12 @@ export class QuestionsService {
     }
 
     const questionType = 'gossip';
+    // gossip is always LISTENING stage
+    const stage = QuestionStage.LISTENING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload the file
@@ -728,7 +732,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -812,10 +816,12 @@ export class QuestionsService {
     }
 
     const questionType = 'topic_based_audio';
+    // topic_based_audio is always LISTENING stage
+    const stage = QuestionStage.LISTENING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload the file
@@ -833,7 +839,7 @@ export class QuestionsService {
       const parent = await tx.question.create({
         data: {
           challengeId: dto.challengeId,
-          stage: dto.stage,
+          stage,
           position,
           type: questionType,
           points: totalPoints, // Auto-calculated from sub-questions
@@ -860,7 +866,7 @@ export class QuestionsService {
       await tx.question.createMany({
         data: parsedSubQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
-          stage: dto.stage,
+          stage,
           position: index + 1,
           type: 'topic_based_audio_subquestion',
           points: sub.points,
@@ -1025,10 +1031,12 @@ export class QuestionsService {
     }
 
     const questionType = 'lyrics_training';
+    // lyrics_training is always LISTENING stage
+    const stage = QuestionStage.LISTENING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload the file
@@ -1040,7 +1048,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1069,10 +1077,11 @@ export class QuestionsService {
     await this.validateChallenge(dto.challengeId);
 
     const questionType = 'sentence_maker';
+    const stage = QuestionStage.WRITING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload all files
@@ -1084,7 +1093,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1118,16 +1127,17 @@ export class QuestionsService {
     }
 
     const questionType = 'fast_test';
+    const stage = QuestionStage.WRITING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     return this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1147,10 +1157,11 @@ export class QuestionsService {
     await this.validateChallenge(dto.challengeId);
 
     const questionType = 'tales';
+    const stage = QuestionStage.WRITING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload all files
@@ -1162,7 +1173,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1198,10 +1209,11 @@ export class QuestionsService {
     }
 
     const questionType = 'superbrain';
+    const stage = QuestionStage.SPEAKING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload the optional image if provided
@@ -1218,7 +1230,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1250,10 +1262,11 @@ export class QuestionsService {
     }
 
     const questionType = 'tell_me_about_it';
+    const stage = QuestionStage.SPEAKING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     // Upload the optional image if provided
@@ -1270,7 +1283,7 @@ export class QuestionsService {
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,
@@ -1302,16 +1315,17 @@ export class QuestionsService {
     }
 
     const questionType = 'debate';
+    const stage = QuestionStage.SPEAKING;
 
     const position = await this.calculateNextPosition(
       dto.challengeId,
-      dto.stage,
+      stage,
     );
 
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
-        stage: dto.stage,
+        stage,
         position,
         type: questionType,
         points: dto.points,

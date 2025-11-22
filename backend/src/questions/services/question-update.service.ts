@@ -82,17 +82,54 @@ export class QuestionUpdateService {
       'report_it',
     ];
 
+    // Question types that always have LISTENING stage
+    const listeningQuestionTypes = [
+      'word_match',
+      'gossip',
+      'topic_based_audio',
+      'lyrics_training',
+    ];
+
+    // Question types that always have WRITING stage
+    const writingQuestionTypes = [
+      'sentence_maker',
+      'fast_test',
+      'tales',
+    ];
+
+    // Question types that always have SPEAKING stage
+    const speakingQuestionTypes = [
+      'superbrain',
+      'tell_me_about_it',
+      'debate',
+    ];
+
     // Remove invalid fields for Prisma update (fields that cannot be updated directly)
     const {
       media, // Media files must be handled separately
       challengeId, // Cannot change challenge relationship
-      stage, // Stage is handled separately for grammar question types
+      stage, // Stage is handled separately for grammar/listening/writing/speaking question types
       ...questionData
     } = restData;
 
     // For grammar question types, always set stage to GRAMMAR
     if (grammarQuestionTypes.includes(question.type)) {
       questionData.stage = QuestionStage.GRAMMAR;
+    }
+
+    // For listening question types, always set stage to LISTENING
+    if (listeningQuestionTypes.includes(question.type)) {
+      questionData.stage = QuestionStage.LISTENING;
+    }
+
+    // For writing question types, always set stage to WRITING
+    if (writingQuestionTypes.includes(question.type)) {
+      questionData.stage = QuestionStage.WRITING;
+    }
+
+    // For speaking question types, always set stage to SPEAKING
+    if (speakingQuestionTypes.includes(question.type)) {
+      questionData.stage = QuestionStage.SPEAKING;
     }
 
     // Validate answer is in options for multiple choice question types

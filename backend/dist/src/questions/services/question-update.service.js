@@ -63,9 +63,34 @@ let QuestionUpdateService = class QuestionUpdateService {
             'tag_it',
             'report_it',
         ];
+        const listeningQuestionTypes = [
+            'word_match',
+            'gossip',
+            'topic_based_audio',
+            'lyrics_training',
+        ];
+        const writingQuestionTypes = [
+            'sentence_maker',
+            'fast_test',
+            'tales',
+        ];
+        const speakingQuestionTypes = [
+            'superbrain',
+            'tell_me_about_it',
+            'debate',
+        ];
         const { media, challengeId, stage, ...questionData } = restData;
         if (grammarQuestionTypes.includes(question.type)) {
             questionData.stage = client_1.QuestionStage.GRAMMAR;
+        }
+        if (listeningQuestionTypes.includes(question.type)) {
+            questionData.stage = client_1.QuestionStage.LISTENING;
+        }
+        if (writingQuestionTypes.includes(question.type)) {
+            questionData.stage = client_1.QuestionStage.WRITING;
+        }
+        if (speakingQuestionTypes.includes(question.type)) {
+            questionData.stage = client_1.QuestionStage.SPEAKING;
         }
         const multipleChoiceTypes = [
             'image_to_multiple_choices',
