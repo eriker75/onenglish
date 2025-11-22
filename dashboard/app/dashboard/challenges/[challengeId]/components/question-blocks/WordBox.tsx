@@ -464,13 +464,6 @@ export default function WordBox({
           </p>
         </div>
       </div>
-
-      {/* AI Validation Info */}
-      <div className="bg-[#33CC00]/10 border border-[#33CC00] rounded-lg p-4">
-        <p className="text-sm text-gray-700">
-          <strong className="text-[#33CC00]">AI-Powered Validation:</strong> Students will construct words from the letters in the grid. The system will automatically validate if the constructed word matches the correct answer using AI. No manual answer checking required.
-        </p>
-      </div>
     </div>
   );
 }

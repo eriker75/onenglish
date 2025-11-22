@@ -4,18 +4,23 @@ import React, { useState, useEffect } from "react";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ImageUpload from "@/components/elements/ImageUpload";
 
 interface UnscrambleProps {
   question?: string;
+  instructions?: string;
   words?: string[];
   correctSentence?: string;
+  imageUrl?: string;
   points?: number;
   timeMinutes?: number;
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
   onWordsChange?: (words: string[]) => void;
   onCorrectSentenceChange?: (sentence: string) => void;
+  onImageChange?: (imageUrl: string | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -24,21 +29,26 @@ interface UnscrambleProps {
 
 export default function Unscramble({
   question = "",
+  instructions = "",
   words = [],
   correctSentence = "",
+  imageUrl: initialImageUrl,
   points: initialPoints = 0,
   timeMinutes: initialTimeMinutes = 0,
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
   onWordsChange,
   onCorrectSentenceChange,
+  onImageChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
 }: UnscrambleProps) {
   const [questionText, setQuestionText] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
   const [scrambledWords, setScrambledWords] = useState<string[]>(
     words.length > 0 ? words : []
   );
@@ -48,6 +58,7 @@ export default function Unscramble({
       ? correctSentence.split(/\s+/).filter((w) => w.trim() !== "")
       : []
   );
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [draggedCorrectIndex, setDraggedCorrectIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -69,6 +80,11 @@ export default function Unscramble({
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
+  };
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
   };
 
 
@@ -213,6 +229,59 @@ export default function Unscramble({
     }
   };
 
+  const handleImageUpload = (file: File) => {
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImageUrl(result);
+        onImageChange?.(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOverImage = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeaveImage = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDropImage = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl(null);
+    onImageChange?.(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDropZoneClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handlePointsChange = (value: number) => {
     const points = Math.max(0, value);
     setPointsValue(points);
@@ -239,17 +308,90 @@ export default function Unscramble({
 
   return (
     <div className={`w-full space-y-6 ${isDragging ? 'cursor-grabbing' : ''}`}>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Question Text *
+          Image (Optional)
         </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the question text..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+        {!imageUrl ? (
+          <div
+            onDragOver={handleDragOverImage}
+            onDragLeave={handleDragLeaveImage}
+            onDrop={handleDropImage}
+            onClick={handleDropZoneClick}
+            className={`
+              relative w-full h-48 border-2 border-dashed rounded-lg cursor-pointer
+              transition-all duration-200
+              ${isDragging
+                ? "border-[#44b07f] bg-[#44b07f]/5"
+                : "border-gray-300 hover:border-gray-400 bg-gray-50"
+              }
+              flex flex-col items-center justify-center gap-3
+            `}
+          >
+            <CloudUploadIcon
+              className={`text-4xl ${isDragging ? "text-[#44b07f]" : "text-gray-400"}`}
+            />
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-700">
+                Drag and drop an image here
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                or click to browse
+              </p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+          </div>
+        ) : (
+          <div className="relative w-full">
+            <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
+              <img
+                src={imageUrl}
+                alt="Question"
+                className="w-full h-auto max-h-64 object-contain bg-gray-50"
+              />
+            </div>
+            <button
+              onClick={handleRemoveImage}
+              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+              title="Remove image"
+            >
+              <DeleteIcon fontSize="small" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Visual Word Editor Section */}

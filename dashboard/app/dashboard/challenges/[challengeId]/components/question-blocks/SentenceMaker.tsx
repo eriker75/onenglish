@@ -231,13 +231,6 @@ export default function SentenceMaker({
           </p>
         </div>
       </div>
-
-      {/* AI Validation Info */}
-      <div className="bg-[#33CC00]/10 border border-[#33CC00] rounded-lg p-4">
-        <p className="text-sm text-gray-700">
-          <strong className="text-[#33CC00]">AI-Powered Validation:</strong> Students will create a sentence in English using the provided images. The system will automatically validate the sentence for grammatical correctness, coherence, and appropriate use of the images. No manual answer checking required.
-        </p>
-      </div>
     </div>
   );
 }
