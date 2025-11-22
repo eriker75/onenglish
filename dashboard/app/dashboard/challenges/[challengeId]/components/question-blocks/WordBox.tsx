@@ -3,6 +3,8 @@ import React, { useState } from "react";
 
 interface WordBoxProps {
   question?: string;
+  instructions?: string;
+  maxWords?: number;
   width?: number;
   height?: number;
   grid?: string[][];
@@ -11,6 +13,8 @@ interface WordBoxProps {
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
+  onMaxWordsChange?: (maxWords: number) => void;
   onWidthChange?: (width: number) => void;
   onHeightChange?: (height: number) => void;
   onGridChange?: (grid: string[][]) => void;
@@ -22,6 +26,8 @@ interface WordBoxProps {
 
 export default function WordBox({
   question = "",
+  instructions = "",
+  maxWords: initialMaxWords = 1,
   width: initialWidth = 3,
   height: initialHeight = 3,
   grid: initialGrid,
@@ -30,6 +36,8 @@ export default function WordBox({
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
+  onMaxWordsChange,
   onWidthChange,
   onHeightChange,
   onGridChange,
@@ -41,6 +49,8 @@ export default function WordBox({
   const [questionText, setQuestionText] = useState(
     question || "Use the letters in the grid to form the correct word"
   );
+  const [instructionsText, setInstructionsText] = useState(instructions);
+  const [maxWordsValue, setMaxWordsValue] = useState(initialMaxWords);
   const [widthValue, setWidthValue] = useState(initialWidth);
   const [heightValue, setHeightValue] = useState(initialHeight);
   const [pointsValue, setPointsValue] = useState(initialPoints);
@@ -75,6 +85,11 @@ export default function WordBox({
     onQuestionChange?.(value);
   };
 
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
+  };
+
   const handlePointsChange = (value: number) => {
     const points = Math.max(0, value);
     setPointsValue(points);
@@ -97,6 +112,12 @@ export default function WordBox({
     const attempts = Math.max(1, Math.floor(value));
     setMaxAttemptsValue(attempts);
     onMaxAttemptsChange?.(attempts);
+  };
+
+  const handleMaxWordsChange = (value: number) => {
+    const maxWords = Math.max(1, Math.floor(value));
+    setMaxWordsValue(maxWords);
+    onMaxWordsChange?.(maxWords);
   };
 
   const handleWidthChange = (value: number) => {
@@ -241,17 +262,44 @@ export default function WordBox({
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Question Text *
-        </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the question text..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Max Words *
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={maxWordsValue}
+            onChange={(e) => handleMaxWordsChange(parseInt(e.target.value) || 1)}
+            placeholder="1"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
