@@ -3,152 +3,228 @@
 import React, { useState } from "react";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-interface Question {
-  id: string;
-  text: string;
-  expectedAnswer?: string;
-}
+import ImageUpload from "@/components/elements/ImageUpload";
 
 interface SuperBrainProps {
   question?: string;
-  questions?: Question[];
+  instructions?: string;
+  content?: string;
+  imageUrl?: string;
+  audioUrl?: string;
+  points?: number;
+  timeMinutes?: number;
+  timeSeconds?: number;
+  maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
-  onQuestionsChange?: (questions: Question[]) => void;
+  onInstructionsChange?: (instructions: string) => void;
+  onContentChange?: (content: string) => void;
+  onImageChange?: (imageUrl: string | null) => void;
+  onAudioChange?: (audioUrl: string | null) => void;
+  onPointsChange?: (points: number) => void;
+  onTimeMinutesChange?: (minutes: number) => void;
+  onTimeSecondsChange?: (seconds: number) => void;
+  onMaxAttemptsChange?: (attempts: number) => void;
 }
 
 export default function SuperBrain({
   question = "",
-  questions = [],
+  instructions = "",
+  content = "",
+  imageUrl: initialImageUrl,
+  audioUrl,
+  points: initialPoints = 0,
+  timeMinutes: initialTimeMinutes = 0,
+  timeSeconds: initialTimeSeconds = 0,
+  maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
-  onQuestionsChange,
+  onInstructionsChange,
+  onContentChange,
+  onImageChange,
+  onAudioChange,
+  onPointsChange,
+  onTimeMinutesChange,
+  onTimeSecondsChange,
+  onMaxAttemptsChange,
 }: SuperBrainProps) {
   const [questionText, setQuestionText] = useState(question);
-  const [questionsList, setQuestionsList] = useState<Question[]>(
-    questions.length > 0
-      ? questions
-      : [
-          {
-            id: `q-${Date.now()}`,
-            text: "",
-          },
-        ]
-  );
+  const [instructionsText, setInstructionsText] = useState(instructions);
+  const [contentSentence, setContentSentence] = useState(content);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
+  const [pointsValue, setPointsValue] = useState(initialPoints);
+  const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
+  const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
+  const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
   };
 
-  const handleQuestionTextChange = (id: string, text: string) => {
-    const newQuestions = questionsList.map((q) =>
-      q.id === id ? { ...q, text } : q
-    );
-    setQuestionsList(newQuestions);
-    onQuestionsChange?.(newQuestions);
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
   };
 
-  const handleExpectedAnswerChange = (id: string, answer: string) => {
-    const newQuestions = questionsList.map((q) =>
-      q.id === id ? { ...q, expectedAnswer: answer } : q
-    );
-    setQuestionsList(newQuestions);
-    onQuestionsChange?.(newQuestions);
+  const handleContentChange = (value: string) => {
+    setContentSentence(value);
+    onContentChange?.(value);
   };
 
-  const handleAddQuestion = () => {
-    const newQuestion: Question = {
-      id: `q-${Date.now()}-${Math.random()}`,
-      text: "",
-    };
-    const newQuestions = [...questionsList, newQuestion];
-    setQuestionsList(newQuestions);
-    onQuestionsChange?.(newQuestions);
+  const handlePointsChange = (value: number) => {
+    const points = Math.max(0, value);
+    setPointsValue(points);
+    onPointsChange?.(points);
   };
 
-  const handleRemoveQuestion = (id: string) => {
-    if (questionsList.length >= 3) {
-      const newQuestions = questionsList.filter((q) => q.id !== id);
-      setQuestionsList(newQuestions);
-      onQuestionsChange?.(newQuestions);
-    }
+  const handleTimeMinutesChange = (value: number) => {
+    const minutes = Math.max(0, Math.floor(value));
+    setTimeMinutesValue(minutes);
+    onTimeMinutesChange?.(minutes);
+  };
+
+  const handleTimeSecondsChange = (value: number) => {
+    const seconds = Math.max(0, Math.min(59, Math.floor(value)));
+    setTimeSecondsValue(seconds);
+    onTimeSecondsChange?.(seconds);
+  };
+
+  const handleMaxAttemptsChange = (value: number) => {
+    const attempts = Math.max(1, Math.floor(value));
+    setMaxAttemptsValue(attempts);
+    onMaxAttemptsChange?.(attempts);
   };
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Topic Description *
-        </label>
-        <textarea
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the topic description..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
-      </div>
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column: Question Text, Instructions, Sentence */}
+        <div className="col-span-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Question Text *
+            </label>
+            <input
+              type="text"
+              value={questionText}
+              onChange={(e) => handleQuestionChange(e.target.value)}
+              placeholder="Enter the question text..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Instructions
+            </label>
+            <input
+              type="text"
+              value={instructionsText}
+              onChange={(e) => handleInstructionsChange(e.target.value)}
+              placeholder="Enter instructions..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sentence (Content) *
+            </label>
+            <input
+              type="text"
+              value={contentSentence}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="The sentence or prompt to speak..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+            />
+          </div>
+        </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Questions (3 or more) *
+        {/* Right Column: Image */}
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Image (Optional)
           </label>
-          <button
-            onClick={handleAddQuestion}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-[#44b07f] hover:bg-[#44b07f]/10 rounded-lg transition-colors"
-          >
-            <AddCircleIcon fontSize="small" />
-            Add Question
-          </button>
+          <ImageUpload
+            imageUrl={imageUrl}
+            onImageChange={(url) => {
+              setImageUrl(url);
+              onImageChange?.(url);
+            }}
+            height="h-64"
+          />
         </div>
-        <div className="space-y-4">
-          {questionsList.map((q, index) => (
-            <div key={q.id} className="p-4 border-2 border-gray-200 rounded-lg bg-white">
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700">
-                  Question {index + 1}
-                </span>
-                {questionsList.length >= 3 && (
-                  <button
-                    onClick={() => handleRemoveQuestion(q.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </button>
-                )}
-              </div>
-              <textarea
-                value={q.text}
-                onChange={(e) => handleQuestionTextChange(q.id, e.target.value)}
-                placeholder="Enter question text..."
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent mb-3"
-              />
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">
-                  Expected Answer (Optional - for AI validation reference)
-                </label>
-                <textarea
-                  value={q.expectedAnswer || ""}
-                  onChange={(e) => handleExpectedAnswerChange(q.id, e.target.value)}
-                  placeholder="Enter expected answer pattern or key points..."
-                  rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent text-sm"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Students will answer each question with an audio response in English. Responses should be clear and answer the question directly.
-        </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          <strong>AI Validation:</strong> Student audio responses will be automatically validated using AI to check if they answer the questions appropriately and are in English. Responses should not be too short or too long.
-        </p>
+      {/* Points, Time, and Max Attempts Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Minutes) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="60"
+            value={timeMinutesValue}
+            onChange={(e) =>
+              handleTimeMinutesChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">Minutes to answer</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Seconds) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={timeSecondsValue}
+            onChange={(e) =>
+              handleTimeSecondsChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Additional seconds (0-59)
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Points *
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={pointsValue}
+            onChange={(e) => handlePointsChange(parseInt(e.target.value) || 0)}
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Points awarded for correct answer
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Max Attempts *
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={maxAttemptsValue}
+            onChange={(e) =>
+              handleMaxAttemptsChange(parseInt(e.target.value) || 1)
+            }
+            placeholder="1"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Maximum number of attempts allowed
+          </p>
+        </div>
       </div>
     </div>
   );

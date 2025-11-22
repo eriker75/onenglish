@@ -1,238 +1,287 @@
 "use client";
 
 import React, { useState } from "react";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
+import ImageUpload from "@/components/elements/ImageUpload";
 
 interface DebateProps {
   question?: string;
-  phrase?: string;
+  instructions?: string;
+  content?: string;
   imageUrl?: string;
-  position?: "for" | "against" | "random";
+  answer?: "for" | "against" | "random";
+  points?: number;
+  timeMinutes?: number;
+  timeSeconds?: number;
+  maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
-  onPhraseChange?: (phrase: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
+  onContentChange?: (content: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
-  onPositionChange?: (position: "for" | "against" | "random") => void;
+  onAnswerChange?: (answer: string) => void;
+  onPointsChange?: (points: number) => void;
+  onTimeMinutesChange?: (minutes: number) => void;
+  onTimeSecondsChange?: (seconds: number) => void;
+  onMaxAttemptsChange?: (attempts: number) => void;
 }
 
 export default function Debate({
   question = "",
-  phrase = "",
+  instructions = "",
+  content = "",
   imageUrl: initialImageUrl,
-  position = "random",
+  answer: initialAnswer,
+  points: initialPoints = 0,
+  timeMinutes: initialTimeMinutes = 0,
+  timeSeconds: initialTimeSeconds = 0,
+  maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
-  onPhraseChange,
+  onInstructionsChange,
+  onContentChange,
   onImageChange,
-  onPositionChange,
+  onAnswerChange,
+  onPointsChange,
+  onTimeMinutesChange,
+  onTimeSecondsChange,
+  onMaxAttemptsChange,
 }: DebateProps) {
   const [questionText, setQuestionText] = useState(question);
-  const [phraseText, setPhraseText] = useState(phrase);
+  const [instructionsText, setInstructionsText] = useState(instructions);
+  const [contentText, setContentText] = useState(content);
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
-  const [selectedPosition, setSelectedPosition] = useState<"for" | "against" | "random">(position);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [selectedPosition, setSelectedPosition] = useState<"for" | "against" | "random">(
+    (initialAnswer as "for" | "against" | "random") || "random"
+  );
+  const [pointsValue, setPointsValue] = useState(initialPoints);
+  const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
+  const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
+  const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
   };
 
-  const handlePhraseChange = (value: string) => {
-    setPhraseText(value);
-    onPhraseChange?.(value);
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
+  };
+
+  const handleContentChange = (value: string) => {
+    setContentText(value);
+    onContentChange?.(value);
   };
 
   const handlePositionChange = (value: "for" | "against" | "random") => {
     setSelectedPosition(value);
-    onPositionChange?.(value);
+    onAnswerChange?.(value);
   };
 
-  const handleImageUpload = (file: File) => {
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImageUrl(result);
-        onImageChange?.(result);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handlePointsChange = (value: number) => {
+    const points = Math.max(0, value);
+    setPointsValue(points);
+    onPointsChange?.(points);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
+  const handleTimeMinutesChange = (value: number) => {
+    const minutes = Math.max(0, Math.floor(value));
+    setTimeMinutesValue(minutes);
+    onTimeMinutesChange?.(minutes);
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  const handleTimeSecondsChange = (value: number) => {
+    const seconds = Math.max(0, Math.min(59, Math.floor(value)));
+    setTimeSecondsValue(seconds);
+    onTimeSecondsChange?.(seconds);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleImageUpload(file);
-    }
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setImageUrl(null);
-    onImageChange?.(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleDropZoneClick = () => {
-    fileInputRef.current?.click();
+  const handleMaxAttemptsChange = (value: number) => {
+    const attempts = Math.max(1, Math.floor(value));
+    setMaxAttemptsValue(attempts);
+    onMaxAttemptsChange?.(attempts);
   };
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Question Text *
-        </label>
-        <textarea
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the question text..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Phrase *
-        </label>
-        <textarea
-          value={phraseText}
-          onChange={(e) => handlePhraseChange(e.target.value)}
-          placeholder="Enter the phrase to defend or argue against..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          The phrase that students will either defend or argue against
-        </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Image (Optional)
-        </label>
-        {!imageUrl ? (
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleDropZoneClick}
-            className={`
-              relative w-full h-48 border-2 border-dashed rounded-lg cursor-pointer
-              transition-all duration-200
-              ${isDragging
-                ? "border-[#44b07f] bg-[#44b07f]/5"
-                : "border-gray-300 hover:border-gray-400 bg-gray-50"
-              }
-              flex flex-col items-center justify-center gap-3
-            `}
-          >
-            <CloudUploadIcon
-              className={`text-4xl ${isDragging ? "text-[#44b07f]" : "text-gray-400"}`}
-            />
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">
-                Drag and drop an image here
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                or click to browse
-              </p>
-            </div>
+      {/* Top Section: Question Text, Instructions, Content (Phrase) */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column: Text Inputs */}
+        <div className="col-span-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Question Text *
+            </label>
             <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileInputChange}
-              className="hidden"
+              type="text"
+              value={questionText}
+              onChange={(e) => handleQuestionChange(e.target.value)}
+              placeholder="Enter the question text..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
             />
           </div>
-        ) : (
-          <div className="relative w-full">
-            <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
-              <img
-                src={imageUrl}
-                alt="Question"
-                className="w-full h-auto max-h-48 object-contain bg-gray-50"
-              />
-            </div>
-            <button
-              onClick={handleRemoveImage}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-              title="Remove image"
-            >
-              <DeleteIcon fontSize="small" />
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Instructions
+            </label>
+            <input
+              type="text"
+              value={instructionsText}
+              onChange={(e) => handleInstructionsChange(e.target.value)}
+              placeholder="Enter instructions..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+            />
           </div>
-        )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phrase (Content) *
+            </label>
+            <textarea
+              value={contentText}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="Enter the phrase to defend or argue against..."
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent resize-none"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              The phrase that students will either defend or argue against
+            </p>
+          </div>
+        </div>
+
+        {/* Right Column: Image and Position Assignment */}
+        <div className="col-span-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Image (Optional)
+            </label>
+            <ImageUpload
+              imageUrl={imageUrl}
+              onImageChange={(url) => {
+                setImageUrl(url);
+                onImageChange?.(url);
+              }}
+              height="h-48"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Position Assignment *
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => handlePositionChange("for")}
+                className={`p-3 border-2 rounded-lg transition-all duration-200 text-sm ${
+                  selectedPosition === "for"
+                    ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                }`}
+              >
+                For (Defend)
+              </button>
+              <button
+                onClick={() => handlePositionChange("against")}
+                className={`p-3 border-2 rounded-lg transition-all duration-200 text-sm ${
+                  selectedPosition === "against"
+                    ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                }`}
+              >
+                Against (Argue)
+              </button>
+              <button
+                onClick={() => handlePositionChange("random")}
+                className={`p-3 border-2 rounded-lg transition-all duration-200 text-sm ${
+                  selectedPosition === "random"
+                    ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
+                    : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                }`}
+              >
+                Random
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {selectedPosition === "random"
+                ? "Position will be randomly assigned to students"
+                : selectedPosition === "for"
+                ? "Students must defend this phrase"
+                : "Students must argue against this phrase"}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Position Assignment *
-        </label>
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={() => handlePositionChange("for")}
-            className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-              selectedPosition === "for"
-                ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
-                : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-            }`}
-          >
-            For (Defend)
-          </button>
-          <button
-            onClick={() => handlePositionChange("against")}
-            className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-              selectedPosition === "against"
-                ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
-                : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-            }`}
-          >
-            Against (Argue)
-          </button>
-          <button
-            onClick={() => handlePositionChange("random")}
-            className={`p-4 border-2 rounded-lg transition-all duration-200 ${
-              selectedPosition === "random"
-                ? "border-[#44b07f] bg-[#44b07f]/10 text-[#44b07f] font-medium"
-                : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-            }`}
-          >
-            Random
-          </button>
+      {/* Points, Time, and Max Attempts Row */}
+      <div className="grid grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Minutes) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="60"
+            value={timeMinutesValue}
+            onChange={(e) =>
+              handleTimeMinutesChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">Minutes to answer</p>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          {selectedPosition === "random"
-            ? "Position will be randomly assigned to students"
-            : selectedPosition === "for"
-            ? "Students must defend this phrase"
-            : "Students must argue against this phrase"}
-        </p>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Seconds) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={timeSecondsValue}
+            onChange={(e) =>
+              handleTimeSecondsChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Additional seconds (0-59)
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Points *
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={pointsValue}
+            onChange={(e) => handlePointsChange(parseInt(e.target.value) || 0)}
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Points awarded for correct answer
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Max Attempts *
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={maxAttemptsValue}
+            onChange={(e) =>
+              handleMaxAttemptsChange(parseInt(e.target.value) || 1)
+            }
+            placeholder="1"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Maximum number of attempts allowed
+          </p>
+        </div>
       </div>
     </div>
   );
