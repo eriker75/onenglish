@@ -44,15 +44,8 @@ export const questionTypesByArea: { [key: string]: QuestionType[] } = {
       category: "Vocabulary",
     },
     {
-      id: "spell_image_with_voice",
-      name: "Spell with Voice",
-      description: "Spell letter by letter with voice",
-      icon: VoiceIcon,
-      category: "Vocabulary",
-    },
-    {
-      id: "spell_image_to_text",
-      name: "Spell to Text",
+      id: "spelling",
+      name: "Spelling",
       description: "Spell the English word shown",
       icon: SpellCheckIcon,
       category: "Vocabulary",

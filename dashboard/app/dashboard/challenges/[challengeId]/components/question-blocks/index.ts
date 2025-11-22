@@ -1,8 +1,7 @@
 // Vocabulary
 export { default as ImageToMultipleChoiceText } from "./ImageToMultipleChoiceText";
 export { default as WordBox } from "./WordBox";
-export { default as SpellImageWithVoice } from "./SpellImageWithVoice";
-export { default as SpellImageToText } from "./SpellImageToText";
+export { default as Spelling } from "./Spelling";
 export { default as WordAssociationsWithText } from "./WordAssociationsWithText";
 
 // Grammar

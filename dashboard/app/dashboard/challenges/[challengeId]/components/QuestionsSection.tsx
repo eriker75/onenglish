@@ -8,8 +8,7 @@ import { QuestionType, questionTypesByArea } from "./questionTypes";
 import {
   ImageToMultipleChoiceText,
   WordBox,
-  SpellImageWithVoice,
-  SpellImageToText,
+  Spelling,
   WordAssociationsWithText,
   Unscramble,
   Tenses,
@@ -63,8 +62,7 @@ interface QuestionsSectionProps {
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   image_to_multiple_choice_text: ImageToMultipleChoiceText,
   wordbox: WordBox,
-  spell_image_with_voice: SpellImageWithVoice,
-  spell_image_to_text: SpellImageToText,
+  spelling: Spelling,
   word_associations_with_text: WordAssociationsWithText,
   unscramble: Unscramble,
   tenses: Tenses,
