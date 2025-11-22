@@ -6,6 +6,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 interface SpellingProps {
   question?: string;
+  instructions?: string;
   correctWord?: string;
   imageUrl?: string;
   points?: number;
@@ -13,6 +14,7 @@ interface SpellingProps {
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
   onCorrectWordChange?: (word: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
   onPointsChange?: (points: number) => void;
@@ -23,6 +25,7 @@ interface SpellingProps {
 
 export default function Spelling({
   question = "",
+  instructions = "",
   correctWord = "",
   imageUrl: initialImageUrl,
   points: initialPoints = 0,
@@ -30,6 +33,7 @@ export default function Spelling({
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
   onCorrectWordChange,
   onImageChange,
   onPointsChange,
@@ -38,6 +42,7 @@ export default function Spelling({
   onMaxAttemptsChange,
 }: SpellingProps) {
   const [questionText, setQuestionText] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
   const [correctWordText, setCorrectWordText] = useState(correctWord);
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
   const [isDragging, setIsDragging] = useState(false);
@@ -50,6 +55,11 @@ export default function Spelling({
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
+  };
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
   };
 
   const handleCorrectWordChange = (value: string) => {
@@ -136,17 +146,31 @@ export default function Spelling({
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Question Text *
-        </label>
-        <textarea
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the question text..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
       <div>
@@ -296,6 +320,13 @@ export default function Spelling({
             Maximum number of attempts allowed
           </p>
         </div>
+      </div>
+
+      {/* AI Validation Info */}
+      <div className="bg-[#33CC00]/10 border border-[#33CC00] rounded-lg p-4">
+        <p className="text-sm text-gray-700">
+          <strong className="text-[#33CC00]">AI-Powered Validation:</strong> Students will spell the English word shown in the image. The system will automatically validate if the spelling matches the correct answer using AI. No manual answer checking required.
+        </p>
       </div>
     </div>
   );

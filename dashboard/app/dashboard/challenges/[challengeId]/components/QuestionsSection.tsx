@@ -203,6 +203,10 @@ export default function QuestionsSection({
     setSelectedQuestionType(null);
     setNewQuestionData({});
     setPendingQuestionData(null);
+    // Clear currentQuestionType in store if it's set, to avoid auto-reselection in grid
+    if (currentQuestionType) {
+      setCurrentQuestionType(null);
+    }
     // Go to grid page (one page beyond questions)
     setCurrentPage(filteredQuestions.length + 1);
   };
