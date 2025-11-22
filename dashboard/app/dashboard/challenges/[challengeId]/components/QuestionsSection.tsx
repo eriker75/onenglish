@@ -112,6 +112,14 @@ export default function QuestionsSection({
     setCurrentPage(1);
   }, [currentQuestionType]);
 
+  // Reset to grid view when area changes
+  useEffect(() => {
+    setSelectedQuestionType(null);
+    setNewQuestionData({});
+    setPendingQuestionData(null);
+    setCurrentPage((questions.length || 0) + 1);
+  }, [area]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // When a new question is added and we have pending data, update it
   useEffect(() => {
     if (pendingQuestionData && filteredQuestions.length > pendingQuestionData.previousLength) {
