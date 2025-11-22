@@ -1,5 +1,6 @@
 import { EnrichedQuestion, FormattedQuestion } from './types';
 export declare class QuestionFormatterService {
+    private getConfigurationsIfNotEmpty;
     formatQuestion(question: EnrichedQuestion): FormattedQuestion | null;
     formatQuestions(questions: EnrichedQuestion[]): FormattedQuestion[];
     private formatImageToMultipleChoices;

@@ -1,7 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, ValidateNested, ArrayMinSize, IsString, IsBoolean, IsOptional, IsInt, Min } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
 export class PassageDto {
   @ApiProperty({
@@ -59,7 +65,7 @@ export class SubQuestionDto {
   points: number;
 }
 
-export class CreateReadItDto extends BaseCreateQuestionDto {
+export class CreateReadItDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     type: [PassageDto],
     description: 'Reading passages (can include images and/or text)',
@@ -132,5 +138,26 @@ export class CreateReadItDto extends BaseCreateQuestionDto {
     return value;
   })
   parentQuestionId?: string;
+
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description:
+      'Optional reference image (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
+  })
+  @IsOptional()
+  @IsFile()
+  @MaxFileSize(5e6) // 5MB
+  @HasMimeType([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/gif',
+    'image/avif',
+  ])
+  media?: FileSystemStoredFile;
 }
 

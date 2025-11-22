@@ -13,6 +13,7 @@ exports.CreateTensesDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
+const nestjs_form_data_1 = require("nestjs-form-data");
 var ValidTenses;
 (function (ValidTenses) {
     ValidTenses["PRESENT_SIMPLE"] = "present_simple";
@@ -25,10 +26,11 @@ var ValidTenses;
     ValidTenses["PAST_PERFECT"] = "past_perfect";
     ValidTenses["FUTURE_PERFECT"] = "future_perfect";
 })(ValidTenses || (ValidTenses = {}));
-class CreateTensesDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateTensesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     options;
     answer;
+    media;
 }
 exports.CreateTensesDto = CreateTensesDto;
 __decorate([
@@ -65,4 +67,25 @@ __decorate([
     (0, class_validator_1.IsEnum)(ValidTenses),
     __metadata("design:type", String)
 ], CreateTensesDto.prototype, "answer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateTensesDto.prototype, "media", void 0);
 //# sourceMappingURL=create-tenses.dto.js.map

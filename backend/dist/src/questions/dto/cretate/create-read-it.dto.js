@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const base_question_dto_1 = require("./base-question.dto");
+const nestjs_form_data_1 = require("nestjs-form-data");
 class PassageDto {
     image;
     text;
@@ -83,10 +84,11 @@ __decorate([
     (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], SubQuestionDto.prototype, "points", void 0);
-class CreateReadItDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateReadItDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     subQuestions;
     parentQuestionId;
+    media;
 }
 exports.CreateReadItDto = CreateReadItDto;
 __decorate([
@@ -167,4 +169,25 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], CreateReadItDto.prototype, "parentQuestionId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateReadItDto.prototype, "media", void 0);
 //# sourceMappingURL=create-read-it.dto.js.map

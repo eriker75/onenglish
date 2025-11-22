@@ -1,8 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
-export class CreateReportItDto extends BaseCreateQuestionDto {
+export class CreateReportItDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     example: '"I will call you tomorrow," she said.',
     description: 'Direct speech sentence to convert to reported speech',
@@ -10,13 +16,25 @@ export class CreateReportItDto extends BaseCreateQuestionDto {
   @IsString()
   content: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     required: false,
-    description: 'Optional reference image (PNG with transparency recommended)',
+    description:
+      'Optional reference image (PNG with transparency recommended) (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
   })
   @IsOptional()
-  media?: any;
+  @IsFile()
+  @MaxFileSize(5e6) // 5MB
+  @HasMimeType([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/gif',
+    'image/avif',
+  ])
+  media?: FileSystemStoredFile;
 }
 

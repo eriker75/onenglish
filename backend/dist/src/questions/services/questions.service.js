@@ -221,7 +221,11 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'unscramble';
         const stage = client_1.QuestionStage.GRAMMAR;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
-        return this.prisma.question.create({
+        let uploadedFile = null;
+        if (dto.media) {
+            uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
+        }
+        const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage,
@@ -237,6 +241,12 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 answer: dto.answer,
             },
         });
+        if (uploadedFile) {
+            await this.questionMediaService.attachMediaFiles(question.id, [
+                { id: uploadedFile.id, context: 'main', position: 0 },
+            ]);
+        }
+        return this.findOne(question.id);
     }
     async createTenses(dto) {
         await this.validateChallenge(dto.challengeId);
@@ -246,7 +256,11 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'tenses';
         const stage = client_1.QuestionStage.GRAMMAR;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
-        return this.prisma.question.create({
+        let uploadedFile = null;
+        if (dto.media) {
+            uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
+        }
+        const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage,
@@ -263,6 +277,12 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 answer: dto.answer,
             },
         });
+        if (uploadedFile) {
+            await this.questionMediaService.attachMediaFiles(question.id, [
+                { id: uploadedFile.id, context: 'main', position: 0 },
+            ]);
+        }
+        return this.findOne(question.id);
     }
     async createTagIt(dto) {
         await this.validateChallenge(dto.challengeId);
@@ -352,6 +372,10 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'read_it';
         const stage = client_1.QuestionStage.GRAMMAR;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
+        let uploadedFile = null;
+        if (dto.media) {
+            uploadedFile = await this.questionMediaService.uploadSingleFile(dto.media);
+        }
         return this.prisma.$transaction(async (tx) => {
             const totalPoints = dto.subQuestions.reduce((sum, sub) => sum + sub.points, 0);
             const parent = await tx.question.create({
@@ -370,6 +394,16 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                     parentQuestionId: dto.parentQuestionId,
                 },
             });
+            if (uploadedFile) {
+                await tx.questionMedia.create({
+                    data: {
+                        questionId: parent.id,
+                        mediaFileId: uploadedFile.id,
+                        position: 0,
+                        context: 'main',
+                    },
+                });
+            }
             await tx.question.createMany({
                 data: dto.subQuestions.map((sub, index) => ({
                     challengeId: dto.challengeId,

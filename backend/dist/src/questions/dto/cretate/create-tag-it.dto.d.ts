@@ -1,6 +1,7 @@
-import { BaseCreateQuestionDto } from './base-question.dto';
-export declare class CreateTagItDto extends BaseCreateQuestionDto {
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+import { FileSystemStoredFile } from 'nestjs-form-data';
+export declare class CreateTagItDto extends BaseCreateQuestionWithoutStageDto {
     content: string[];
     answer: string[];
-    media?: any;
+    media?: FileSystemStoredFile;
 }

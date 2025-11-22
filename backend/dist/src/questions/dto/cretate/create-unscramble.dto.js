@@ -13,9 +13,11 @@ exports.CreateUnscrambleDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
-class CreateUnscrambleDto extends base_question_dto_1.BaseCreateQuestionDto {
+const nestjs_form_data_1 = require("nestjs-form-data");
+class CreateUnscrambleDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     answer;
+    media;
 }
 exports.CreateUnscrambleDto = CreateUnscrambleDto;
 __decorate([
@@ -40,4 +42,25 @@ __decorate([
     (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateUnscrambleDto.prototype, "answer", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        required: false,
+        description: 'Optional reference image (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateUnscrambleDto.prototype, "media", void 0);
 //# sourceMappingURL=create-unscramble.dto.js.map

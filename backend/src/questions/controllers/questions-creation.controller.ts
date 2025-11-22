@@ -105,10 +105,12 @@ export class QuestionsCreationController {
   // ==================== GRAMMAR ENDPOINTS ====================
 
   @Post('unscramble')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create an unscramble sentence question',
     description:
-      'Creates a grammar question where students reorder scrambled words to form a correct sentence. Default validation method: AUTO.',
+      'Creates a grammar question where students reorder scrambled words to form a correct sentence. Optionally include a reference image. Default validation method: AUTO.',
   })
   @ApiResponse({
     status: 201,
@@ -123,10 +125,12 @@ export class QuestionsCreationController {
   }
 
   @Post('tenses')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a verb tenses question',
     description:
-      'Creates a grammar question where students identify or select the correct verb tense. Default validation method: AUTO.',
+      'Creates a grammar question where students identify or select the correct verb tense. Optionally include a reference image. Default validation method: AUTO.',
   })
   @ApiResponse({
     status: 201,
@@ -181,10 +185,12 @@ export class QuestionsCreationController {
   }
 
   @Post('read_it')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a reading comprehension question with sub-questions',
     description:
-      'Creates a grammar/reading question where students read a passage and answer true/false sub-questions. Default validation method: AUTO.',
+      'Creates a grammar/reading question where students read a passage and answer true/false sub-questions. Optionally include a reference image. Default validation method: AUTO.',
   })
   @ApiResponse({
     status: 201,

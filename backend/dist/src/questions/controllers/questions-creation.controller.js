@@ -205,9 +205,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createWordAssociations", null);
 __decorate([
     (0, common_1.Post)('unscramble'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create an unscramble sentence question',
-        description: 'Creates a grammar question where students reorder scrambled words to form a correct sentence. Default validation method: AUTO.',
+        description: 'Creates a grammar question where students reorder scrambled words to form a correct sentence. Optionally include a reference image. Default validation method: AUTO.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,
@@ -224,9 +226,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createUnscramble", null);
 __decorate([
     (0, common_1.Post)('tenses'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a verb tenses question',
-        description: 'Creates a grammar question where students identify or select the correct verb tense. Default validation method: AUTO.',
+        description: 'Creates a grammar question where students identify or select the correct verb tense. Optionally include a reference image. Default validation method: AUTO.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,
@@ -285,9 +289,11 @@ __decorate([
 ], QuestionsCreationController.prototype, "createReportIt", null);
 __decorate([
     (0, common_1.Post)('read_it'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a reading comprehension question with sub-questions',
-        description: 'Creates a grammar/reading question where students read a passage and answer true/false sub-questions. Default validation method: AUTO.',
+        description: 'Creates a grammar/reading question where students read a passage and answer true/false sub-questions. Optionally include a reference image. Default validation method: AUTO.',
     }),
     (0, swagger_1.ApiResponse)({
         status: 201,

@@ -34,6 +34,18 @@ import {
 @Injectable()
 export class QuestionFormatterService {
   /**
+   * Helper to include configurations only if not empty
+   */
+  private getConfigurationsIfNotEmpty(
+    configurations?: Record<string, string>,
+  ): Record<string, string> | undefined {
+    if (!configurations || Object.keys(configurations).length === 0) {
+      return undefined;
+    }
+    return configurations;
+  }
+
+  /**
    * Main formatter - routes to specific formatter based on question type
    */
   formatQuestion(question: EnrichedQuestion): FormattedQuestion | null {
@@ -165,7 +177,9 @@ export class QuestionFormatterService {
       options: question.options || [],
       answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -241,7 +255,9 @@ export class QuestionFormatterService {
       // Correct sentence
       correctSentence: question.answer,
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -268,7 +284,9 @@ export class QuestionFormatterService {
       // Correct answer(s)
       answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -296,7 +314,9 @@ export class QuestionFormatterService {
       // Correct answer
       answer: question.answer,
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -348,7 +368,9 @@ export class QuestionFormatterService {
           ?.map((sq) => this.formatQuestion(sq))
           .filter((q): q is FormattedQuestion => q !== null) || [],
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -496,7 +518,9 @@ export class QuestionFormatterService {
       // Reference audio (if available)
       referenceAudio: question.media?.find((m) => m.type === 'audio') || null,
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -524,7 +548,9 @@ export class QuestionFormatterService {
       // Speaking duration
       minDuration: parseInt(question.configurations?.minDuration || '30'),
       // Metadata
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -649,7 +675,9 @@ export class QuestionFormatterService {
           .filter((q): q is FormattedQuestion => q !== null) || [],
       // Configuration
       totalQuestions: question.subQuestions?.length || 0,
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -673,7 +701,9 @@ export class QuestionFormatterService {
       options: question.options,
       answer: question.answer,
       media: question.media || [],
-      configurations: question.configurations || {},
+      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+        configurations: question.configurations,
+      }),
       subQuestions:
         question.subQuestions
           ?.map((sq) => this.formatQuestion(sq))

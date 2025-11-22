@@ -1,6 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsArray, IsEnum, ArrayMinSize } from 'class-validator';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsArray, IsEnum, ArrayMinSize, IsOptional } from 'class-validator';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+import {
+  FileSystemStoredFile,
+  HasMimeType,
+  IsFile,
+  MaxFileSize,
+} from 'nestjs-form-data';
 
 enum ValidTenses {
   PRESENT_SIMPLE = 'present_simple',
@@ -14,7 +20,7 @@ enum ValidTenses {
   FUTURE_PERFECT = 'future_perfect',
 }
 
-export class CreateTensesDto extends BaseCreateQuestionDto {
+export class CreateTensesDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     example: 'She does her homework before dinner every day.',
     description: 'Sentence to identify tense from',
@@ -45,5 +51,26 @@ export class CreateTensesDto extends BaseCreateQuestionDto {
   })
   @IsEnum(ValidTenses)
   answer: ValidTenses;
+
+  @ApiPropertyOptional({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description:
+      'Optional reference image (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
+  })
+  @IsOptional()
+  @IsFile()
+  @MaxFileSize(5e6) // 5MB
+  @HasMimeType([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/gif',
+    'image/avif',
+  ])
+  media?: FileSystemStoredFile;
 }
 

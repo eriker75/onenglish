@@ -9,6 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionFormatterService = void 0;
 const common_1 = require("@nestjs/common");
 let QuestionFormatterService = class QuestionFormatterService {
+    getConfigurationsIfNotEmpty(configurations) {
+        if (!configurations || Object.keys(configurations).length === 0) {
+            return undefined;
+        }
+        return configurations;
+    }
     formatQuestion(question) {
         if (!question)
             return null;
@@ -99,7 +105,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             images: question.media?.filter((m) => m.type === 'image') || [],
             options: question.options || [],
             answer: question.answer,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -156,7 +164,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             scrambledWords: question.content || [],
             correctSentence: question.answer,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -176,7 +186,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             sentence: question.content,
             options: question.options || null,
             answer: question.answer,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -198,7 +210,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             tense: question.content?.tense,
             subject: question.content?.subject,
             answer: question.answer,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -237,7 +251,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             subQuestions: question.subQuestions
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -349,7 +365,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             textToRead: question.content,
             referenceAudio: question.media?.find((m) => m.type === 'audio') || null,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -370,7 +388,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             video: question.media?.find((m) => m.type === 'video') || null,
             prompt: question.content,
             minDuration: parseInt(question.configurations?.minDuration || '30'),
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -465,7 +485,9 @@ let QuestionFormatterService = class QuestionFormatterService {
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],
             totalQuestions: question.subQuestions?.length || 0,
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -486,7 +508,9 @@ let QuestionFormatterService = class QuestionFormatterService {
             options: question.options,
             answer: question.answer,
             media: question.media || [],
-            configurations: question.configurations || {},
+            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
+                configurations: question.configurations,
+            }),
             subQuestions: question.subQuestions
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],

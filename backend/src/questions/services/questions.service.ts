@@ -340,7 +340,18 @@ export class QuestionsService {
       stage,
     );
 
-    return this.prisma.question.create({
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.media) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.media,
+      );
+    }
+
+    // Create the question
+    const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage,
@@ -356,6 +367,16 @@ export class QuestionsService {
         answer: dto.answer,
       },
     });
+
+    // Attach media file if uploaded
+    if (uploadedFile) {
+      await this.questionMediaService.attachMediaFiles(question.id, [
+        { id: uploadedFile.id, context: 'main', position: 0 },
+      ]);
+    }
+
+    // Return enriched question
+    return this.findOne(question.id);
   }
 
   async createTenses(dto: QuestionDtos.CreateTensesDto) {
@@ -374,7 +395,18 @@ export class QuestionsService {
       stage,
     );
 
-    return this.prisma.question.create({
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.media) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.media,
+      );
+    }
+
+    // Create the question
+    const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage,
@@ -391,6 +423,16 @@ export class QuestionsService {
         answer: dto.answer,
       },
     });
+
+    // Attach media file if uploaded
+    if (uploadedFile) {
+      await this.questionMediaService.attachMediaFiles(question.id, [
+        { id: uploadedFile.id, context: 'main', position: 0 },
+      ]);
+    }
+
+    // Return enriched question
+    return this.findOne(question.id);
   }
 
   async createTagIt(dto: QuestionDtos.CreateTagItDto) {
@@ -537,6 +579,16 @@ export class QuestionsService {
       stage,
     );
 
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.media) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.media,
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       // Calculate total points from sub-questions
       const totalPoints = dto.subQuestions.reduce(
@@ -561,6 +613,18 @@ export class QuestionsService {
           parentQuestionId: dto.parentQuestionId,
         },
       });
+
+      // Attach media file if uploaded
+      if (uploadedFile) {
+        await tx.questionMedia.create({
+          data: {
+            questionId: parent.id,
+            mediaFileId: uploadedFile.id,
+            position: 0,
+            context: 'main',
+          },
+        });
+      }
 
       await tx.question.createMany({
         data: dto.subQuestions.map((sub, index) => ({

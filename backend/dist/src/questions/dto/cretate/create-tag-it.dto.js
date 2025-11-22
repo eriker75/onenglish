@@ -13,7 +13,8 @@ exports.CreateTagItDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
-class CreateTagItDto extends base_question_dto_1.BaseCreateQuestionDto {
+const nestjs_form_data_1 = require("nestjs-form-data");
+class CreateTagItDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     answer;
     media;
@@ -40,13 +41,24 @@ __decorate([
     __metadata("design:type", Array)
 ], CreateTagItDto.prototype, "answer", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({
+    (0, swagger_1.ApiPropertyOptional)({
         type: 'string',
         format: 'binary',
         required: false,
-        description: 'Optional reference image (PNG with transparency recommended)',
+        description: 'Optional reference image (PNG with transparency recommended) (image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif)',
     }),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
 ], CreateTagItDto.prototype, "media", void 0);
 //# sourceMappingURL=create-tag-it.dto.js.map
