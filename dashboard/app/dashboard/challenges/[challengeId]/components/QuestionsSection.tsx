@@ -351,10 +351,20 @@ export default function QuestionsSection({
               <FormComponent
                 {...newQuestionData}
                 onQuestionChange={(value: string) => setNewQuestionData({ ...newQuestionData, question: value })}
+                onInstructionsChange={(value: string) => setNewQuestionData({ ...newQuestionData, instructions: value })}
                 onOptionsChange={(options: string[]) => setNewQuestionData({ ...newQuestionData, options })}
                 onCorrectAnswerChange={(answer: string) => setNewQuestionData({ ...newQuestionData, correctAnswer: answer })}
+                onAnswerChange={(answer: string[]) => setNewQuestionData({ ...newQuestionData, answer })}
                 onImageChange={(imageUrl: string | null) => setNewQuestionData({ ...newQuestionData, imageUrl })}
                 onAudioChange={(audioUrl: string | null) => setNewQuestionData({ ...newQuestionData, audioUrl })}
+                onContentChange={(content: any) => setNewQuestionData({ ...newQuestionData, content })}
+                onParagraphChange={(paragraph: string) => setNewQuestionData({ ...newQuestionData, paragraph })}
+                onStatementsChange={(statements: any[]) => setNewQuestionData({ ...newQuestionData, statements })}
+                onSentenceChange={(sentence: string) => setNewQuestionData({ ...newQuestionData, sentence })}
+                onWordsChange={(words: string[]) => setNewQuestionData({ ...newQuestionData, words })}
+                onCorrectSentenceChange={(sentence: string) => setNewQuestionData({ ...newQuestionData, correctSentence: sentence })}
+                onMaxWordsChange={(value: number) => setNewQuestionData({ ...newQuestionData, maxWords: value })}
+                onMaxAssociationsChange={(value: number) => setNewQuestionData({ ...newQuestionData, maxAssociations: value })}
                 onPointsChange={(points: number) => setNewQuestionData({ ...newQuestionData, points })}
                 onTimeMinutesChange={(minutes: number) => setNewQuestionData({ ...newQuestionData, timeMinutes: minutes })}
                 onTimeSecondsChange={(seconds: number) => setNewQuestionData({ ...newQuestionData, timeSeconds: seconds })}
@@ -413,10 +423,20 @@ export default function QuestionsSection({
               {React.createElement(componentMap[currentQuestion.type], {
                 ...currentQuestion,
                 onQuestionChange: (value: string) => onQuestionChange(area, currentQuestion.id, "question", value),
+                onInstructionsChange: (value: string) => onQuestionChange(area, currentQuestion.id, "instructions", value),
                 onOptionsChange: (options: string[]) => onQuestionChange(area, currentQuestion.id, "options", options),
                 onCorrectAnswerChange: (answer: string) => onQuestionChange(area, currentQuestion.id, "correctAnswer", answer),
+                onAnswerChange: (answer: string[]) => onQuestionChange(area, currentQuestion.id, "answer", answer),
                 onImageChange: (imageUrl: string | null) => onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || ""),
                 onAudioChange: (audioUrl: string | null) => onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || ""),
+                onContentChange: (content: any) => onQuestionChange(area, currentQuestion.id, "content", content),
+                onParagraphChange: (paragraph: string) => onQuestionChange(area, currentQuestion.id, "paragraph", paragraph),
+                onStatementsChange: (statements: any[]) => onQuestionChange(area, currentQuestion.id, "statements", statements),
+                onSentenceChange: (sentence: string) => onQuestionChange(area, currentQuestion.id, "sentence", sentence),
+                onWordsChange: (words: string[]) => onQuestionChange(area, currentQuestion.id, "words", words),
+                onCorrectSentenceChange: (sentence: string) => onQuestionChange(area, currentQuestion.id, "correctSentence", sentence),
+                onMaxWordsChange: (value: number) => onQuestionChange(area, currentQuestion.id, "maxWords", value.toString()),
+                onMaxAssociationsChange: (value: number) => onQuestionChange(area, currentQuestion.id, "maxAssociations", value.toString()),
                 onPointsChange: (points: number) => onQuestionChange(area, currentQuestion.id, "points", points.toString()),
                 onTimeMinutesChange: (minutes: number) => onQuestionChange(area, currentQuestion.id, "timeMinutes", minutes.toString()),
                 onTimeSecondsChange: (seconds: number) => onQuestionChange(area, currentQuestion.id, "timeSeconds", seconds.toString()),
