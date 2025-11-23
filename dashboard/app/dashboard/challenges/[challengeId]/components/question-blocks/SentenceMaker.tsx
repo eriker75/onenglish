@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { useState } from "react";
 import ImageUpload from "@/components/elements/ImageUpload";
 
 interface SentenceMakerProps {
   question?: string;
+  instructions?: string;
+  questionText?: string;
   images?: string[];
   points?: number;
   timeMinutes?: number;
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
+  onQuestionTextChange?: (questionText: string) => void;
   onImagesChange?: (images: string[]) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
@@ -21,52 +24,55 @@ interface SentenceMakerProps {
 
 export default function SentenceMaker({
   question = "",
+  instructions = "",
+  questionText: initialQuestionText = "",
   images = [],
   points: initialPoints = 0,
   timeMinutes: initialTimeMinutes = 0,
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
+  onQuestionTextChange,
   onImagesChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
 }: SentenceMakerProps) {
-  const [questionText, setQuestionText] = useState(
-    question || "Use the images to create a complete English sentence"
+  const [questionValue, setQuestionValue] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
+  const [questionText, setQuestionText] = useState(initialQuestionText);
+  // Always have exactly 2 image slots
+  const [imagesList, setImagesList] = useState<string[]>(
+    images.length >= 2 ? images.slice(0, 2) : images.length === 1 ? [images[0], ""] : ["", ""]
   );
-  const [imagesList, setImagesList] = useState<string[]>(images.length > 0 ? images : []);
   const [pointsValue, setPointsValue] = useState(initialPoints);
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
   const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const handleQuestionChange = (value: string) => {
-    setQuestionText(value);
+    setQuestionValue(value);
     onQuestionChange?.(value);
+  };
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
+  };
+
+  const handleQuestionTextChange = (value: string) => {
+    setQuestionText(value);
+    onQuestionTextChange?.(value);
   };
 
 
   const handleImageChange = (index: number, imageUrl: string | null) => {
     const newImages = [...imagesList];
-    if (imageUrl) {
-      newImages[index] = imageUrl;
-    }
+    newImages[index] = imageUrl || "";
     setImagesList(newImages);
     onImagesChange?.(newImages);
-  };
-
-  const handleRemoveImage = (index: number) => {
-    const newImages = imagesList.filter((_, i) => i !== index);
-    setImagesList(newImages);
-    onImagesChange?.(newImages);
-  };
-
-  const handleAddImageSlot = () => {
-    const newImages = [...imagesList, ""];
-    setImagesList(newImages);
   };
 
   const handlePointsChange = (value: number) => {
@@ -95,70 +101,56 @@ export default function SentenceMaker({
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Instruction Text *
-        </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the instruction text..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      {/* Row 1: Question and Instructions */}
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question *
+          </label>
+          <input
+            type="text"
+            value={questionValue}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
+      {/* Row 2: Two Image Blocks */}
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Images *
-          </label>
-          <button
-            onClick={handleAddImageSlot}
-            className="px-4 py-2 text-sm font-medium text-[#33CC00] bg-white border-2 border-[#33CC00] hover:bg-[#33CC00] hover:text-white rounded-lg transition-colors shadow-sm"
-          >
-            Add Slot
-          </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {imagesList.map((image, index) => (
+            <div key={index} className="space-y-2">
+              <label className="block text-sm font-medium text-gray-600">
+                Image {index + 1} *
+              </label>
+              <ImageUpload
+                imageUrl={image || undefined}
+                onImageChange={(url) => handleImageChange(index, url)}
+                height="h-48"
+              />
+            </div>
+          ))}
         </div>
-        {imagesList.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-            <p className="text-sm text-yellow-800">
-              Click "Add Slot" to add image upload areas
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {imagesList.map((image, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-600">
-                    Image {index + 1}
-                  </span>
-                  {image && (
-                    <button
-                      onClick={() => handleRemoveImage(index)}
-                      className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors"
-                      title="Remove image"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </button>
-                  )}
-                </div>
-                <ImageUpload
-                  imageUrl={image || undefined}
-                  onImageChange={(url) => handleImageChange(index, url)}
-                  height="h-32"
-                />
-              </div>
-            ))}
-          </div>
-        )}
         <p className="text-xs text-gray-500 mt-2">
-          Add multiple image slots. Drag and drop or click to upload images. Students will create a sentence in English using these images.
+          Upload two images. Students will create a sentence in English using these images.
         </p>
       </div>
 
-      {/* Points, Time, and Max Attempts Row */}
+      {/* Row 3: Points, Time, and Max Attempts */}
       <div className="grid grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

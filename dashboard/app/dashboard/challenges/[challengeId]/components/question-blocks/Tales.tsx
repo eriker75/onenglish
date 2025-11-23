@@ -5,6 +5,7 @@ import ImageUpload from "@/components/elements/ImageUpload";
 
 interface TalesProps {
   question?: string;
+  instructions?: string;
   imageUrl?: string;
   exampleStory?: string;
   points?: number;
@@ -12,6 +13,7 @@ interface TalesProps {
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
   onExampleStoryChange?: (story: string) => void;
   onPointsChange?: (points: number) => void;
@@ -22,6 +24,7 @@ interface TalesProps {
 
 export default function Tales({
   question = "",
+  instructions = "",
   imageUrl: initialImageUrl,
   exampleStory = "",
   points: initialPoints = 0,
@@ -29,6 +32,7 @@ export default function Tales({
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
   onImageChange,
   onExampleStoryChange,
   onPointsChange,
@@ -36,9 +40,8 @@ export default function Tales({
   onTimeSecondsChange,
   onMaxAttemptsChange,
 }: TalesProps) {
-  const [questionText, setQuestionText] = useState(
-    question || "Write a story in English about this image"
-  );
+  const [questionText, setQuestionText] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
   const [exampleStoryText, setExampleStoryText] = useState(exampleStory);
   const [pointsValue, setPointsValue] = useState(initialPoints);
@@ -49,6 +52,11 @@ export default function Tales({
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
+  };
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
   };
 
   const handleExampleStoryChange = (value: string) => {
@@ -87,17 +95,32 @@ export default function Tales({
 
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Instruction Text *
-        </label>
-        <input
-          type="text"
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the instruction text..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      {/* Row 1: Question Text and Instructions */}
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
       <div>
