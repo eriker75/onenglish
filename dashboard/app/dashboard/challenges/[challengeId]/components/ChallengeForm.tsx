@@ -1,15 +1,15 @@
 "use client";
-
 import { useStepper } from "@/hooks/useStepper";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { useEffect } from "react";
-import QuestionsSection, { Question, QuestionFieldValue } from "./QuestionsSection";
+import QuestionsSection, {
+  Question,
+  QuestionFieldValue,
+} from "./QuestionsSection";
 import FormNavigation from "./FormNavigation";
-import { QuestionType } from "./questionTypes";
 
 interface ChallengeFormProps {
   questionsByArea: { [key: string]: Question[] };
-  onAddQuestion: (area: string, questionType?: QuestionType) => void;
   onRemoveQuestion: (area: string, questionId: string) => void;
   onQuestionChange: (
     area: string,
@@ -25,24 +25,21 @@ interface ChallengeFormProps {
   ) => void;
   onSubmit: () => void;
   onBack: () => void;
+  onSuccess?: () => void; // Add onSuccess prop
 }
 
 export default function ChallengeForm({
   questionsByArea,
-  onAddQuestion,
   onRemoveQuestion,
   onQuestionChange,
   onOptionChange,
   onSubmit,
   onBack,
+  onSuccess,
 }: ChallengeFormProps) {
-  const { currentStep, nextStep, prevStep, steps, goToStep } = useStepper();
-  const {
-    currentStage,
-    setCurrentStage,
-    addStage,
-    setCurrentQuestionType,
-  } = useChallengeFormUIStore();
+  const { currentStep, nextStep, prevStep, steps } = useStepper();
+  const { setCurrentStage, addStage, setCurrentQuestionType } =
+    useChallengeFormUIStore();
 
   // Set stage from stepper when it changes (single source of truth: stepper)
   useEffect(() => {
@@ -50,18 +47,18 @@ export default function ChallengeForm({
     if (currentArea) {
       const stageName = currentArea.toLowerCase();
       const state = useChallengeFormUIStore.getState();
-      
+
       // Only update if different to avoid loops
       if (stageName !== state.currentStage) {
         // Reset question type filter when stage changes
         setCurrentQuestionType(null);
-        
+
         // Add stage if it doesn't exist
-        if (!state.stages.includes(stageName as any)) {
-          addStage(stageName as any);
+        if (!state.stages.includes(stageName)) {
+          addStage(stageName);
         } else {
           // Only set if it's actually different
-          setCurrentStage(stageName as any);
+          setCurrentStage(stageName);
         }
       }
     }
@@ -88,10 +85,10 @@ export default function ChallengeForm({
       <QuestionsSection
         area={currentArea}
         questions={currentQuestions}
-        onAddQuestion={onAddQuestion}
         onRemoveQuestion={onRemoveQuestion}
         onQuestionChange={onQuestionChange}
         onOptionChange={onOptionChange}
+        onSuccess={onSuccess}
       />
       {/* Navigation Buttons */}
       <FormNavigation

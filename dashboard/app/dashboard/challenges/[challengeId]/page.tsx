@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import DashboardContent from "@/components/DashboardContent";
@@ -10,10 +10,10 @@ import ChallengeForm, {
   QuestionFieldValue,
 } from "@/app/dashboard/challenges/[challengeId]/components/ChallengeForm";
 import QuestionTypeNavigation from "./components/QuestionTypeNavigation";
-import { QuestionType } from "./components/questionTypes";
 import { getDemoChallenges } from "@/src/data/demo-data";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import api from "@/src/config/axiosInstance"; // Import axios instance
 
 export default function ChallengeEditPage() {
   const router = useRouter();
@@ -38,55 +38,104 @@ export default function ChallengeEditPage() {
     Speaking: [],
   });
 
-  useEffect(() => {
-    const loadChallenge = async () => {
+  const loadChallenge = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // Set challenge ID in UI store
+      setCurrentChallengeId(challengeId);
+      // Set challenge ID in data store (needed for wrappers)
+      updateChallengeField("id", challengeId);
+
+      // Fetch challenge details from API
       try {
-        setIsLoading(true);
-        // Set challenge ID in UI store
-        setCurrentChallengeId(challengeId);
-        // Set challenge ID in data store (needed for wrappers)
-        updateChallengeField("id", challengeId);
-
-        // First, try to load from localStorage (for newly created challenges)
-        const savedChallenge = localStorage.getItem(`challenge-${challengeId}`);
-
-        if (savedChallenge) {
-          const challenge = JSON.parse(savedChallenge);
-          setGrade(challenge.grade);
-          setChallengeType(challenge.type);
-          setIsDemo(challenge.isDemo || false);
-          setChallengeName(challenge.name);
-          setIsLoading(false);
-          return;
-        }
-
-        // If not in localStorage, try to load from demo data
-        const challenges = await getDemoChallenges();
-        const challenge = challenges.find((c) => c.id === challengeId);
+        const response = await api.get(`/challenges/${challengeId}`);
+        const challenge = response.data;
 
         if (challenge) {
-          setGrade(challenge.grade);
-          setChallengeType(challenge.type);
-          setIsDemo(challenge.isDemo || false);
-          setChallengeName(challenge.name);
-          // If challenge has questions, load them here
-          // For now, start with empty questions
-        } else {
-          // Challenge doesn't exist, but allow editing anyway (for new challenges)
-          // The data will be loaded from the redirect state or localStorage
-          console.warn("Challenge not found, but continuing with edit mode");
-        }
-      } catch (error) {
-        console.error("Error loading challenge:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+           setGrade(challenge.grade);
+           setChallengeType(challenge.type);
+           setIsDemo(challenge.isDemo || false);
+           setChallengeName(challenge.title); // Assuming 'title' is the property name from API
 
+           // Map questions from API response to questionsByArea structure
+           // We need to implement mapping logic based on API response structure
+           // For now, let's assume the API returns questions in a format we can map
+           // Or we fetch questions separately if needed. 
+           // If the challenge object contains questions, map them:
+           
+           if (challenge.questions && Array.isArray(challenge.questions)) {
+             const mappedQuestionsByArea: { [key: string]: Question[] } = {
+                Vocabulary: [],
+                Grammar: [],
+                Listening: [],
+                Writing: [],
+                Speaking: [],
+             };
+
+             challenge.questions.forEach((q: any) => {
+               // Determine area based on q.stage or q.type
+               // Ensure q.stage matches our keys "Vocabulary", "Grammar", etc.
+               // If stage is uppercase "VOCABULARY", convert to Title Case if needed, 
+               // but our keys are Title Case.
+               
+               // Helper to format stage name
+               const formatStage = (stage: string) => {
+                 if (!stage) return "Vocabulary"; // Default fallback
+                 return stage.charAt(0).toUpperCase() + stage.slice(1).toLowerCase();
+               };
+
+               const area = formatStage(q.stage);
+               if (mappedQuestionsByArea[area]) {
+                 mappedQuestionsByArea[area].push({
+                   id: q.id,
+                   question: q.text || q.question || "", // Handle various potential field names
+                   type: q.type,
+                   questionTypeName: q.type, // Or map to readable name
+                   options: q.options,
+                   correctAnswer: q.answer,
+                   stage: q.stage
+                   // Add other fields as needed
+                 });
+               }
+             });
+             setQuestionsByArea(mappedQuestionsByArea);
+           }
+        }
+      } catch (apiError) {
+         console.error("Error fetching challenge from API, falling back to demo/local", apiError);
+         // Fallback logic (keep existing demo/local storage logic as fallback)
+          const savedChallenge = localStorage.getItem(`challenge-${challengeId}`);
+          if (savedChallenge) {
+            const challenge = JSON.parse(savedChallenge);
+            setGrade(challenge.grade);
+            setChallengeType(challenge.type);
+            setIsDemo(challenge.isDemo || false);
+            setChallengeName(challenge.name);
+            // Load questions if stored locally?
+          } else {
+             const challenges = await getDemoChallenges();
+             const challenge = challenges.find((c) => c.id === challengeId);
+             if (challenge) {
+                setGrade(challenge.grade);
+                setChallengeType(challenge.type);
+                setIsDemo(challenge.isDemo || false);
+                setChallengeName(challenge.name);
+             }
+          }
+      }
+
+    } catch (error) {
+      console.error("Error loading challenge:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [challengeId, setCurrentChallengeId, updateChallengeField]);
+
+  useEffect(() => {
     if (challengeId) {
       loadChallenge();
     }
-  }, [challengeId, setCurrentChallengeId]);
+  }, [challengeId, loadChallenge]);
 
   // Initialize with first stage if no stage is set
   useEffect(() => {
@@ -96,36 +145,30 @@ export default function ChallengeEditPage() {
     }
   }, [isLoading, stages.length, addStage]);
 
-  const handleAddQuestion = (area: string, questionType?: QuestionType) => {
-    const { currentStage } = useChallengeFormUIStore.getState();
-
-    // Default question text based on question type
-    let defaultQuestionText = "";
-    if (questionType?.id === "image_to_multiple_choice_text") {
-      defaultQuestionText = "Select the correct word for the image";
-    }
-
-    const newQuestion: Question = {
-      id: `q-${Date.now()}-${Math.random()}`,
-      question: defaultQuestionText,
-      type: questionType?.id || "multiple_choice",
-      questionTypeName: questionType?.name || "Multiple Choice",
-      options: ["", "", "", ""],
-      correctAnswer: "",
-      stage: currentStage || undefined,
-    };
-
-    setQuestionsByArea((prev) => ({
-      ...prev,
-      [area]: [...prev[area], newQuestion],
-    }));
-  };
-
-  const handleRemoveQuestion = (area: string, questionId: string) => {
-    setQuestionsByArea((prev) => ({
-      ...prev,
-      [area]: prev[area].filter((q) => q.id !== questionId),
-    }));
+  const handleRemoveQuestion = async (area: string, questionId: string) => {
+     // Call API to remove question
+     try {
+        // Assuming endpoint like DELETE /questions/:id
+        // We need to know which endpoint to hit. Since we have questionId, maybe generic?
+        // Or we rely on wrapper or specific logic.
+        // But here we just update local state or refetch?
+        // If we want to delete from DB, we should call API.
+        
+        // Assuming we have a delete endpoint, let's try generic
+        // await api.delete(`/questions/${questionId}`); // Uncomment when ready
+        
+        // Then update local state
+        setQuestionsByArea((prev) => ({
+          ...prev,
+          [area]: prev[area].filter((q) => q.id !== questionId),
+        }));
+        
+        // Optionally refetch to be sure
+        // loadChallenge(); 
+     } catch (error) {
+       console.error("Failed to delete question", error);
+       // Show toast error?
+     }
   };
 
   const handleQuestionChange = (
@@ -190,6 +233,11 @@ export default function ChallengeEditPage() {
     // TODO: Save to backend
     router.push("/dashboard/challenges");
   };
+  
+  // Callback to refresh data when a question is created/updated via wrapper
+  const handleDataRefresh = () => {
+      loadChallenge();
+  };
 
   if (isLoading) {
     return (
@@ -230,12 +278,12 @@ export default function ChallengeEditPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <ChallengeForm
             questionsByArea={questionsByArea}
-            onAddQuestion={handleAddQuestion}
             onRemoveQuestion={handleRemoveQuestion}
             onQuestionChange={handleQuestionChange}
             onOptionChange={handleOptionChange}
             onSubmit={handleSubmit}
             onBack={() => router.push("/dashboard/challenges")}
+            onSuccess={handleDataRefresh}
           />
         </div>
       </DashboardContent>

@@ -154,8 +154,8 @@ export default function UnscrambleWrapper({ existingQuestion, onCancel, onSucces
     validWords.forEach(word => formData.append("content[]", word));
     
     // answer: correct words array (split from correctSentence)
-    const correctWords = correctSentence.split(/\s+/).filter(w => w.trim() !== "");
-    correctWords.forEach(word => formData.append("answer[]", word));
+    const correctWords = correctSentence.split(/\s+/).filter((w: string) => w.trim() !== "");
+    correctWords.forEach((word: string | Blob) => formData.append("answer[]", word));
 
     if (imageFile) {
       formData.append("media", imageFile);

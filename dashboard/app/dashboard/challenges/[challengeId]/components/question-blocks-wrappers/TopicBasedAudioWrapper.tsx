@@ -30,9 +30,15 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
   // State
-  const [questionText, setQuestionText] = useState(existingQuestion?.content || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [audioUrl, setAudioUrl] = useState<string | null>((existingQuestion as any)?.mediaUrl || null);
+  const [questionText, setQuestionText] = useState(
+    (existingQuestion as any)?.content || ""
+  );
+  const [instructions, setInstructions] = useState(
+    (existingQuestion as any)?.instructions || ""
+  );
+  const [audioUrl, setAudioUrl] = useState<string | null>(
+    (existingQuestion as any)?.mediaUrl || null
+  );
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [subQuestions, setSubQuestions] = useState<SubQuestion[]>(
     (existingQuestion as any)?.subQuestions?.map((q: any) => ({

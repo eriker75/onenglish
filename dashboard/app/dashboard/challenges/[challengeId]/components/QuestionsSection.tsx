@@ -1,51 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import QuestionCard from "./QuestionCard";
 import QuestionTypeGrid from "./QuestionTypeGrid";
 import { QuestionType, questionTypesByArea } from "./questionTypes";
 import {
-  ImageToMultipleChoiceText,
-  WordBox,
-  Spelling,
-  WordAssociationsWithText,
-  Unscramble,
-  Tenses,
-  TagIt,
-  ReportIt,
-  ReadIt,
-  WordMatch,
-  Gossip,
-  TopicBasedAudio,
-  LyricsTraining,
-  SentenceMaker,
-  FastTest,
-  Tales,
-  SuperBrain,
-  TellMeAboutIt,
-  Debate,
-} from "./question-blocks";
-
-import DebateWrapper from "./question-blocks-wrappers/DebateWrapper";
-import FastTestWrapper from "./question-blocks-wrappers/FastTestWrapper";
-import GossipWrapper from "./question-blocks-wrappers/GossipWrapper";
-import ImageToMultipleChoiceWrapper from "./question-blocks-wrappers/ImageToMultipleChoiceWrapper";
-import LyricsTrainingWrapper from "./question-blocks-wrappers/LyricsTrainingWrapper";
-import ReadItWrapper from "./question-blocks-wrappers/ReadItWrapper";
-import ReportItWrapper from "./question-blocks-wrappers/ReportItWrapper";
-import SentenceMakerWrapper from "./question-blocks-wrappers/SentenceMakerWrapper";
-import SpellingWrapper from "./question-blocks-wrappers/SpellingWrapper";
-import SuperBrainWrapper from "./question-blocks-wrappers/SuperBrainWrapper";
-import TagItWrapper from "./question-blocks-wrappers/TagItWrapper";
-import TalesWrapper from "./question-blocks-wrappers/TalesWrapper";
-import TellMeAboutItWrapper from "./question-blocks-wrappers/TellMeAboutItWrapper";
-import TensesWrapper from "./question-blocks-wrappers/TensesWrapper";
-import TopicBasedAudioWrapper from "./question-blocks-wrappers/TopicBasedAudioWrapper";
-import UnscrambleWrapper from "./question-blocks-wrappers/UnscrambleWrapper";
-import WordAssociationsWrapper from "./question-blocks-wrappers/WordAssociationsWrapper";
-import WordBoxWrapper from "./question-blocks-wrappers/WordBoxWrapper";
-import WordMatchWrapper from "./question-blocks-wrappers/WordMatchWrapper";
+  DebateWrapper,
+  FastTestWrapper,
+  GossipWrapper,
+  ImageToMultipleChoiceWrapper,
+  LyricsTrainingWrapper,
+  ReadItWrapper,
+  ReportItWrapper,
+  SentenceMakerWrapper,
+  SpellingWrapper,
+  SuperBrainWrapper,
+  TagItWrapper,
+  TalesWrapper,
+  TellMeAboutItWrapper,
+  TensesWrapper,
+  TopicBasedAudioWrapper,
+  UnscrambleWrapper,
+  WordAssociationsWrapper,
+  WordBoxWrapper,
+  WordMatchWrapper,
+} from "./question-blocks-wrappers";
 
 export interface Question {
   id: string;
@@ -68,7 +48,6 @@ export interface Statement {
 interface QuestionsSectionProps {
   area: string;
   questions: Question[];
-  onAddQuestion: (area: string, questionType?: QuestionType) => void;
   onRemoveQuestion: (area: string, questionId: string) => void;
   onQuestionChange: (
     area: string,
@@ -82,10 +61,17 @@ interface QuestionsSectionProps {
     optionIndex: number,
     value: string
   ) => void;
+  onSuccess?: () => void; // Add onSuccess prop for refetching
 }
 
-// Component map for CREATING question types (using wrappers)
-const wrapperMap: { [key: string]: React.ComponentType<any> } = {
+interface WrapperProps {
+  existingQuestion?: Question;
+  onCancel: () => void;
+  onSuccess: () => void;
+}
+
+// Component map for mapping question types to their wrapper components
+const wrapperMap: Record<string, React.ComponentType<WrapperProps>> = {
   image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
   wordbox: WordBoxWrapper,
   spelling: SpellingWrapper,
@@ -110,21 +96,16 @@ const wrapperMap: { [key: string]: React.ComponentType<any> } = {
 export default function QuestionsSection({
   area,
   questions,
-  onAddQuestion,
   onRemoveQuestion,
   onQuestionChange,
   onOptionChange,
+  onSuccess,
 }: QuestionsSectionProps) {
-  const { currentStage, currentQuestionType, setCurrentQuestionType } =
+  const { currentQuestionType, setCurrentQuestionType } =
     useChallengeFormUIStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedQuestionType, setSelectedQuestionType] =
     useState<QuestionType | null>(null);
-  const [newQuestionData, setNewQuestionData] = useState<any>({});
-  const [pendingQuestionData, setPendingQuestionData] = useState<{
-    data: any;
-    previousLength: number;
-  } | null>(null);
 
   // Filter questions by selected type from store
   const filteredQuestions = React.useMemo(() => {
@@ -134,104 +115,54 @@ export default function QuestionsSection({
     return questions.filter((q) => q.type === currentQuestionType);
   }, [questions, currentQuestionType]);
 
-  const previousQuestionsLengthRef = React.useRef(filteredQuestions.length);
+  const [prevArea, setPrevArea] = useState(area);
+  const [prevQuestionType, setPrevQuestionType] = useState(currentQuestionType);
+  const [prevQuestionsLength, setPrevQuestionsLength] = useState(
+    filteredQuestions.length
+  );
 
-  const totalPages = filteredQuestions.length || 1;
-
-  // Reset to page 1 when question type filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [currentQuestionType]);
-
-  // Reset to grid view when area changes
-  useEffect(() => {
+  // Reset state when area changes (during render)
+  if (area !== prevArea) {
+    setPrevArea(area);
     setSelectedQuestionType(null);
-    setNewQuestionData({});
-    setPendingQuestionData(null);
     setCurrentPage((questions.length || 0) + 1);
-  }, [area]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
-  // When a new question is added and we have pending data, update it
-  useEffect(() => {
-    if (
-      pendingQuestionData &&
-      filteredQuestions.length > pendingQuestionData.previousLength
-    ) {
-      // A new question was added, find it and update it with pending data
-      const newQuestion = filteredQuestions[filteredQuestions.length - 1];
-
-      if (newQuestion) {
-        Object.keys(pendingQuestionData.data).forEach((key) => {
-          const value = pendingQuestionData.data[key];
-          if (value !== undefined && value !== null && value !== "") {
-            onQuestionChange(area, newQuestion.id, key, value);
-          }
-        });
-      }
-
-      // Clear pending data
-      setPendingQuestionData(null);
-
-      // Reset selected type and data
-      setSelectedQuestionType(null);
-      setNewQuestionData({});
-
-      // Go to the grid page (one page beyond questions)
-      setCurrentPage(filteredQuestions.length + 1);
+  // Reset to page 1 when question type filter changes (during render)
+  if (currentQuestionType !== prevQuestionType) {
+    setPrevQuestionType(currentQuestionType);
+    if (currentQuestionType && currentPage !== 1) {
+      setCurrentPage(1);
     }
-  }, [
-    filteredQuestions.length,
-    pendingQuestionData,
-    area,
-    onQuestionChange,
-    filteredQuestions,
-  ]);
+  }
 
-  // Adjust current page when questions change (e.g., after deletion)
-  useEffect(() => {
-    // Skip if showing a form or if we just added a question (pendingQuestionData handles that)
-    if (selectedQuestionType || pendingQuestionData) {
-      previousQuestionsLengthRef.current = filteredQuestions.length;
-      return;
-    }
-
-    // Detect if we deleted a question (length decreased)
+  // Adjust current page when questions change (during render)
+  if (
+    !selectedQuestionType &&
+    filteredQuestions.length !== prevQuestionsLength
+  ) {
     const questionsLengthDecreased =
-      filteredQuestions.length < previousQuestionsLengthRef.current;
+      filteredQuestions.length < prevQuestionsLength;
 
     if (questionsLengthDecreased) {
       // After deletion, navigate to grid page
-      if (filteredQuestions.length === 0) {
-        // No questions left, go to grid page (page 1)
-        setCurrentPage(1);
-      } else {
-        // Go to grid page (one page beyond all questions)
-        setCurrentPage(filteredQuestions.length + 1);
+      const targetPage =
+        filteredQuestions.length === 0 ? 1 : filteredQuestions.length + 1;
+      if (currentPage !== targetPage) {
+        setCurrentPage(targetPage);
       }
     }
-
-    // Update ref for next comparison
-    previousQuestionsLengthRef.current = filteredQuestions.length;
-  }, [filteredQuestions.length, selectedQuestionType, pendingQuestionData]);
+    setPrevQuestionsLength(filteredQuestions.length);
+  }
 
   const handleSelectQuestionType = (questionType: QuestionType) => {
     // Show the form for the selected question type
     setSelectedQuestionType(questionType);
-
-    // Set default question text based on question type
-    const initialData: any = {};
-    if (questionType.id === "image_to_multiple_choice_text") {
-      initialData.question = "Select the correct word for the image";
-    }
-
-    setNewQuestionData(initialData);
   };
 
   const handleCancelQuestion = () => {
     // Cancel adding question, go back to grid
     setSelectedQuestionType(null);
-    setNewQuestionData({});
-    setPendingQuestionData(null);
     // Clear currentQuestionType in store if it's set, to avoid auto-reselection in grid
     if (currentQuestionType) {
       setCurrentQuestionType(null);
@@ -261,27 +192,18 @@ export default function QuestionsSection({
     ? wrapperMap[selectedQuestionType.id]
     : null;
 
-  // When currentQuestionType changes and we're on the grid, auto-select that type to create
-  useEffect(() => {
-    if (currentQuestionType && isShowingGrid && !selectedQuestionType) {
-      // Find the question type from questionTypesByArea
-      const allTypes = Object.values(questionTypesByArea).flat();
-      const typeToSelect = allTypes.find((t) => t.id === currentQuestionType);
+  // When currentQuestionType changes and we're on the grid, auto-select that type to create (during render)
+  if (currentQuestionType && isShowingGrid && !selectedQuestionType) {
+    // Find the question type from questionTypesByArea
+    const allTypes = Object.values(questionTypesByArea).flat();
+    const typeToSelect = allTypes.find((t) => t.id === currentQuestionType);
 
-      if (typeToSelect) {
-        setSelectedQuestionType(typeToSelect);
-        // Set default question text based on question type
-        const initialData: any = {};
-        if (typeToSelect.id === "image_to_multiple_choice_text") {
-          initialData.question = "Select the correct word for the image";
-        }
-        setNewQuestionData(initialData);
-      }
+    if (typeToSelect) {
+      setSelectedQuestionType(typeToSelect);
     }
-  }, [currentQuestionType, isShowingGrid, selectedQuestionType]);
+  }
 
   // Calculate pagination info - only show pages for existing questions
-  // The grid appears when currentPage > filteredQuestions.length, but it's not a numbered page
   const displayPages = Math.max(1, filteredQuestions.length);
 
   return (
@@ -322,15 +244,6 @@ export default function QuestionsSection({
               </button>
             )}
           </div>
-          <p className="text-gray-600 mt-1">
-            {isShowingQuestionForm
-              ? `Creating new ${selectedQuestionType?.name || "question"}`
-              : isShowingGrid
-                ? filteredQuestions.length === 0
-                  ? `Start building your question set by selecting a type`
-                  : `Select a question type to add another question`
-                : `Manage and edit your ${filteredQuestions.length} ${filteredQuestions.length === 1 ? "question" : "questions"}`}
-          </p>
         </div>
 
         {/* Pagination with numbers - Always visible when there are questions or grid */}
@@ -397,25 +310,10 @@ export default function QuestionsSection({
             <FormComponent
               onCancel={handleCancelQuestion}
               onSuccess={() => {
-                // Refresh/navigate logic if needed
-                // But wrappers usually handle saving. We just need to close form.
-                // However, wrapper onSuccess just toasts. It doesn't callback.
-                // We need to update Wrappers to accept `onSuccess` callback.
-
-                // For now, rely on pendingQuestionData pattern if wrappers used that,
-                // BUT wrappers call API directly. They don't use `pendingQuestionData` from QuestionsSection.
-                // This means QuestionsSection won't know a question was added unless we refetch or manage state differently.
-
-                // The original logic used `onAddQuestion` which updated local state.
-                // The wrappers create data on backend directly.
-                // This causes a disconnect: local state vs backend state.
-
-                // Ideally, wrappers should return the created question data to parent
-                // OR parent should refetch questions.
-
-                // Given the wrappers are already implemented to call API,
-                // we should pass an `onSuccess` prop to them, which then calls `handleCancelQuestion` (to close form)
-                // AND ideally triggers a refresh of the questions list.
+                // Refresh/navigate logic
+                if (onSuccess) {
+                  onSuccess();
+                }
                 handleCancelQuestion();
               }}
             />
@@ -466,6 +364,9 @@ export default function QuestionsSection({
                 onSuccess={() => {
                   // After update, maybe we want to stay on the same page or go to grid.
                   // Usually "save" implies done.
+                  if (onSuccess) {
+                    onSuccess();
+                  }
                   setCurrentQuestionType(null);
                   setCurrentPage(filteredQuestions.length + 1);
                 }}
