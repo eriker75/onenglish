@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createQuestion } from '@/src/repositories/questions';
+import { createQuestion } from '@/src/requests/questions';
 import { QUERY_KEYS } from '@/src/definitions/constants/QUERY_KEYS';
 import { QuestionType, Question } from '@/src/definitions/types/Question';
 import { useChallengeQuestionsStore } from '@/src/stores/challenge-questions.store';

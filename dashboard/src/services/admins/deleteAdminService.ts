@@ -1,4 +1,4 @@
-import deleteAdmin from "@/src/repositories/admins/deleteAdmin";
+import deleteAdmin from "@/src/requests/admins/deleteAdmin";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

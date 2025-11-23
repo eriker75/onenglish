@@ -1,4 +1,4 @@
-import deleteCoordinator from "@/src/repositories/coordinators/deleteCoordinator";
+import deleteCoordinator from "@/src/requests/coordinators/deleteCoordinator";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

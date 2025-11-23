@@ -1,4 +1,4 @@
-import getChallengeById from "@/src/repositories/challenges/getChallengeById";
+import getChallengeById from "@/src/requests/challenges/getChallengeById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

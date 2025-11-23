@@ -1,4 +1,4 @@
-import updateStudent from "@/src/repositories/students/updateStudent";
+import updateStudent from "@/src/requests/students/updateStudent";
 import { UpdateStudentDto } from "@/src/definitions/dtos/requests/students";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

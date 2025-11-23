@@ -1,4 +1,4 @@
-import getTeacherById from "@/src/repositories/teachers/getTeacherById";
+import getTeacherById from "@/src/requests/teachers/getTeacherById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

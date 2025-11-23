@@ -1,4 +1,4 @@
-import updateChallenge from "@/src/repositories/challenges/updateChallenge";
+import updateChallenge from "@/src/requests/challenges/updateChallenge";
 import { UpdateChallengeDto } from "@/src/definitions/dtos/requests/challenges";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

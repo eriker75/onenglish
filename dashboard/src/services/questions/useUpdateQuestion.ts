@@ -3,7 +3,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateQuestion } from '@/src/repositories/questions';
+import { updateQuestion } from '@/src/requests/questions';
 import { QUERY_KEYS } from '@/src/definitions/constants/QUERY_KEYS';
 import { UpdateQuestionDto } from '@/src/definitions/dtos/requests/questions';
 import { Question } from '@/src/definitions/types/Question';

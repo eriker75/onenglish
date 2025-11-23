@@ -1,4 +1,4 @@
-import getSchoolById from "@/src/repositories/schools/getSchoolById";
+import getSchoolById from "@/src/requests/schools/getSchoolById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

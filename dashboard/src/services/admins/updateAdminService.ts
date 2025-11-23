@@ -1,4 +1,4 @@
-import updateAdmin from "@/src/repositories/admins/updateAdmin";
+import updateAdmin from "@/src/requests/admins/updateAdmin";
 import { UpdateAdminDto } from "@/src/definitions/dtos/requests/admins";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

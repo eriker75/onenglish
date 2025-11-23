@@ -1,4 +1,4 @@
-import updateTeacher from "@/src/repositories/teachers/updateTeacher";
+import updateTeacher from "@/src/requests/teachers/updateTeacher";
 import { UpdateTeacherDto } from "@/src/definitions/dtos/requests/teachers";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

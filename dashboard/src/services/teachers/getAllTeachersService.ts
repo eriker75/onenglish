@@ -1,4 +1,4 @@
-import getAllTeachers from "@/src/repositories/teachers/getAllTeachers";
+import getAllTeachers from "@/src/requests/teachers/getAllTeachers";
 import { GetAllTeachersQueryParamsDto } from "@/src/definitions/dtos/requests/teachers";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";

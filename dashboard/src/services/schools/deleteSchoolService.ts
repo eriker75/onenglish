@@ -1,4 +1,4 @@
-import deleteSchool from "@/src/repositories/schools/deleteSchool";
+import deleteSchool from "@/src/requests/schools/deleteSchool";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

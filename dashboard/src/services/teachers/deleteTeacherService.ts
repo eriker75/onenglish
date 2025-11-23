@@ -1,4 +1,4 @@
-import deleteTeacher from "@/src/repositories/teachers/deleteTeacher";
+import deleteTeacher from "@/src/requests/teachers/deleteTeacher";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

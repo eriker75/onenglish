@@ -1,4 +1,4 @@
-import deleteChallenge from "@/src/repositories/challenges/deleteChallenge";
+import deleteChallenge from "@/src/requests/challenges/deleteChallenge";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

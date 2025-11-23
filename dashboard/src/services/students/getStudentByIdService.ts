@@ -1,4 +1,4 @@
-import getStudentById from "@/src/repositories/students/getStudentById";
+import getStudentById from "@/src/requests/students/getStudentById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

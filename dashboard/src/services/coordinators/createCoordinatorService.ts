@@ -1,4 +1,4 @@
-import createCoordinator from "@/src/repositories/coordinators/createCoordinator";
+import createCoordinator from "@/src/requests/coordinators/createCoordinator";
 import { CreateCoordinatorDto } from "@/src/definitions/dtos/requests/coordinators";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

@@ -1,4 +1,4 @@
-import getCoordinatorById from "@/src/repositories/coordinators/getCoordinatorById";
+import getCoordinatorById from "@/src/requests/coordinators/getCoordinatorById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

@@ -4,7 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteQuestion } from '@/src/repositories/questions';
+import { deleteQuestion } from '@/src/requests/questions';
 import { QUERY_KEYS } from '@/src/definitions/constants/QUERY_KEYS';
 import { useChallengeQuestionsStore } from '@/src/stores/challenge-questions.store';
 import { toast } from 'sonner';

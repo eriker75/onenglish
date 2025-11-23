@@ -1,4 +1,4 @@
-import getAdminById from "@/src/repositories/admins/getAdminById";
+import getAdminById from "@/src/requests/admins/getAdminById";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
 

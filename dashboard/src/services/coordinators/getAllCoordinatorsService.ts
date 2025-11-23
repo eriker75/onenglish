@@ -1,4 +1,4 @@
-import getAllCoordinators from "@/src/repositories/coordinators/getAllCoordinators";
+import getAllCoordinators from "@/src/requests/coordinators/getAllCoordinators";
 import { GetAllCoordinatorsQueryParamsDto } from "@/src/definitions/dtos/requests/coordinators";
 import { QUERY_KEYS } from "@/src/definitions/constants/QUERY_KEYS";
 import { useQuery } from "@tanstack/react-query";
