@@ -7,24 +7,21 @@ import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
 import SentenceMaker from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/SentenceMaker";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function SentenceMakerWrapper() {
+interface SentenceMakerWrapperProps {
+  onCancel?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function SentenceMakerWrapper({ onCancel, onSuccess }: SentenceMakerWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
   const [questionText, setQuestionText] = useState(""); // Question from SentenceMaker (actually "Question" label)
   const [instructions, setInstructions] = useState("");
-  const [userQuestionText, setUserQuestionText] = useState(""); // "Question Text" or "Question" in component? Component has "question" prop and "questionText" prop.
-  // "question" prop maps to "Question *" input (questionValue).
-  // "questionText" prop maps to... wait, SentenceMaker has `questionText` prop but it's not used in the UI?
-  // Let's re-check SentenceMaker.tsx.
-  // It has `question` (state questionValue) -> "Question *"
-  // It has `questionText` (state questionText) -> Not used in JSX? 
-  // It defines `handleQuestionTextChange` but it's not attached to any input?
-  // It seems `questionText` prop is unused in SentenceMaker.tsx.
-  // I will rely on `question` (questionValue) as the main text.
+  // const [userQuestionText, setUserQuestionText] = useState(""); // Unused
   
   const [images, setImages] = useState<string[]>(["", ""]); // Preview URLs
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null]); // Files
@@ -48,6 +45,7 @@ export default function SentenceMakerWrapper() {
         description: "Sentence maker question created successfully",
         variant: "default",
       });
+      if (onSuccess) onSuccess();
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
@@ -107,20 +105,30 @@ export default function SentenceMakerWrapper() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">Create Sentence Maker Question</h2>
-        <Button
-          onClick={handleSave}
-          disabled={createQuestionMutation.isPending}
-          className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
-        >
-          {createQuestionMutation.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-          ) : (
-            <><Save className="mr-2 h-4 w-4" />Save Question</>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="text-gray-600"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={createQuestionMutation.isPending}
+            className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
+          >
+            {createQuestionMutation.isPending ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            ) : (
+              <><Save className="mr-2 h-4 w-4" />Save Question</>
+            )}
+          </Button>
+        </div>
       </div>
 
       <SentenceMaker
@@ -143,4 +151,3 @@ export default function SentenceMakerWrapper() {
     </div>
   );
 }
-

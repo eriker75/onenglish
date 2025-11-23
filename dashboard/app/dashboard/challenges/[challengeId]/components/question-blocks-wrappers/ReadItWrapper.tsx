@@ -7,7 +7,7 @@ import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
 import ReadIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/ReadIt";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Statement {
@@ -16,7 +16,12 @@ interface Statement {
   correct: boolean;
 }
 
-export default function ReadItWrapper() {
+interface ReadItWrapperProps {
+  onCancel?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function ReadItWrapper({ onCancel, onSuccess }: ReadItWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
@@ -48,6 +53,7 @@ export default function ReadItWrapper() {
         description: "Reading comprehension question created successfully",
         variant: "default",
       });
+      if (onSuccess) onSuccess();
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
@@ -93,13 +99,9 @@ export default function ReadItWrapper() {
     formData.append("instructions", instructions);
     
     // content: PassageDto[]
-    // The DTO expects an array of passages. We have one paragraph.
-    // PassageDto has { text: string, image?: string }
     const contentPayload = [
       {
         text: paragraph,
-        // image: undefined // We upload image via media field separately if supported, or here if it's an ID.
-        // The DTO has `media` field for file.
       }
     ];
     formData.append("content", JSON.stringify(contentPayload));
@@ -129,26 +131,31 @@ export default function ReadItWrapper() {
     createQuestionMutation.mutate(formData);
   };
 
-  // Need to capture file from ImageUpload. 
-  // ReadIt component uses ImageUpload but doesn't expose onFileChange explicitly in props interface?
-  // Let's check ReadIt.tsx again. It exposes onImageChange (string). 
-  // It does NOT expose onFileChange. I need to update ReadIt.tsx too.
-
   return (
-    <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">Create Reading Question (ReadIt)</h2>
-        <Button
-          onClick={handleSave}
-          disabled={createQuestionMutation.isPending}
-          className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
-        >
-          {createQuestionMutation.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-          ) : (
-            <><Save className="mr-2 h-4 w-4" />Save Question</>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="text-gray-600"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={createQuestionMutation.isPending}
+            className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
+          >
+            {createQuestionMutation.isPending ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            ) : (
+              <><Save className="mr-2 h-4 w-4" />Save Question</>
+            )}
+          </Button>
+        </div>
       </div>
 
       <ReadIt
@@ -175,4 +182,3 @@ export default function ReadItWrapper() {
     </div>
   );
 }
-

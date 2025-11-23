@@ -406,25 +406,33 @@ export default function QuestionsSection({
       {isShowingQuestionForm && selectedQuestionType ? (
         FormComponent ? (
           // Show question form for selected type
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="space-y-6">
-              {/* Use Wrapper component which handles its own state and saving */}
-              <FormComponent />
-              
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button
-                  onClick={handleCancelQuestion}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                {/* Wrappers have their own save button, so we hide this one or repurposed it.
-                    However, hiding it fully might confuse the user if they expect a global "Save" or 
-                    if the Wrapper doesn't close the form.
-                    For now, we will hide the "Save Question" button here since the wrapper handles it. 
-                */}
-              </div>
-            </div>
+          <div className="bg-white rounded-lg border border-gray-200">
+            {/* Use Wrapper component which handles its own state and saving */}
+            <FormComponent 
+              onCancel={handleCancelQuestion}
+              onSuccess={() => {
+                // Refresh/navigate logic if needed
+                // But wrappers usually handle saving. We just need to close form.
+                // However, wrapper onSuccess just toasts. It doesn't callback.
+                // We need to update Wrappers to accept `onSuccess` callback.
+                
+                // For now, rely on pendingQuestionData pattern if wrappers used that, 
+                // BUT wrappers call API directly. They don't use `pendingQuestionData` from QuestionsSection.
+                // This means QuestionsSection won't know a question was added unless we refetch or manage state differently.
+                
+                // The original logic used `onAddQuestion` which updated local state.
+                // The wrappers create data on backend directly.
+                // This causes a disconnect: local state vs backend state.
+                
+                // Ideally, wrappers should return the created question data to parent 
+                // OR parent should refetch questions.
+                
+                // Given the wrappers are already implemented to call API, 
+                // we should pass an `onSuccess` prop to them, which then calls `handleCancelQuestion` (to close form)
+                // AND ideally triggers a refresh of the questions list.
+                handleCancelQuestion();
+              }}
+            />
           </div>
         ) : (
           // Show error if component not found

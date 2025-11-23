@@ -7,10 +7,15 @@ import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
 import LyricsTraining from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/LyricsTraining";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function LyricsTrainingWrapper() {
+interface LyricsTrainingWrapperProps {
+  onCancel?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTrainingWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
@@ -41,6 +46,7 @@ export default function LyricsTrainingWrapper() {
         description: "Lyrics training question created successfully",
         variant: "default",
       });
+      if (onSuccess) onSuccess();
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
@@ -102,16 +108,6 @@ export default function LyricsTrainingWrapper() {
     formData.append("text", questionText);
     // Append hint to instructions if exists, as backend might not have hint field
     formData.append("instructions", hint ? `${instructions} (Hint: ${hint})` : instructions);
-    formData.append("options", validOptions.join(",")); // Check if backend expects comma-separated or array. NestJS FormData with IsString({each:true}) usually expects array if same key repeated, or comma separated if handled manually.
-    // Wait, nestjs-form-data usually handles arrays if key is 'options[]' or repeated 'options'.
-    // But `ImageToMultipleChoiceWrapper` used `validOptions.join(",")`.
-    // Let's check `CreateLyricsTrainingDto`. It uses `@IsArray()` and `@IsString({ each: true })`.
-    // If I send `options` as multiple fields, `nestjs-form-data` should parse it as array.
-    // If I send as comma separated string, it might fail validation if it expects array.
-    // However, `ImageToMultipleChoiceWrapper` used `join(",")` and the backend likely handles it or uses a Transform.
-    // `CreateImageToMultipleChoicesDto` has `@Transform`?
-    // Let's check `CreateImageToMultipleChoicesDto`.
-    // If not, I should be careful.
     
     // Strategy: Send repeated fields for array.
     validOptions.forEach(opt => formData.append("options[]", opt));
@@ -131,20 +127,30 @@ export default function LyricsTrainingWrapper() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">Create Lyrics Training Question</h2>
-        <Button
-          onClick={handleSave}
-          disabled={createQuestionMutation.isPending}
-          className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
-        >
-          {createQuestionMutation.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-          ) : (
-            <><Save className="mr-2 h-4 w-4" />Save Question</>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="text-gray-600"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={createQuestionMutation.isPending}
+            className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
+          >
+            {createQuestionMutation.isPending ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            ) : (
+              <><Save className="mr-2 h-4 w-4" />Save Question</>
+            )}
+          </Button>
+        </div>
       </div>
 
       <LyricsTraining
@@ -173,4 +179,3 @@ export default function LyricsTrainingWrapper() {
     </div>
   );
 }
-

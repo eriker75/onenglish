@@ -7,10 +7,15 @@ import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
 import FastTest from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/FastTest";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function FastTestWrapper() {
+interface FastTestWrapperProps {
+  onCancel?: () => void;
+  onSuccess?: () => void;
+}
+
+export default function FastTestWrapper({ onCancel, onSuccess }: FastTestWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
@@ -35,6 +40,7 @@ export default function FastTestWrapper() {
         description: "Fast test question created successfully",
         variant: "default",
       });
+      if (onSuccess) onSuccess();
     },
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
@@ -90,20 +96,30 @@ export default function FastTestWrapper() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">Create Fast Test Question</h2>
-        <Button
-          onClick={handleSave}
-          disabled={createQuestionMutation.isPending}
-          className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
-        >
-          {createQuestionMutation.isPending ? (
-            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-          ) : (
-            <><Save className="mr-2 h-4 w-4" />Save Question</>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            className="text-gray-600"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={createQuestionMutation.isPending}
+            className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
+          >
+            {createQuestionMutation.isPending ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            ) : (
+              <><Save className="mr-2 h-4 w-4" />Save Question</>
+            )}
+          </Button>
+        </div>
       </div>
 
       <FastTest
@@ -129,4 +145,3 @@ export default function FastTestWrapper() {
     </div>
   );
 }
-
