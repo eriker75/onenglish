@@ -10,13 +10,13 @@ interface BasicInfoFormProps {
 }
 
 const venezuelanGrades = [
-  "5th grade",
-  "6th grade",
-  "1st year",
-  "2nd year",
-  "3rd year",
-  "4th year",
-  "5th year",
+  "5th_grade",
+  "6th_grade",
+  "1st_year",
+  "2nd_year",
+  "3rd_year",
+  "4th_year",
+  "5th_year",
 ];
 
 export default function BasicInfoForm({

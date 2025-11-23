@@ -41,7 +41,6 @@ export default function ChallengeForm({
   const { currentStep, nextStep, prevStep, steps, goToStep } = useStepper();
   const {
     currentStage,
-    currentPhase,
     setCurrentStage,
     addStage,
     setCurrentQuestionType,

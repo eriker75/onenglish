@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Question } from "@/definitions/types/Question";
+import { Question } from "@/src/definitions/types/Question";
 import { useDeleteQuestion } from "@/src/services/questions";
 
 interface DeleteQuestionModalProps {
