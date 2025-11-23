@@ -59,8 +59,8 @@ export default function TagIt({
   // Initialize sentence input from content array
   useEffect(() => {
     if (content && content.length > 0 && !sentenceInput) {
-      // Join with "___" placeholder
-      setSentenceInput(content.join("___"));
+      // Join with " ___ " placeholder
+      setSentenceInput(content.join(" ___ "));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only on mount
@@ -78,7 +78,7 @@ export default function TagIt({
   const handleSentenceInputChange = (value: string) => {
     setSentenceInput(value);
     // Split by "___" to create content array
-    const parts = value.split("___");
+    const parts = value.split("___").map((s) => s.trim()).filter((s) => s !== "");
     onContentChange?.(parts);
   };
 
@@ -129,32 +129,38 @@ export default function TagIt({
 
   return (
     <div className="w-full space-y-6">
+      {/* Row 1: Question Text and Instructions */}
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text *
-            </label>
-            <input
-              type="text"
-              value={questionText}
-              onChange={(e) => handleQuestionChange(e.target.value)}
-              placeholder="Enter the question text..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Instructions
-            </label>
-            <input
-              type="text"
-              value={instructionsText}
-              onChange={(e) => handleInstructionsChange(e.target.value)}
-              placeholder="Enter instructions..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-            />
-          </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Question Text *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the question text..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Row 2: Content/Answers and Image */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Sentence Content and Valid Answers */}
+        <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Sentence Content *
@@ -185,9 +191,50 @@ export default function TagIt({
               </div>
             )}
           </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Valid Answers (Dynamic) *
+              </label>
+              <button
+                onClick={handleAddAnswer}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#44b07f] hover:bg-[#44b07f]/10 rounded-lg transition-colors"
+              >
+                <AddCircleIcon fontSize="small" />
+                Add Answer
+              </button>
+            </div>
+            <div className="space-y-2">
+              {answerList.map((ans, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={ans}
+                    onChange={(e) => handleAnswerChange(index, e.target.value)}
+                    placeholder={`Correct Answer Variation ${index + 1}`}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+                  />
+                  {answerList.length > 1 && (
+                    <button
+                      onClick={() => handleRemoveAnswer(index)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Remove answer"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Add all acceptable variations (e.g., "isn't he", "is not he").
+            </p>
+          </div>
         </div>
 
-        <div className="col-span-6">
+        {/* Right Column: Image */}
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Image (Optional)
           </label>
@@ -197,49 +244,9 @@ export default function TagIt({
               setImageUrl(url);
               onImageChange?.(url);
             }}
-            height="h-48"
+            height="h-64"
           />
         </div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Valid Answers (Dynamic) *
-          </label>
-          <button
-            onClick={handleAddAnswer}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-[#44b07f] hover:bg-[#44b07f]/10 rounded-lg transition-colors"
-          >
-            <AddCircleIcon fontSize="small" />
-            Add Answer
-          </button>
-        </div>
-        <div className="space-y-2">
-          {answerList.map((ans, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={ans}
-                onChange={(e) => handleAnswerChange(index, e.target.value)}
-                placeholder={`Correct Answer Variation ${index + 1}`}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-              />
-              {answerList.length > 1 && (
-                <button
-                  onClick={() => handleRemoveAnswer(index)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Remove answer"
-                >
-                  <DeleteIcon fontSize="small" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Add all acceptable variations (e.g., "isn't he", "is not he").
-        </p>
       </div>
 
       {/* Points, Time, and Max Attempts Row */}

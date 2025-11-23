@@ -11,6 +11,7 @@ interface Question {
   text: string;
   options: string[];
   correctAnswer: string;
+  points?: number;
 }
 
 interface TopicBasedAudioProps {
@@ -62,6 +63,7 @@ export default function TopicBasedAudio({
             text: "",
             options: ["", "", "", ""],
             correctAnswer: "",
+            points: 0,
           },
         ]
   );
@@ -83,6 +85,14 @@ export default function TopicBasedAudio({
   const handleQuestionTextChange = (id: string, text: string) => {
     const newQuestions = questionsList.map((q) =>
       q.id === id ? { ...q, text } : q
+    );
+    setQuestionsList(newQuestions);
+    onQuestionsChange?.(newQuestions);
+  };
+
+  const handleQuestionPointsChange = (id: string, points: number) => {
+    const newQuestions = questionsList.map((q) =>
+      q.id === id ? { ...q, points } : q
     );
     setQuestionsList(newQuestions);
     onQuestionsChange?.(newQuestions);
@@ -115,6 +125,7 @@ export default function TopicBasedAudio({
       text: "",
       options: ["", "", "", ""],
       correctAnswer: "",
+      points: 0,
     };
     const newQuestions = [...questionsList, newQuestion];
     setQuestionsList(newQuestions);
@@ -227,53 +238,68 @@ export default function TopicBasedAudio({
                   </button>
                 )}
               </div>
-              <input
-                type="text"
-                value={q.text}
-                onChange={(e) => handleQuestionTextChange(q.id, e.target.value)}
-                placeholder="Enter question text..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent mb-3"
-              />
-              <div className="space-y-2">
-                {q.options.map((option, oIndex) => (
-                  <div
-                    key={oIndex}
-                    className={`
-                      flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer
-                      transition-all duration-200
-                      ${q.correctAnswer === option
-                        ? "border-[#44b07f] bg-[#44b07f]/5"
-                        : "border-gray-200 hover:border-gray-300 bg-white"
-                      }
-                    `}
-                  >
-                    <RadioButtonUncheckedIcon
-                      className={q.correctAnswer === option ? "text-[#44b07f]" : "text-gray-400"}
-                      fontSize="small"
-                    />
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-12 gap-4">
+                  <div className="col-span-9">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Question Text</label>
                     <input
                       type="text"
-                      value={option}
-                      onChange={(e) => handleOptionChange(q.id, oIndex, e.target.value)}
-                      placeholder={`Option ${oIndex + 1}`}
-                      className={`flex-1 px-2 py-1 border-0 bg-transparent focus:outline-none focus:ring-0 ${
-                        q.correctAnswer === option ? "text-[#44b07f] font-medium" : "text-gray-700"
-                      }`}
-                      onClick={() => handleCorrectAnswerChange(q.id, option)}
+                      value={q.text}
+                      onChange={(e) => handleQuestionTextChange(q.id, e.target.value)}
+                      placeholder="Enter question text..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
                     />
-                    {q.correctAnswer === option && (
-                      <span className="text-[#44b07f] font-medium">✓</span>
-                    )}
                   </div>
-                ))}
+                  <div className="col-span-3">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Points</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={q.points}
+                      onChange={(e) => handleQuestionPointsChange(q.id, parseInt(e.target.value) || 0)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">Options</label>
+                  <div className="space-y-2">
+                    {q.options.map((option, oIndex) => (
+                      <div key={oIndex} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(q.id, oIndex, e.target.value)}
+                          placeholder={`Option ${oIndex + 1}`}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-2">Correct Answer</label>
+                  <select
+                    value={q.correctAnswer}
+                    onChange={(e) => handleCorrectAnswerChange(q.id, e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+                  >
+                    <option value="">Select correct answer</option>
+                    {q.options.filter(opt => opt).map((opt, i) => (
+                      <option key={i} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Fourth Row: Points, Time, and Max Attempts */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* Fourth Row: Time and Max Attempts */}
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Time (Minutes) *
@@ -310,22 +336,15 @@ export default function TopicBasedAudio({
             Additional seconds (0-59)
           </p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Points *
-          </label>
-          <input
-            type="number"
-            min="0"
-            value={pointsValue}
-            onChange={(e) => handlePointsChange(parseInt(e.target.value) || 0)}
-            placeholder="0"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Points awarded for correct answer
-          </p>
-        </div>
+        {/* Points removed from here as it's per question now, but we might want to show total? 
+            The DTO suggests we can omit points if subquestions have them. 
+            However, the frontend usually has a "Points" field for the total score of the question block if it's treated as one unit.
+            But TopicBasedAudio has sub-questions with individual points.
+            I'll remove the global points input to avoid confusion, or make it read-only sum.
+            For now, I'll remove it from the UI as requested implied structure "similar to read it" 
+            (ReadIt usually sums up points or has per-question points).
+            Actually, I'll remove the Points input from the bottom row.
+        */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Max Attempts *
