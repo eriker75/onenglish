@@ -428,28 +428,93 @@ export default function QuestionsSection({
           {currentQuestion.type && componentMap[currentQuestion.type] ? (
             // Use the question block component for existing questions
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              {React.createElement(componentMap[currentQuestion.type], {
-                ...currentQuestion,
-                onQuestionChange: (value: string) => onQuestionChange(area, currentQuestion.id, "question", value),
-                onInstructionsChange: (value: string) => onQuestionChange(area, currentQuestion.id, "instructions", value),
-                onOptionsChange: (options: string[]) => onQuestionChange(area, currentQuestion.id, "options", options),
-                onCorrectAnswerChange: (answer: string) => onQuestionChange(area, currentQuestion.id, "correctAnswer", answer),
-                onAnswerChange: (answer: string[]) => onQuestionChange(area, currentQuestion.id, "answer", answer),
-                onImageChange: (imageUrl: string | null) => onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || ""),
-                onAudioChange: (audioUrl: string | null) => onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || ""),
-                onContentChange: (content: any) => onQuestionChange(area, currentQuestion.id, "content", content),
-                onParagraphChange: (paragraph: string) => onQuestionChange(area, currentQuestion.id, "paragraph", paragraph),
-                onStatementsChange: (statements: any[]) => onQuestionChange(area, currentQuestion.id, "statements", statements),
-                onSentenceChange: (sentence: string) => onQuestionChange(area, currentQuestion.id, "sentence", sentence),
-                onWordsChange: (words: string[]) => onQuestionChange(area, currentQuestion.id, "words", words),
-                onCorrectSentenceChange: (sentence: string) => onQuestionChange(area, currentQuestion.id, "correctSentence", sentence),
-                onMaxWordsChange: (value: number) => onQuestionChange(area, currentQuestion.id, "maxWords", value.toString()),
-                onMaxAssociationsChange: (value: number) => onQuestionChange(area, currentQuestion.id, "maxAssociations", value.toString()),
-                onPointsChange: (points: number) => onQuestionChange(area, currentQuestion.id, "points", points.toString()),
-                onTimeMinutesChange: (minutes: number) => onQuestionChange(area, currentQuestion.id, "timeMinutes", minutes.toString()),
-                onTimeSecondsChange: (seconds: number) => onQuestionChange(area, currentQuestion.id, "timeSeconds", seconds.toString()),
-                onMaxAttemptsChange: (attempts: number) => onQuestionChange(area, currentQuestion.id, "maxAttempts", attempts.toString()),
-              })}
+              {(() => {
+                const QuestionComponent = componentMap[currentQuestion.type];
+                if (!QuestionComponent) return null;
+
+                return (
+                  <QuestionComponent
+                    {...currentQuestion}
+                    onQuestionChange={(value: string) =>
+                      onQuestionChange(area, currentQuestion.id, "question", value)
+                    }
+                    onInstructionsChange={(value: string) =>
+                      onQuestionChange(area, currentQuestion.id, "instructions", value)
+                    }
+                    onOptionsChange={(options: string[]) =>
+                      onQuestionChange(area, currentQuestion.id, "options", options)
+                    }
+                    onCorrectAnswerChange={(answer: string) =>
+                      onQuestionChange(area, currentQuestion.id, "correctAnswer", answer)
+                    }
+                    onAnswerChange={(answer: string[]) =>
+                      onQuestionChange(area, currentQuestion.id, "answer", answer)
+                    }
+                    onImageChange={(imageUrl: string | null) =>
+                      onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || "")
+                    }
+                    onAudioChange={(audioUrl: string | null) =>
+                      onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || "")
+                    }
+                    onContentChange={(content: string | string[]) =>
+                      onQuestionChange(area, currentQuestion.id, "content", content)
+                    }
+                    onParagraphChange={(paragraph: string) =>
+                      onQuestionChange(area, currentQuestion.id, "paragraph", paragraph)
+                    }
+                    onStatementsChange={(statements: Statement[]) =>
+                      onQuestionChange(area, currentQuestion.id, "statements", statements)
+                    }
+                    onSentenceChange={(sentence: string) =>
+                      onQuestionChange(area, currentQuestion.id, "sentence", sentence)
+                    }
+                    onWordsChange={(words: string[]) =>
+                      onQuestionChange(area, currentQuestion.id, "words", words)
+                    }
+                    onCorrectSentenceChange={(sentence: string) =>
+                      onQuestionChange(area, currentQuestion.id, "correctSentence", sentence)
+                    }
+                    onMaxWordsChange={(value: number) =>
+                      onQuestionChange(area, currentQuestion.id, "maxWords", value.toString())
+                    }
+                    onMaxAssociationsChange={(value: number) =>
+                      onQuestionChange(
+                        area,
+                        currentQuestion.id,
+                        "maxAssociations",
+                        value.toString()
+                      )
+                    }
+                    onPointsChange={(points: number) =>
+                      onQuestionChange(area, currentQuestion.id, "points", points.toString())
+                    }
+                    onTimeMinutesChange={(minutes: number) =>
+                      onQuestionChange(
+                        area,
+                        currentQuestion.id,
+                        "timeMinutes",
+                        minutes.toString()
+                      )
+                    }
+                    onTimeSecondsChange={(seconds: number) =>
+                      onQuestionChange(
+                        area,
+                        currentQuestion.id,
+                        "timeSeconds",
+                        seconds.toString()
+                      )
+                    }
+                    onMaxAttemptsChange={(attempts: number) =>
+                      onQuestionChange(
+                        area,
+                        currentQuestion.id,
+                        "maxAttempts",
+                        attempts.toString()
+                      )
+                    }
+                  />
+                );
+              })()}
               <div className="flex justify-end gap-3 pt-4 mt-6 border-t">
                 <button
                   onClick={() => {

@@ -7,6 +7,8 @@ import DashboardContent from "@/components/DashboardContent";
 import { questionTypesByArea, QuestionType } from "@/app/dashboard/challenges/[challengeId]/components/questionTypes";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import * as QuestionBlocks from "@/app/dashboard/challenges/[challengeId]/components/question-blocks";
+import TopicBasedAudioWrapper from "@/app/dashboard/question-blocks-wrappers/TopicBasedAudioWrapper";
+import ImageToMultipleChoiceWrapper from "@/app/dashboard/question-blocks-wrappers/ImageToMultipleChoiceWrapper";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 
 export default function QuestionTypeExampleWithChallengePage() {
@@ -60,7 +62,7 @@ export default function QuestionTypeExampleWithChallengePage() {
   // Mapeo de IDs de tipos de pregunta a componentes
   const componentMap: { [key: string]: React.ComponentType<any> } = {
     // Vocabulary
-    image_to_multiple_choice_text: QuestionBlocks.ImageToMultipleChoiceText,
+    image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
     wordbox: QuestionBlocks.WordBox,
     spelling: QuestionBlocks.Spelling,
     word_associations_with_text: QuestionBlocks.WordAssociationsWithText,
@@ -73,7 +75,7 @@ export default function QuestionTypeExampleWithChallengePage() {
     // Listening
     word_match: QuestionBlocks.WordMatch,
     gossip: QuestionBlocks.Gossip,
-    topic_based_audio: QuestionBlocks.TopicBasedAudio,
+    topic_based_audio: TopicBasedAudioWrapper,
     lyrics_training: QuestionBlocks.LyricsTraining,
     // Writing
     sentence_maker: QuestionBlocks.SentenceMaker,

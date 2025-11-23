@@ -18,6 +18,7 @@ interface ImageToMultipleChoiceTextProps {
   onOptionsChange?: (options: string[]) => void;
   onCorrectAnswerChange?: (answer: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -37,6 +38,7 @@ export default function ImageToMultipleChoiceText({
   onOptionsChange,
   onCorrectAnswerChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -137,10 +139,11 @@ export default function ImageToMultipleChoiceText({
         const result = reader.result as string;
         setImageUrl(result);
         onImageChange?.(result);
+        onFileChange?.(file);
       };
       reader.readAsDataURL(file);
     }
-  }, [onImageChange]);
+  }, [onImageChange, onFileChange]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -175,6 +178,7 @@ export default function ImageToMultipleChoiceText({
   const handleRemoveImage = () => {
     setImageUrl(null);
     onImageChange?.(null);
+    onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

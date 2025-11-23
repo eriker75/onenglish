@@ -5,6 +5,7 @@ import "./globals.css";
 import QueryProvider from "@/src/providers/QueryProvider";
 import { AuthProvider } from "@/src/providers/AuthProvider";
 import { GenericModalProvider } from "@/src/contexts/GenericModalContext";
+import { Toaster } from "@/components/ui/toaster";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <SidebarProvider>
               <GenericModalProvider>{children}</GenericModalProvider>
+              <Toaster />
             </SidebarProvider>
           </AuthProvider>
         </QueryProvider>

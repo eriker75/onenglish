@@ -16,6 +16,7 @@ interface ReportItProps {
   onInstructionsChange?: (instructions: string) => void;
   onOriginalSentenceChange?: (sentence: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -35,6 +36,7 @@ export default function ReportIt({
   onInstructionsChange,
   onOriginalSentenceChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -143,6 +145,7 @@ export default function ReportIt({
               setImageUrl(url);
               onImageChange?.(url);
             }}
+            onFileChange={onFileChange}
             height="h-48"
           />
         </div>

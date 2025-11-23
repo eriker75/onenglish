@@ -7,12 +7,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 interface AudioUploadProps {
   audioUrl?: string | null;
   onAudioChange?: (audioUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   height?: "h-48" | "h-32" | "h-24" | "h-20";
 }
 
 export default function AudioUpload({
   audioUrl,
   onAudioChange,
+  onFileChange,
   height = "h-32",
 }: AudioUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +22,7 @@ export default function AudioUpload({
 
   const handleAudioUpload = (file: File) => {
     if (file && file.type.startsWith("audio/")) {
+      onFileChange?.(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -60,6 +63,7 @@ export default function AudioUpload({
 
   const handleRemoveAudio = () => {
     onAudioChange?.(null);
+    onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

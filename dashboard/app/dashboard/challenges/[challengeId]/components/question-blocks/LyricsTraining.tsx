@@ -20,6 +20,7 @@ interface LyricsTrainingProps {
   onInstructionsChange?: (instructions: string) => void;
   onHintChange?: (hint: string) => void;
   onAudioChange?: (audioUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onOptionsChange?: (options: string[]) => void;
   onCorrectAnswerChange?: (answer: string) => void;
   onPointsChange?: (points: number) => void;
@@ -43,6 +44,7 @@ export default function LyricsTraining({
   onInstructionsChange,
   onHintChange,
   onAudioChange,
+  onFileChange,
   onOptionsChange,
   onCorrectAnswerChange,
   onPointsChange,
@@ -196,6 +198,7 @@ export default function LyricsTraining({
               setVideoUrl(url);
               onAudioChange?.(url); // Using onAudioChange to save to backend audioUrl field
             }}
+            onFileChange={onFileChange}
             height="h-64"
           />
         </div>

@@ -26,6 +26,7 @@ interface TopicBasedAudioProps {
   onQuestionChange?: (question: string) => void;
   onInstructionsChange?: (instructions: string) => void;
   onAudioChange?: (audioUrl: string | null) => void;
+  onAudioFileChange?: (file: File | null) => void;
   onQuestionsChange?: (questions: Question[]) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
@@ -45,6 +46,7 @@ export default function TopicBasedAudio({
   onQuestionChange,
   onInstructionsChange,
   onAudioChange,
+  onAudioFileChange,
   onQuestionsChange,
   onPointsChange,
   onTimeMinutesChange,
@@ -204,6 +206,9 @@ export default function TopicBasedAudio({
           onAudioChange={(url) => {
             setAudioUrl(url);
             onAudioChange?.(url);
+          }}
+          onFileChange={(file) => {
+            onAudioFileChange?.(file);
           }}
         />
       </div>

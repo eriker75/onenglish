@@ -16,6 +16,7 @@ interface SentenceMakerProps {
   onInstructionsChange?: (instructions: string) => void;
   onQuestionTextChange?: (questionText: string) => void;
   onImagesChange?: (images: string[]) => void;
+  onImageFilesChange?: (index: number, file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -35,6 +36,7 @@ export default function SentenceMaker({
   onInstructionsChange,
   onQuestionTextChange,
   onImagesChange,
+  onImageFilesChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -140,6 +142,7 @@ export default function SentenceMaker({
               <ImageUpload
                 imageUrl={image || undefined}
                 onImageChange={(url) => handleImageChange(index, url)}
+                onFileChange={(file) => onImageFilesChange?.(index, file)}
                 height="h-48"
               />
             </div>

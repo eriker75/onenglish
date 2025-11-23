@@ -15,6 +15,7 @@ interface TalesProps {
   onQuestionChange?: (question: string) => void;
   onInstructionsChange?: (instructions: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onExampleStoryChange?: (story: string) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
@@ -34,6 +35,7 @@ export default function Tales({
   onQuestionChange,
   onInstructionsChange,
   onImageChange,
+  onFileChange,
   onExampleStoryChange,
   onPointsChange,
   onTimeMinutesChange,
@@ -130,6 +132,7 @@ export default function Tales({
         <ImageUpload
           imageUrl={imageUrl}
           onImageChange={handleImageChange}
+          onFileChange={onFileChange}
           height="h-48"
         />
       </div>

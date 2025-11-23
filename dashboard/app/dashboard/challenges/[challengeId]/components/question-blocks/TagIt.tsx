@@ -20,6 +20,7 @@ interface TagItProps {
   onContentChange?: (content: string[]) => void;
   onAnswerChange?: (answer: string[]) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -41,6 +42,7 @@ export default function TagIt({
   onContentChange,
   onAnswerChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -244,6 +246,7 @@ export default function TagIt({
               setImageUrl(url);
               onImageChange?.(url);
             }}
+            onFileChange={onFileChange}
             height="h-64"
           />
         </div>

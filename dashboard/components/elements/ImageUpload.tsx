@@ -7,12 +7,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 interface ImageUploadProps {
   imageUrl?: string | null;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   height?: "h-48" | "h-64" | "h-32";
 }
 
 export default function ImageUpload({
   imageUrl,
   onImageChange,
+  onFileChange,
   height = "h-48",
 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +22,7 @@ export default function ImageUpload({
 
   const handleImageUpload = (file: File) => {
     if (file && file.type.startsWith("image/")) {
+      onFileChange?.(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -60,6 +63,7 @@ export default function ImageUpload({
 
   const handleRemoveImage = () => {
     onImageChange?.(null);
+    onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

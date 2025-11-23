@@ -7,12 +7,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 interface VideoUploadProps {
   videoUrl?: string | null;
   onVideoChange?: (videoUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   height?: "h-48" | "h-32" | "h-64";
 }
 
 export default function VideoUpload({
   videoUrl,
   onVideoChange,
+  onFileChange,
   height = "h-48",
 }: VideoUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
@@ -20,6 +22,7 @@ export default function VideoUpload({
 
   const handleVideoUpload = (file: File) => {
     if (file && file.type.startsWith("video/")) {
+      onFileChange?.(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
@@ -60,6 +63,7 @@ export default function VideoUpload({
 
   const handleRemoveVideo = () => {
     onVideoChange?.(null);
+    onFileChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

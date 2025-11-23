@@ -24,6 +24,7 @@ interface WordMatchProps {
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
   onMaxAttemptsChange?: (attempts: number) => void;
+  onAudioFileChange?: (file: File | null) => void;
 }
 
 export default function WordMatch({
@@ -45,6 +46,7 @@ export default function WordMatch({
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
+  onAudioFileChange,
 }: WordMatchProps) {
   const [questionText, setQuestionText] = useState(
     question || "Listen to the audio and select the correct word"
@@ -192,6 +194,9 @@ export default function WordMatch({
           onAudioChange={(url) => {
             setAudioUrl(url);
             onAudioChange?.(url);
+          }}
+          onFileChange={(file) => {
+            onAudioFileChange?.(file);
           }}
         />
       </div>

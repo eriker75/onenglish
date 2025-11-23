@@ -16,6 +16,7 @@ interface TellMeAboutItProps {
   onInstructionsChange?: (instructions: string) => void;
   onContentChange?: (content: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -35,6 +36,7 @@ export default function TellMeAboutIt({
   onInstructionsChange,
   onContentChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -142,6 +144,7 @@ export default function TellMeAboutIt({
               setImageUrl(url);
               onImageChange?.(url);
             }}
+            onFileChange={onFileChange}
             height="h-64"
           />
         </div>

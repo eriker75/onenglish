@@ -19,6 +19,7 @@ interface SuperBrainProps {
   onInstructionsChange?: (instructions: string) => void;
   onContentChange?: (content: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onAudioChange?: (audioUrl: string | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
@@ -40,6 +41,7 @@ export default function SuperBrain({
   onInstructionsChange,
   onContentChange,
   onImageChange,
+  onFileChange,
   onAudioChange,
   onPointsChange,
   onTimeMinutesChange,
@@ -148,6 +150,7 @@ export default function SuperBrain({
               setImageUrl(url);
               onImageChange?.(url);
             }}
+            onFileChange={onFileChange}
             height="h-64"
           />
         </div>

@@ -20,6 +20,7 @@ interface GossipProps {
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
   onMaxAttemptsChange?: (attempts: number) => void;
+  onAudioFileChange?: (file: File | null) => void;
 }
 
 export default function Gossip({
@@ -39,6 +40,7 @@ export default function Gossip({
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
+  onAudioFileChange,
 }: GossipProps) {
   const [questionText, setQuestionText] = useState(question);
   const [instructionsText, setInstructionsText] = useState(instructions);
@@ -140,6 +142,9 @@ export default function Gossip({
           onAudioChange={(url) => {
             setAudioUrl(url);
             onAudioChange?.(url);
+          }}
+          onFileChange={(file) => {
+            onAudioFileChange?.(file);
           }}
         />
       </div>

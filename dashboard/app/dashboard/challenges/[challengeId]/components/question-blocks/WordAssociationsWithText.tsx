@@ -18,6 +18,7 @@ interface WordAssociationsWithTextProps {
   onReferenceWordChange?: (word: string) => void;
   onMaxAssociationsChange?: (max: number) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -39,6 +40,7 @@ export default function WordAssociationsWithText({
   onReferenceWordChange,
   onMaxAssociationsChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -165,6 +167,7 @@ export default function WordAssociationsWithText({
         <ImageUpload
           imageUrl={imageUrl}
           onImageChange={handleImageChange}
+          onFileChange={onFileChange}
           height="h-48"
         />
       </div>

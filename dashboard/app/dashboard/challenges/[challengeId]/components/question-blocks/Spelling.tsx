@@ -16,6 +16,7 @@ interface SpellingProps {
   onInstructionsChange?: (instructions: string) => void;
   onCorrectWordChange?: (word: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -35,6 +36,7 @@ export default function Spelling({
   onInstructionsChange,
   onCorrectWordChange,
   onImageChange,
+  onFileChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -129,6 +131,7 @@ export default function Spelling({
         <ImageUpload
           imageUrl={imageUrl}
           onImageChange={handleImageChange}
+          onFileChange={onFileChange}
           height="h-64"
         />
       </div>
