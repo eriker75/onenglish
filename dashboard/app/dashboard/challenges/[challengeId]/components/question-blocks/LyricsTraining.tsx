@@ -1,30 +1,27 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import AudioUpload from "@/components/elements/AudioUpload";
-
-interface LyricsLine {
-  id: string;
-  text: string;
-  options: string[];
-  correctWord: string;
-}
+import VideoUpload from "@/components/elements/VideoUpload";
 
 interface LyricsTrainingProps {
   question?: string;
   instructions?: string;
-  audioUrl?: string;
-  lyrics?: LyricsLine[];
+  hint?: string;
+  audioUrl?: string; // Using audioUrl field for Video URL to match backend
+  options?: string[];
+  correctAnswer?: string;
   points?: number;
   timeMinutes?: number;
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
   onInstructionsChange?: (instructions: string) => void;
+  onHintChange?: (hint: string) => void;
   onAudioChange?: (audioUrl: string | null) => void;
-  onLyricsChange?: (lyrics: LyricsLine[]) => void;
+  onOptionsChange?: (options: string[]) => void;
+  onCorrectAnswerChange?: (answer: string) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
@@ -34,16 +31,20 @@ interface LyricsTrainingProps {
 export default function LyricsTraining({
   question = "",
   instructions = "",
-  audioUrl: initialAudioUrl,
-  lyrics = [],
+  hint = "",
+  audioUrl: initialVideoUrl,
+  options = ["", "", ""],
+  correctAnswer = "",
   points: initialPoints = 0,
   timeMinutes: initialTimeMinutes = 0,
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
   onInstructionsChange,
+  onHintChange,
   onAudioChange,
-  onLyricsChange,
+  onOptionsChange,
+  onCorrectAnswerChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
@@ -51,19 +52,12 @@ export default function LyricsTraining({
 }: LyricsTrainingProps) {
   const [questionText, setQuestionText] = useState(question);
   const [instructionsText, setInstructionsText] = useState(instructions);
-  const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl || null);
-  const [lyricsList, setLyricsList] = useState<LyricsLine[]>(
-    lyrics.length > 0
-      ? lyrics
-      : [
-          {
-            id: `line-${Date.now()}`,
-            text: "",
-            options: ["", "", ""],
-            correctWord: "",
-          },
-        ]
+  const [hintText, setHintText] = useState(hint);
+  const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl || null);
+  const [questionOptions, setQuestionOptions] = useState<string[]>(
+    options.length > 0 ? options : ["", "", ""]
   );
+  const [selectedAnswer, setSelectedAnswer] = useState(correctAnswer);
   const [pointsValue, setPointsValue] = useState(initialPoints);
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
@@ -79,49 +73,48 @@ export default function LyricsTraining({
     onInstructionsChange?.(value);
   };
 
-  const handleLyricTextChange = (id: string, text: string) => {
-    const newLyrics = lyricsList.map((l) => (l.id === id ? { ...l, text } : l));
-    setLyricsList(newLyrics);
-    onLyricsChange?.(newLyrics);
+  const handleHintChange = (value: string) => {
+    setHintText(value);
+    onHintChange?.(value);
   };
 
-  const handleOptionChange = (id: string, optionIndex: number, value: string) => {
-    const newLyrics = lyricsList.map((l) => {
-      if (l.id === id) {
-        const newOptions = [...l.options];
-        newOptions[optionIndex] = value;
-        return { ...l, options: newOptions };
-      }
-      return l;
-    });
-    setLyricsList(newLyrics);
-    onLyricsChange?.(newLyrics);
-  };
-
-  const handleCorrectWordChange = (id: string, word: string) => {
-    const newLyrics = lyricsList.map((l) => (l.id === id ? { ...l, correctWord: word } : l));
-    setLyricsList(newLyrics);
-    onLyricsChange?.(newLyrics);
-  };
-
-  const handleAddLyric = () => {
-    const newLyric: LyricsLine = {
-      id: `line-${Date.now()}-${Math.random()}`,
-      text: "",
-      options: ["", "", ""],
-      correctWord: "",
-    };
-    const newLyrics = [...lyricsList, newLyric];
-    setLyricsList(newLyrics);
-    onLyricsChange?.(newLyrics);
-  };
-
-  const handleRemoveLyric = (id: string) => {
-    if (lyricsList.length > 1) {
-      const newLyrics = lyricsList.filter((l) => l.id !== id);
-      setLyricsList(newLyrics);
-      onLyricsChange?.(newLyrics);
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...questionOptions];
+    newOptions[index] = value;
+    setQuestionOptions(newOptions);
+    onOptionsChange?.(newOptions);
+    
+    // If the deleted option was the correct answer, clear it
+    if (value === "" && selectedAnswer === questionOptions[index]) {
+      setSelectedAnswer("");
+      onCorrectAnswerChange?.("");
     }
+  };
+
+  const handleAddOption = () => {
+    const newOptions = [...questionOptions, ""];
+    setQuestionOptions(newOptions);
+    onOptionsChange?.(newOptions);
+  };
+
+  const handleRemoveOption = (index: number) => {
+    if (questionOptions.length > 1) {
+      const removedOption = questionOptions[index];
+      const newOptions = questionOptions.filter((_, i) => i !== index);
+      setQuestionOptions(newOptions);
+      onOptionsChange?.(newOptions);
+      
+      // If the removed option was the correct answer, clear it
+      if (selectedAnswer === removedOption) {
+        setSelectedAnswer("");
+        onCorrectAnswerChange?.("");
+      }
+    }
+  };
+
+  const handleCorrectAnswerChange = (value: string) => {
+    setSelectedAnswer(value);
+    onCorrectAnswerChange?.(value);
   };
 
   const handlePointsChange = (value: number) => {
@@ -150,9 +143,9 @@ export default function LyricsTraining({
 
   return (
     <div className="w-full space-y-6">
-      {/* Row 1: Question Text and Instructions */}
+      {/* Row 1: Question Text, Instructions, and Hint */}
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-6">
+        <div className="col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Question Text *
           </label>
@@ -164,7 +157,7 @@ export default function LyricsTraining({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
-        <div className="col-span-6">
+        <div className="col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Instructions
           </label>
@@ -176,115 +169,103 @@ export default function LyricsTraining({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
-      </div>
-
-      {/* Row 2: Audio File */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Song Audio File *
-        </label>
-        <AudioUpload
-          audioUrl={audioUrl}
-          onAudioChange={(url) => {
-            setAudioUrl(url);
-            onAudioChange?.(url);
-          }}
-        />
-      </div>
-
-      {/* Row 3: Lyrics Lines (Dynamic) */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Lyrics Lines *
+        <div className="col-span-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Hint *
           </label>
-          <button
-            onClick={handleAddLyric}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-[#44b07f] hover:bg-[#44b07f]/10 rounded-lg transition-colors"
-          >
-            <AddCircleIcon fontSize="small" />
-            Add Line
-          </button>
+          <input
+            type="text"
+            value={hintText}
+            onChange={(e) => handleHintChange(e.target.value)}
+            placeholder="Everything you want's a dream ______"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
         </div>
-        <div className="space-y-4">
-          {lyricsList.map((lyric, index) => (
-            <div key={lyric.id} className="p-4 border border-gray-200 rounded-lg bg-white">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    Line {index + 1}
-                  </span>
-                  {lyricsList.length > 1 && (
+      </div>
+
+      {/* Row 2: Video File and Options (Two Columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Video File */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Video File *
+          </label>
+          <VideoUpload
+            videoUrl={videoUrl}
+            onVideoChange={(url) => {
+              setVideoUrl(url);
+              onAudioChange?.(url); // Using onAudioChange to save to backend audioUrl field
+            }}
+            height="h-64"
+          />
+        </div>
+
+        {/* Right Column: Options */}
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Answer Options *
+              </label>
+              <button
+                onClick={handleAddOption}
+                className="flex items-center gap-1 px-3 py-1 text-sm text-[#44b07f] hover:bg-[#44b07f]/10 rounded-lg transition-colors"
+              >
+                <AddCircleIcon fontSize="small" />
+                Add Option
+              </button>
+            </div>
+            <div className="space-y-2">
+              {questionOptions.map((option, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => handleOptionChange(index, e.target.value)}
+                    placeholder={`Option ${index + 1}`}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent text-gray-700"
+                  />
+                  {questionOptions.length > 1 && (
                     <button
-                      onClick={() => handleRemoveLyric(lyric.id)}
+                      onClick={() => handleRemoveOption(index)}
                       className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Remove option"
                     >
                       <DeleteIcon fontSize="small" />
                     </button>
                   )}
                 </div>
-                
-                <input
-                  type="text"
-                  value={lyric.text}
-                  onChange={(e) => handleLyricTextChange(lyric.id, e.target.value)}
-                  placeholder="Enter the question/lyric line..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-                />
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Option 1</label>
-                    <input
-                      type="text"
-                      value={lyric.options[0] || ""}
-                      onChange={(e) => handleOptionChange(lyric.id, 0, e.target.value)}
-                      placeholder="Option 1"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Option 2</label>
-                    <input
-                      type="text"
-                      value={lyric.options[1] || ""}
-                      onChange={(e) => handleOptionChange(lyric.id, 1, e.target.value)}
-                      placeholder="Option 2"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-500">Option 3</label>
-                    <input
-                      type="text"
-                      value={lyric.options[2] || ""}
-                      onChange={(e) => handleOptionChange(lyric.id, 2, e.target.value)}
-                      placeholder="Option 3"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-2">Correct Word/Option *</label>
-                  <select
-                    value={lyric.correctWord}
-                    onChange={(e) => handleCorrectWordChange(lyric.id, e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-                  >
-                    <option value="">Select correct answer</option>
-                    {lyric.options.filter(opt => opt).map((opt, i) => (
-                      <option key={i} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          {/* Correct Answer Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Correct Answer *
+            </label>
+            <select
+              value={selectedAnswer}
+              onChange={(e) => handleCorrectAnswerChange(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+            >
+              <option value="">Select correct answer</option>
+              {questionOptions
+                .filter((opt) => opt.trim() !== "")
+                .map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Select the correct answer from the options above
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Row 4: Points, Time, and Max Attempts */}
+      {/* Row 3: Points, Time, and Max Attempts */}
       <div className="grid grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
