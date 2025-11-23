@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { TopicBasedAudioQuestion } from "./types";
 
 interface SubQuestion {
   id: string;
@@ -25,66 +26,81 @@ interface TopicBasedAudioWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onSuccess }: TopicBasedAudioWrapperProps) {
+export default function TopicBasedAudioWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: TopicBasedAudioWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
+  // Cast existingQuestion to TopicBasedAudioQuestion for type safety
+  const topicBasedAudioQuestion = existingQuestion as
+    | TopicBasedAudioQuestion
+    | undefined;
+
   // State
   const [questionText, setQuestionText] = useState(
-    (existingQuestion as any)?.content || ""
+    topicBasedAudioQuestion?.content || ""
   );
   const [instructions, setInstructions] = useState(
-    (existingQuestion as any)?.instructions || ""
+    topicBasedAudioQuestion?.instructions || ""
   );
   const [audioUrl, setAudioUrl] = useState<string | null>(
-    (existingQuestion as any)?.mediaUrl || null
+    topicBasedAudioQuestion?.mediaUrl || null
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [subQuestions, setSubQuestions] = useState<SubQuestion[]>(
-    (existingQuestion as any)?.subQuestions?.map((q: any) => ({
-      id: q.id,
-      text: q.text,
-      options: q.options,
-      correctAnswer: q.answer,
-      points: q.points
+    topicBasedAudioQuestion?.subQuestions?.map((q) => ({
+      id: q.id || "",
+      text: q.text ?? "",
+      options: q.options ?? [],
+      correctAnswer: q.answer ?? q.correctAnswer ?? "",
+      points: q.points,
     })) || []
   );
 
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const initialTime = topicBasedAudioQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    topicBasedAudioQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText((existingQuestion as any)?.content || "");
-      setInstructions((existingQuestion as any)?.instructions || "");
-      setAudioUrl((existingQuestion as any)?.mediaUrl || null);
+    if (topicBasedAudioQuestion) {
+      setQuestionText(topicBasedAudioQuestion?.content || "");
+      setInstructions(topicBasedAudioQuestion?.instructions || "");
+      setAudioUrl(topicBasedAudioQuestion?.mediaUrl || null);
       setSubQuestions(
-        (existingQuestion as any)?.subQuestions?.map((q: any) => ({
-          id: q.id,
-          text: q.text,
-          options: q.options,
-          correctAnswer: q.answer,
-          points: q.points
+        topicBasedAudioQuestion?.subQuestions?.map((q) => ({
+          id: q.id || "",
+          text: q.text ?? "",
+          options: q.options ?? [],
+          correctAnswer: q.answer ?? q.correctAnswer ?? "",
+          points: q.points,
         })) || []
       );
-      
-      const time = (existingQuestion as any)?.timeLimit || 0;
+
+      const time = topicBasedAudioQuestion?.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any)?.maxAttempts || 1);
+      setMaxAttempts(topicBasedAudioQuestion?.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [topicBasedAudioQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/topic_based_audio", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post(
+        "/questions/create/topic_based_audio",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -99,19 +115,30 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
       console.error("Error creating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const response = await api.patch(`/questions/topic_based_audio/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
+      const response = await api.patch(
+        `/questions/topic_based_audio/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -126,13 +153,15 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
       console.error("Error updating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -176,11 +205,11 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
 
     const formData = new FormData();
     formData.append("challengeId", challengeId);
-    
+
     if (audioFile) {
       formData.append("media", audioFile);
     }
-    
+
     // Format sub-questions for backend
     const formattedSubQuestions = subQuestions.map((q) => ({
       id: q.id, // Include ID for updates if it exists
@@ -191,21 +220,21 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
     }));
 
     formData.append("subQuestions", JSON.stringify(formattedSubQuestions));
-    
-    formData.append("content", questionText); 
+
+    formData.append("content", questionText);
     if (instructions) {
-       formData.append("instructions", instructions);
+      formData.append("instructions", instructions);
     }
-    
+
     // Time calculation
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("maxAttempts", maxAttempts.toString());
 
-    if (existingQuestion) {
+    if (topicBasedAudioQuestion && existingQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
       createQuestionMutation.mutate(formData);
@@ -216,7 +245,9 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit Topic Based Audio Question" : "Create Topic Based Audio Question"}
+          {existingQuestion
+            ? "Edit Topic Based Audio Question"
+            : "Create Topic Based Audio Question"}
         </h2>
         <div className="flex gap-2">
           <Button
@@ -233,9 +264,15 @@ export default function TopicBasedAudioWrapper({ existingQuestion, onCancel, onS
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {existingQuestion ? "Update Question" : "Save Question"}
+              </>
             )}
           </Button>
         </div>

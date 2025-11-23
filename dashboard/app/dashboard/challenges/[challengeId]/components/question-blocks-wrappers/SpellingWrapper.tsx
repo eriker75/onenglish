@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { SpellingQuestion } from "./types";
 
 interface SpellingWrapperProps {
   existingQuestion?: Question;
@@ -17,34 +18,49 @@ interface SpellingWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function SpellingWrapper({ existingQuestion, onCancel, onSuccess }: SpellingWrapperProps) {
+export default function SpellingWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: SpellingWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
+  // Cast existingQuestion to SpellingQuestion for type safety
+  const spellingQuestion = existingQuestion as SpellingQuestion | undefined;
+
   // State
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [correctWord, setCorrectWord] = useState((existingQuestion as any)?.answer || "");
+  const [questionText, setQuestionText] = useState(
+    spellingQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    spellingQuestion?.instructions || ""
+  );
+  const [correctWord, setCorrectWord] = useState(
+    spellingQuestion?.correctAnswer || ""
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [points, setPoints] = useState(spellingQuestion?.points || 0);
+
+  const initialTime = spellingQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    spellingQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any).instructions || "");
-      setCorrectWord((existingQuestion as any).answer || "");
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (spellingQuestion) {
+      setQuestionText(spellingQuestion.question || "");
+      setInstructions(spellingQuestion.instructions || "");
+      setCorrectWord(spellingQuestion.correctAnswer || "");
+      setPoints(spellingQuestion.points || 0);
+      const time = spellingQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(spellingQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [spellingQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({
@@ -68,14 +84,21 @@ export default function SpellingWrapper({ existingQuestion, onCancel, onSuccess 
       console.error("Error creating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       const response = await api.patch(`/questions/spelling/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -95,13 +118,15 @@ export default function SpellingWrapper({ existingQuestion, onCancel, onSuccess 
       console.error("Error updating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -137,15 +162,15 @@ export default function SpellingWrapper({ existingQuestion, onCancel, onSuccess 
       formData.append("media", imageFile);
     }
     formData.append("answer", correctWord);
-    
+
     if (questionText) formData.append("text", questionText);
     if (instructions) formData.append("instructions", instructions);
-    
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("points", points.toString());
     formData.append("maxAttempts", maxAttempts.toString());
 
@@ -160,7 +185,9 @@ export default function SpellingWrapper({ existingQuestion, onCancel, onSuccess 
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit Spelling Question" : "Create Spelling Question"}
+          {existingQuestion
+            ? "Edit Spelling Question"
+            : "Create Spelling Question"}
         </h2>
         <div className="flex gap-2">
           <Button

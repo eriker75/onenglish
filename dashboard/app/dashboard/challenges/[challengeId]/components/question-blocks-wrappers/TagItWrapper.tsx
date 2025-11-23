@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { TagItQuestion } from "./types";
 
 interface TagItWrapperProps {
   existingQuestion?: Question;
@@ -17,36 +18,50 @@ interface TagItWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: TagItWrapperProps) {
+export default function TagItWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: TagItWrapperProps) {
   const { toast } = useToast();
+  // Cast existingQuestion to TagItQuestion for type safety
+  const tagItQuestion = existingQuestion as TagItQuestion | undefined;
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [content, setContent] = useState<string[]>((existingQuestion as any)?.content || []);
-  const [answer, setAnswer] = useState<string[]>((existingQuestion as any)?.answer || [""]);
+  const [questionText, setQuestionText] = useState(
+    existingQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    tagItQuestion?.instructions || ""
+  );
+  const [content, setContent] = useState<string[]>(
+    tagItQuestion?.content || []
+  );
+  const [answer, setAnswer] = useState<string[]>(tagItQuestion?.answer || [""]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [points, setPoints] = useState(tagItQuestion?.points || 0);
+
+  const initialTime = tagItQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    tagItQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any).instructions || "");
-      setContent((existingQuestion as any).content || []);
-      setAnswer((existingQuestion as any).answer || [""]);
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (tagItQuestion) {
+      setQuestionText(existingQuestion?.question || "");
+      setInstructions(tagItQuestion.instructions || "");
+      setContent(tagItQuestion.content || []);
+      setAnswer(tagItQuestion.answer || [""]);
+      setPoints(tagItQuestion.points || 0);
+      const time = tagItQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(tagItQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [existingQuestion?.question, tagItQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -68,14 +83,21 @@ export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: 
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       const response = await api.patch(`/questions/tag_it/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -94,13 +116,15 @@ export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: 
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -121,7 +145,7 @@ export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: 
       return;
     }
 
-    const validAnswers = answer.filter(a => a.trim() !== "");
+    const validAnswers = answer.filter((a) => a.trim() !== "");
     if (validAnswers.length === 0) {
       toast({
         title: "Error",
@@ -135,24 +159,24 @@ export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: 
     formData.append("challengeId", challengeId);
     formData.append("text", questionText);
     formData.append("instructions", instructions);
-    
-    content.forEach(part => formData.append("content[]", part));
-    validAnswers.forEach(ans => formData.append("answer[]", ans));
-    
+
+    content.forEach((part) => formData.append("content[]", part));
+    validAnswers.forEach((ans) => formData.append("answer[]", ans));
+
     if (imageFile) {
       formData.append("media", imageFile);
     }
 
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("points", points.toString());
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "GRAMMAR");
 
-    if (existingQuestion) {
+    if (tagItQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
       createQuestionMutation.mutate(formData);
@@ -180,9 +204,15 @@ export default function TagItWrapper({ existingQuestion, onCancel, onSuccess }: 
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {existingQuestion ? "Update Question" : "Save Question"}
+              </>
             )}
           </Button>
         </div>

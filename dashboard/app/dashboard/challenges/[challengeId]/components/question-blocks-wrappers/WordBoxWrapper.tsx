@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection"; // Import Question interface
+import { WordBoxQuestion, WordBoxPayload } from "./types";
 
 interface WordBoxWrapperProps {
   existingQuestion?: Question; // Add existingQuestion prop
@@ -17,47 +18,70 @@ interface WordBoxWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }: WordBoxWrapperProps) {
+export default function WordBoxWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: WordBoxWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
+  // Cast existingQuestion to WordBoxQuestion for type safety
+  const wordBoxQuestion = existingQuestion as WordBoxQuestion | undefined;
+
   // Initialize State with existingQuestion data or defaults
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [maxWords, setMaxWords] = useState((existingQuestion as any)?.maxWords || 5);
-  const [gridWidth, setGridWidth] = useState((existingQuestion as any)?.gridWidth || 3);
-  const [gridHeight, setGridHeight] = useState((existingQuestion as any)?.gridHeight || 3);
-  const [grid, setGrid] = useState<string[][]>(
-    (existingQuestion as any)?.content || Array(3).fill(null).map(() => Array(3).fill(""))
+  const [questionText, setQuestionText] = useState(
+    wordBoxQuestion?.question || ""
   );
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
+  const [instructions, setInstructions] = useState(
+    wordBoxQuestion?.instructions || ""
+  );
+  const [maxWords, setMaxWords] = useState(wordBoxQuestion?.maxWords || 5);
+  const [gridWidth, setGridWidth] = useState(wordBoxQuestion?.gridWidth || 3);
+  const [gridHeight, setGridHeight] = useState(
+    wordBoxQuestion?.gridHeight || 3
+  );
+  const [grid, setGrid] = useState<string[][]>(
+    wordBoxQuestion?.content ||
+      Array(3)
+        .fill(null)
+        .map(() => Array(3).fill(""))
+  );
+  const [points, setPoints] = useState(wordBoxQuestion?.points || 0);
+
   // Calculate initial time values
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const initialTime = wordBoxQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    wordBoxQuestion?.maxAttempts || 1
+  );
 
   // Effect to update state if existingQuestion changes (e.g., switching between questions)
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any).instructions || "");
-      setMaxWords((existingQuestion as any).maxWords || 5);
-      setGridWidth((existingQuestion as any).gridWidth || 3);
-      setGridHeight((existingQuestion as any).gridHeight || 3);
-      setGrid((existingQuestion as any).content || Array(3).fill(null).map(() => Array(3).fill("")));
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (wordBoxQuestion) {
+      setQuestionText(wordBoxQuestion.question || "");
+      setInstructions(wordBoxQuestion.instructions || "");
+      setMaxWords(wordBoxQuestion.maxWords || 5);
+      setGridWidth(wordBoxQuestion.gridWidth || 3);
+      setGridHeight(wordBoxQuestion.gridHeight || 3);
+      setGrid(
+        wordBoxQuestion.content ||
+          Array(3)
+            .fill(null)
+            .map(() => Array(3).fill(""))
+      );
+      setPoints(wordBoxQuestion.points || 0);
+      const time = wordBoxQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(wordBoxQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [wordBoxQuestion]);
 
   // Create Mutation
   const createQuestionMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: WordBoxPayload) => {
       const response = await api.post("/questions/create/wordbox", data);
       return response.data;
     },
@@ -73,7 +97,8 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
       console.error("Error creating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
@@ -81,7 +106,7 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
 
   // Update Mutation
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: WordBoxPayload }) => {
       const response = await api.patch(`/questions/wordbox/${id}`, data);
       return response.data;
     },
@@ -97,13 +122,15 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
       console.error("Error updating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -116,7 +143,9 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
     }
 
     // Validate grid content (at least one letter?)
-    const hasContent = grid.some(row => row.some(cell => cell.trim() !== ""));
+    const hasContent = grid.some((row) =>
+      row.some((cell) => cell.trim() !== "")
+    );
     if (!hasContent) {
       toast({
         title: "Error",
@@ -126,8 +155,8 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
       return;
     }
 
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
-    
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
+
     const payload = {
       challengeId,
       gridWidth,
@@ -152,7 +181,9 @@ export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit WordBox Question" : "Create WordBox Question"}
+          {existingQuestion
+            ? "Edit WordBox Question"
+            : "Create WordBox Question"}
         </h2>
         <div className="flex gap-2">
           <Button

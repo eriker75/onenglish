@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
@@ -9,6 +9,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { GossipQuestion } from "./types";
 
 interface GossipWrapperProps {
   existingQuestion?: Question;
@@ -16,8 +17,16 @@ interface GossipWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function GossipWrapper({ existingQuestion, onCancel, onSuccess }: GossipWrapperProps) {
-  const toast = (opts: { title: string; description?: string; variant?: "default" | "destructive" }) => {
+export default function GossipWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: GossipWrapperProps) {
+  const toast = (opts: {
+    title: string;
+    description?: string;
+    variant?: "default" | "destructive";
+  }) => {
     if (opts.variant === "destructive") {
       console.error(`[Toast error]: ${opts.title} - ${opts.description ?? ""}`);
     } else {
@@ -26,46 +35,53 @@ export default function GossipWrapper({ existingQuestion, onCancel, onSuccess }:
   };
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [correctTranscription, setCorrectTranscription] = useState((existingQuestion as any)?.answer || "");
+  // Cast existingQuestion to GossipQuestion for type safety
+  const gossipQuestion = existingQuestion as GossipQuestion | undefined;
+
+  const [questionText, setQuestionText] = useState(
+    gossipQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    gossipQuestion?.instructions || ""
+  );
+  const [correctTranscription, setCorrectTranscription] = useState(
+    gossipQuestion?.answer || ""
+  );
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  // Note: We might need to handle existing media URL if we want to show it, 
+  // Note: We might need to handle existing media URL if we want to show it,
   // but `Gossip` component might need an update to accept `audioUrl` if it doesn't already.
   // Looking at previous usage: `Gossip` does NOT seem to take `audioUrl`. It takes `onAudioFileChange`.
   // If editing, we might want to show the existing audio.
-  
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+
+  const [points, setPoints] = useState(gossipQuestion?.points || 0);
+
+  const initialTime = gossipQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    gossipQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any).instructions || "");
-      setCorrectTranscription((existingQuestion as any).answer || "");
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (gossipQuestion) {
+      setQuestionText(gossipQuestion.question || "");
+      setInstructions(gossipQuestion.instructions || "");
+      setCorrectTranscription(gossipQuestion.answer || "");
+      setPoints(gossipQuestion.points || 0);
+      const time = gossipQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(gossipQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [gossipQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await api.post(
-        "/questions/create/gossip",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await api.post("/questions/create/gossip", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -88,16 +104,18 @@ export default function GossipWrapper({ existingQuestion, onCancel, onSuccess }:
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const response = await api.patch(
-        `/questions/gossip/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
+      const response = await api.patch(`/questions/gossip/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -119,7 +137,8 @@ export default function GossipWrapper({ existingQuestion, onCancel, onSuccess }:
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {

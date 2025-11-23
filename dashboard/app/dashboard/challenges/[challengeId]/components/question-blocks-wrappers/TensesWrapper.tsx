@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { TensesQuestion, TensesPayload } from "./types";
 
 interface TensesWrapperProps {
   existingQuestion?: Question;
@@ -21,36 +22,39 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [sentence, setSentence] = useState((existingQuestion as any)?.content || "");
-  const [options, setOptions] = useState<string[]>((existingQuestion as any)?.options || []);
-  const [correctAnswer, setCorrectAnswer] = useState((existingQuestion as any)?.answer || "");
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  // Cast existingQuestion to TensesQuestion for type safety
+  const tensesQuestion = existingQuestion as TensesQuestion | undefined;
+
+  const [questionText, setQuestionText] = useState(tensesQuestion?.question || "");
+  const [instructions, setInstructions] = useState(tensesQuestion?.instructions || "");
+  const [sentence, setSentence] = useState(tensesQuestion?.content || "");
+  const [options, setOptions] = useState<string[]>(tensesQuestion?.options || []);
+  const [correctAnswer, setCorrectAnswer] = useState(tensesQuestion?.answer || "");
+  const [points, setPoints] = useState(tensesQuestion?.points || 0);
+
+  const initialTime = tensesQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(tensesQuestion?.maxAttempts || 1);
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any)?.instructions || "");
-      setSentence((existingQuestion as any)?.content || "");
-      setOptions((existingQuestion as any)?.options || []);
-      setCorrectAnswer((existingQuestion as any)?.answer || "");
-      setPoints((existingQuestion as any)?.points || 0);
-      
-      const time = (existingQuestion as any)?.timeLimit || 0;
+    if (tensesQuestion) {
+      setQuestionText(tensesQuestion?.question || "");
+      setInstructions(tensesQuestion.instructions || "");
+      setSentence(tensesQuestion.content || "");
+      setOptions(tensesQuestion.options || []);
+      setCorrectAnswer(tensesQuestion.answer || "");
+      setPoints(tensesQuestion.points || 0);
+
+      const time = tensesQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any)?.maxAttempts || 1);
+      setMaxAttempts(tensesQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [tensesQuestion]);
 
   const createQuestionMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: TensesPayload) => {
       const response = await api.post("/questions/create/tenses", data);
       return response.data;
     },
@@ -72,7 +76,7 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: TensesPayload }) => {
       const response = await api.patch(`/questions/tenses/${id}`, data);
       return response.data;
     },

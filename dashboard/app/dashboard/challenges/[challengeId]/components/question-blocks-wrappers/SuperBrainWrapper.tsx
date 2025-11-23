@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { SuperBrainQuestion } from "./types";
 
 interface SuperBrainWrapperProps {
   existingQuestion?: Question;
@@ -21,31 +22,34 @@ export default function SuperBrainWrapper({ existingQuestion, onCancel, onSucces
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
+  // Cast existingQuestion to SuperBrainQuestion for type safety
+  const superBrainQuestion = existingQuestion as SuperBrainQuestion | undefined;
+
   const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [content, setContent] = useState((existingQuestion as any)?.content || "");
+  const [instructions, setInstructions] = useState(superBrainQuestion?.instructions || "");
+  const [content, setContent] = useState(superBrainQuestion?.content || "");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null); // Not used for upload currently
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  const [points, setPoints] = useState(superBrainQuestion?.points || 0);
   
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const initialTime = superBrainQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(superBrainQuestion?.maxAttempts || 1);
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any).instructions || "");
-      setContent((existingQuestion as any).content || "");
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (superBrainQuestion) {
+      setQuestionText(existingQuestion?.question || "");
+      setInstructions(superBrainQuestion.instructions || "");
+      setContent(superBrainQuestion.content || "");
+      setPoints(superBrainQuestion.points || 0);
+      const time = superBrainQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(superBrainQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [existingQuestion?.question, superBrainQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -139,7 +143,7 @@ export default function SuperBrainWrapper({ existingQuestion, onCancel, onSucces
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "SPEAKING");
 
-    if (existingQuestion) {
+    if (superBrainQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
       createQuestionMutation.mutate(formData);

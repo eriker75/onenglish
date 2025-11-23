@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { ImageToMultipleChoiceQuestion } from "./types";
 
 interface ImageToMultipleChoiceWrapperProps {
   existingQuestion?: Question;
@@ -17,44 +18,64 @@ interface ImageToMultipleChoiceWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCancel, onSuccess }: ImageToMultipleChoiceWrapperProps) {
+export default function ImageToMultipleChoiceWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: ImageToMultipleChoiceWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
+  // Cast existingQuestion to ImageToMultipleChoiceQuestion for type safety
+  const imageQuestion = existingQuestion as
+    | ImageToMultipleChoiceQuestion
+    | undefined;
+
   // State
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [options, setOptions] = useState<string[]>((existingQuestion as any)?.options || ["", "", "", ""]);
-  const [correctAnswer, setCorrectAnswer] = useState((existingQuestion as any)?.correctAnswer || (existingQuestion as any)?.answer || "");
+  const [questionText, setQuestionText] = useState(
+    imageQuestion?.question || ""
+  );
+  const [options, setOptions] = useState<string[]>(
+    imageQuestion?.options || ["", "", "", ""]
+  );
+  const [correctAnswer, setCorrectAnswer] = useState(
+    imageQuestion?.correctAnswer || ""
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
-  
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [points, setPoints] = useState(imageQuestion?.points || 0);
+
+  const initialTime = imageQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    imageQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setOptions((existingQuestion as any).options || ["", "", "", ""]);
-      // Backend usually returns 'answer' but locally we might call it 'correctAnswer' in prop. DTO calls it 'answer'.
-      setCorrectAnswer((existingQuestion as any).correctAnswer || (existingQuestion as any).answer || "");
-      setPoints((existingQuestion as any).points || 0);
-      const time = (existingQuestion as any).timeLimit || 0;
+    if (imageQuestion) {
+      setQuestionText(imageQuestion.question || "");
+      setOptions(imageQuestion.options || ["", "", "", ""]);
+      setCorrectAnswer(imageQuestion.correctAnswer || "");
+      setPoints(imageQuestion.points || 0);
+      const time = imageQuestion.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      setMaxAttempts(imageQuestion.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [imageQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/image_to_multiple_choices", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post(
+        "/questions/create/image_to_multiple_choices",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -69,19 +90,30 @@ export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCance
       console.error("Error creating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const response = await api.patch(`/questions/image_to_multiple_choices/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
+      const response = await api.patch(
+        `/questions/image_to_multiple_choices/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -96,13 +128,15 @@ export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCance
       console.error("Error updating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -123,7 +157,7 @@ export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCance
       return;
     }
 
-    const validOptions = options.filter(opt => opt.trim() !== "");
+    const validOptions = options.filter((opt) => opt.trim() !== "");
     if (validOptions.length < 2) {
       toast({
         title: "Error",
@@ -151,12 +185,12 @@ export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCance
     formData.append("options", validOptions.join(","));
     formData.append("answer", correctAnswer);
     formData.append("points", points.toString());
-    
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("maxAttempts", maxAttempts.toString());
 
     if (existingQuestion) {
@@ -170,7 +204,10 @@ export default function ImageToMultipleChoiceWrapper({ existingQuestion, onCance
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit Vocabulary Question" : "Create Vocabulary Question"} (Image to Multiple Choice)
+          {existingQuestion
+            ? "Edit Vocabulary Question"
+            : "Create Vocabulary Question"}{" "}
+          (Image to Multiple Choice)
         </h2>
         <div className="flex gap-2">
           <Button

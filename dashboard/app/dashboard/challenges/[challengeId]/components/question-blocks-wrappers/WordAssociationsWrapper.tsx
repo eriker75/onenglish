@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -10,6 +10,7 @@ import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
+import { WordAssociationsQuestion } from "./types";
 
 interface WordAssociationsWrapperProps {
   existingQuestion?: Question;
@@ -17,48 +18,72 @@ interface WordAssociationsWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function WordAssociationsWrapper({ existingQuestion, onCancel, onSuccess }: WordAssociationsWrapperProps) {
+export default function WordAssociationsWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: WordAssociationsWrapperProps) {
   const { toast } = useToast();
+  // Cast existingQuestion to WordAssociationsQuestion for type safety
+  const wordAssociationsQuestion = existingQuestion as
+    | WordAssociationsQuestion
+    | undefined;
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
   // State
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
-  const [referenceWord, setReferenceWord] = useState((existingQuestion as any)?.content || "");
-  const [maxAssociations, setMaxAssociations] = useState((existingQuestion as any)?.maxAssociations || 3);
-  const [imageUrl, setImageUrl] = useState<string | null>((existingQuestion as any)?.mediaUrl || null);
+  const [questionText, setQuestionText] = useState(
+    existingQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    wordAssociationsQuestion?.instructions || ""
+  );
+  const [referenceWord, setReferenceWord] = useState(
+    wordAssociationsQuestion?.content || ""
+  );
+  const [maxAssociations, setMaxAssociations] = useState(
+    wordAssociationsQuestion?.maxAssociations || 3
+  );
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    wordAssociationsQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  const [points, setPoints] = useState(wordAssociationsQuestion?.points || 0);
 
-  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const initialTime = wordAssociationsQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+  const [maxAttempts, setMaxAttempts] = useState(
+    wordAssociationsQuestion?.maxAttempts || 1
+  );
 
   useEffect(() => {
-    if (existingQuestion) {
-      setQuestionText(existingQuestion.question || "");
-      setInstructions((existingQuestion as any)?.instructions || "");
-      setReferenceWord((existingQuestion as any)?.content || "");
-      setMaxAssociations((existingQuestion as any)?.maxAssociations || 3);
-      setImageUrl((existingQuestion as any)?.mediaUrl || null);
-      setPoints((existingQuestion as any)?.points || 0);
-      
-      const time = (existingQuestion as any)?.timeLimit || 0;
+    if (wordAssociationsQuestion) {
+      setQuestionText(existingQuestion?.question || "");
+      setInstructions(wordAssociationsQuestion?.instructions || "");
+      setReferenceWord(wordAssociationsQuestion?.content || "");
+      setMaxAssociations(wordAssociationsQuestion?.maxAssociations || 3);
+      setImageUrl(wordAssociationsQuestion?.mediaUrl || null);
+      setPoints(wordAssociationsQuestion?.points || 0);
+
+      const time = wordAssociationsQuestion?.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts((existingQuestion as any)?.maxAttempts || 1);
+      setMaxAttempts(wordAssociationsQuestion?.maxAttempts || 1);
     }
-  }, [existingQuestion]);
+  }, [existingQuestion?.question, wordAssociationsQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/word_associations", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post(
+        "/questions/create/word_associations",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -73,19 +98,30 @@ export default function WordAssociationsWrapper({ existingQuestion, onCancel, on
       console.error("Error creating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
+        description:
+          error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
     },
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const response = await api.patch(`/questions/word_associations/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
+      const response = await api.patch(
+        `/questions/word_associations/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -100,13 +136,15 @@ export default function WordAssociationsWrapper({ existingQuestion, onCancel, on
       console.error("Error updating question:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
+        description:
+          error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
     },
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending =
+    createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -132,22 +170,22 @@ export default function WordAssociationsWrapper({ existingQuestion, onCancel, on
     formData.append("content", referenceWord);
     formData.append("maxAssociations", maxAssociations.toString());
     formData.append("points", points.toString());
-    
+
     if (imageFile) {
       formData.append("media", imageFile);
     }
-    
+
     if (questionText) formData.append("text", questionText);
     if (instructions) formData.append("instructions", instructions);
-    
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("maxAttempts", maxAttempts.toString());
 
-    if (existingQuestion) {
+    if (wordAssociationsQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
       createQuestionMutation.mutate(formData);
@@ -158,7 +196,9 @@ export default function WordAssociationsWrapper({ existingQuestion, onCancel, on
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit Word Associations Question" : "Create Word Associations Question"}
+          {existingQuestion
+            ? "Edit Word Associations Question"
+            : "Create Word Associations Question"}
         </h2>
         <div className="flex gap-2">
           <Button

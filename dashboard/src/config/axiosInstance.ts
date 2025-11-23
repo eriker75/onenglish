@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getSession } from "next-auth/react";
+// import { getSession } from "next-auth/react";
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 if (!BACKEND_URL) {
@@ -14,9 +14,12 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     if (typeof window !== "undefined") {
-      const session = await getSession();
-
-      const accessToken = session?.user?.accessToken as string | undefined;
+      // const session = await getSession();
+      // const accessToken = session?.user?.accessToken as string | undefined;
+      
+      // Try to get token from localStorage
+      const accessToken = localStorage.getItem("token") || localStorage.getItem("accessToken");
+      
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
