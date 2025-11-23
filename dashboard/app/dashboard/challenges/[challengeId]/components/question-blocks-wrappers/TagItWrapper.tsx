@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -48,20 +48,6 @@ export default function TagItWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     tagItQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (tagItQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(tagItQuestion.instructions || "");
-      setContent(tagItQuestion.content || []);
-      setAnswer(tagItQuestion.answer || [""]);
-      setPoints(tagItQuestion.points || 0);
-      const time = tagItQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(tagItQuestion.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, tagItQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

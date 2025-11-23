@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -29,11 +29,18 @@ export default function TalesWrapper({
   // Cast existingQuestion to TalesQuestion for type safety
   const talesQuestion = existingQuestion as TalesQuestion | undefined;
 
+  // Extract example story from instructions if possible
+  // This assumes a specific format: "instructions\n\nExample Story:\nexampleStory"
+  const fullInstructions = talesQuestion?.instructions || "";
+  const parts = fullInstructions.split("\n\nExample Story:\n");
+  const initialInstructions = parts.length > 1 ? parts[0] : fullInstructions;
+  const initialExampleStory = parts.length > 1 ? parts[1] : "";
+
   const [questionText, setQuestionText] = useState(
     existingQuestion?.question || ""
   );
-  const [instructions, setInstructions] = useState("");
-  const [exampleStory, setExampleStory] = useState("");
+  const [instructions, setInstructions] = useState(initialInstructions);
+  const [exampleStory, setExampleStory] = useState(initialExampleStory);
   const [imageUrl, setImageUrl] = useState<string | null>(
     talesQuestion?.mediaUrl || null
   );
@@ -46,32 +53,6 @@ export default function TalesWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     talesQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (talesQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-
-      // Extract example story from instructions if possible
-      // This assumes a specific format: "instructions\n\nExample Story:\nexampleStory"
-      const fullInstructions = talesQuestion?.instructions || "";
-      const parts = fullInstructions.split("\n\nExample Story:\n");
-      if (parts.length > 1) {
-        setInstructions(parts[0]);
-        setExampleStory(parts[1]);
-      } else {
-        setInstructions(fullInstructions);
-        setExampleStory("");
-      }
-
-      setImageUrl(talesQuestion?.mediaUrl || null);
-      setPoints(talesQuestion?.points || 0);
-
-      const time = talesQuestion?.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(talesQuestion?.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, talesQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

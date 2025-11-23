@@ -26,6 +26,7 @@ import {
   WordBoxWrapper,
   WordMatchWrapper,
 } from "./question-blocks-wrappers";
+import { cn } from "@/lib/utils";
 
 export interface Question {
   id: string;
@@ -269,15 +270,13 @@ export default function QuestionsSection({
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
                         disabled={isCurrentPage}
-                        className={`
-                        w-8 h-8 rounded-lg text-sm font-medium transition-colors
-                        ${
+                        className={cn(
+                          "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
                           isCurrentPage
                             ? "bg-[#FF0098] text-white"
-                            : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]"
-                        }
-                        disabled:cursor-default
-                      `}
+                            : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]",
+                          "disabled:cursor-default"
+                        )}
                       >
                         {pageNum}
                       </button>

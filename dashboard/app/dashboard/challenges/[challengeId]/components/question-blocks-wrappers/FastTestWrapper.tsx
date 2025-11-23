@@ -5,12 +5,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
-import FastTest from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/FastTest";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { FastTestQuestion, FastTestPayload } from "./types";
+import FastTest from "../question-blocks/FastTest";
 
 interface FastTestWrapperProps {
   existingQuestion?: Question;

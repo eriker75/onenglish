@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -56,28 +56,6 @@ export default function WordBoxWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     wordBoxQuestion?.maxAttempts || 1
   );
-
-  // Effect to update state if existingQuestion changes (e.g., switching between questions)
-  useEffect(() => {
-    if (wordBoxQuestion) {
-      setQuestionText(wordBoxQuestion.question || "");
-      setInstructions(wordBoxQuestion.instructions || "");
-      setMaxWords(wordBoxQuestion.maxWords || 5);
-      setGridWidth(wordBoxQuestion.gridWidth || 3);
-      setGridHeight(wordBoxQuestion.gridHeight || 3);
-      setGrid(
-        wordBoxQuestion.content ||
-          Array(3)
-            .fill(null)
-            .map(() => Array(3).fill(""))
-      );
-      setPoints(wordBoxQuestion.points || 0);
-      const time = wordBoxQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(wordBoxQuestion.maxAttempts || 1);
-    }
-  }, [wordBoxQuestion]);
 
   // Create Mutation
   const createQuestionMutation = useMutation({

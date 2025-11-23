@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -66,28 +66,6 @@ export default function TopicBasedAudioWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     topicBasedAudioQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (topicBasedAudioQuestion) {
-      setQuestionText(topicBasedAudioQuestion?.content || "");
-      setInstructions(topicBasedAudioQuestion?.instructions || "");
-      setAudioUrl(topicBasedAudioQuestion?.mediaUrl || null);
-      setSubQuestions(
-        topicBasedAudioQuestion?.subQuestions?.map((q) => ({
-          id: q.id || "",
-          text: q.text ?? "",
-          options: q.options ?? [],
-          correctAnswer: q.answer ?? q.correctAnswer ?? "",
-          points: q.points,
-        })) || []
-      );
-
-      const time = topicBasedAudioQuestion?.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(topicBasedAudioQuestion?.maxAttempts || 1);
-    }
-  }, [topicBasedAudioQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({

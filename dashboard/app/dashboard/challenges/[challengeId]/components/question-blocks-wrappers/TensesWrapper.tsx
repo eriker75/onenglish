@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -36,22 +36,6 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
   const [maxAttempts, setMaxAttempts] = useState(tensesQuestion?.maxAttempts || 1);
-
-  useEffect(() => {
-    if (tensesQuestion) {
-      setQuestionText(tensesQuestion?.question || "");
-      setInstructions(tensesQuestion.instructions || "");
-      setSentence(tensesQuestion.content || "");
-      setOptions(tensesQuestion.options || []);
-      setCorrectAnswer(tensesQuestion.answer || "");
-      setPoints(tensesQuestion.points || 0);
-
-      const time = tensesQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(tensesQuestion.maxAttempts || 1);
-    }
-  }, [tensesQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (data: TensesPayload) => {

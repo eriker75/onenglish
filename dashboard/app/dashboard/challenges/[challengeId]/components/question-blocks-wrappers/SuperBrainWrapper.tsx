@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -37,19 +37,6 @@ export default function SuperBrainWrapper({ existingQuestion, onCancel, onSucces
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
   const [maxAttempts, setMaxAttempts] = useState(superBrainQuestion?.maxAttempts || 1);
-
-  useEffect(() => {
-    if (superBrainQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(superBrainQuestion.instructions || "");
-      setContent(superBrainQuestion.content || "");
-      setPoints(superBrainQuestion.points || 0);
-      const time = superBrainQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(superBrainQuestion.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, superBrainQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

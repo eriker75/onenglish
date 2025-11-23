@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
-import ImageToMultipleChoiceText from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/ImageToMultipleChoiceText";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { ImageToMultipleChoiceQuestion } from "./types";
+import ImageToMultipleChoiceText from "../question-blocks/ImageToMultipleChoiceText";
 
 interface ImageToMultipleChoiceWrapperProps {
   existingQuestion?: Question;
@@ -50,19 +50,6 @@ export default function ImageToMultipleChoiceWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     imageQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (imageQuestion) {
-      setQuestionText(imageQuestion.question || "");
-      setOptions(imageQuestion.options || ["", "", "", ""]);
-      setCorrectAnswer(imageQuestion.correctAnswer || "");
-      setPoints(imageQuestion.points || 0);
-      const time = imageQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(imageQuestion.maxAttempts || 1);
-    }
-  }, [imageQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({

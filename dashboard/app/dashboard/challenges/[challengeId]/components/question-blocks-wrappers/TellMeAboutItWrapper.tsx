@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -36,21 +36,6 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
   const [maxAttempts, setMaxAttempts] = useState(tellMeAboutItQuestion?.maxAttempts || 1);
-
-  useEffect(() => {
-    if (tellMeAboutItQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(tellMeAboutItQuestion?.instructions || "");
-      setContent(tellMeAboutItQuestion?.content || "");
-      setImageUrl(tellMeAboutItQuestion?.mediaUrl || null);
-      setPoints(tellMeAboutItQuestion?.points || 0);
-      
-      const time = tellMeAboutItQuestion?.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(tellMeAboutItQuestion?.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, tellMeAboutItQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

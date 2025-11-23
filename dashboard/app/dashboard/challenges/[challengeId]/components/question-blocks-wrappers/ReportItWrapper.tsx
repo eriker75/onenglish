@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -47,19 +47,6 @@ export default function ReportItWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     reportItQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (reportItQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(reportItQuestion.instructions || "");
-      setOriginalSentence(reportItQuestion.content || "");
-      setPoints(reportItQuestion.points || 0);
-      const time = reportItQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(reportItQuestion.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, reportItQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

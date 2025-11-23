@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -48,28 +48,6 @@ export default function SentenceMakerWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     sentenceMakerQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (sentenceMakerQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(sentenceMakerQuestion.instructions || "");
-      // Handle existing images?
-      // If backend returns image URLs in `media` or `content` or specific field.
-      // Assuming `media` array of URLs if present.
-      // For now, we init empty or with existing structure if available.
-      // If `existingQuestion` has media URLs, we should populate `images`.
-      // But we don't have exact DTO structure in frontend for `media`.
-      // Assuming `sentenceMakerQuestion.media` is array of strings (URLs).
-      // If so:
-      // setImages(sentenceMakerQuestion.media || ["", ""]);
-
-      setPoints(sentenceMakerQuestion.points || 0);
-      const time = sentenceMakerQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(sentenceMakerQuestion.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, sentenceMakerQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

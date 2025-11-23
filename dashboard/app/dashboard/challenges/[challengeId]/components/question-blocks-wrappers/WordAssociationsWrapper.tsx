@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -55,22 +55,6 @@ export default function WordAssociationsWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     wordAssociationsQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (wordAssociationsQuestion) {
-      setQuestionText(existingQuestion?.question || "");
-      setInstructions(wordAssociationsQuestion?.instructions || "");
-      setReferenceWord(wordAssociationsQuestion?.content || "");
-      setMaxAssociations(wordAssociationsQuestion?.maxAssociations || 3);
-      setImageUrl(wordAssociationsQuestion?.mediaUrl || null);
-      setPoints(wordAssociationsQuestion?.points || 0);
-
-      const time = wordAssociationsQuestion?.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(wordAssociationsQuestion?.maxAttempts || 1);
-    }
-  }, [existingQuestion?.question, wordAssociationsQuestion]);
 
   // Mutation
   const createQuestionMutation = useMutation({

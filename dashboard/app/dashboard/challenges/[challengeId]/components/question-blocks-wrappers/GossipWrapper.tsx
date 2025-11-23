@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
-import Gossip from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Gossip";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { GossipQuestion } from "./types";
+import Gossip from "../question-blocks/Gossip";
 
 interface GossipWrapperProps {
   existingQuestion?: Question;
@@ -62,18 +62,6 @@ export default function GossipWrapper({
     gossipQuestion?.maxAttempts || 1
   );
 
-  useEffect(() => {
-    if (gossipQuestion) {
-      setQuestionText(gossipQuestion.question || "");
-      setInstructions(gossipQuestion.instructions || "");
-      setCorrectTranscription(gossipQuestion.answer || "");
-      setPoints(gossipQuestion.points || 0);
-      const time = gossipQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(gossipQuestion.maxAttempts || 1);
-    }
-  }, [gossipQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -60,25 +60,6 @@ export default function UnscrambleWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     unscrambleQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (unscrambleQuestion) {
-      setQuestionText(unscrambleQuestion.question || "");
-      setInstructions(unscrambleQuestion.instructions || "");
-      setScrambledWords(unscrambleQuestion.content || []);
-
-      const sentence = Array.isArray(unscrambleQuestion.answer)
-        ? unscrambleQuestion.answer.join(" ")
-        : unscrambleQuestion.answer || "";
-      setCorrectSentence(sentence);
-
-      setPoints(unscrambleQuestion.points || 0);
-      const time = unscrambleQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(unscrambleQuestion.maxAttempts || 1);
-    }
-  }, [unscrambleQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {

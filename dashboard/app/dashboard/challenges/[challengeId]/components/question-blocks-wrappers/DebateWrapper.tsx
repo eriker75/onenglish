@@ -5,12 +5,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 import api from "@/src/config/axiosInstance";
-import Debate from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Debate";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { DebateQuestion, DebatePayload } from "./types";
+import Debate from "../question-blocks/Debate";
 
 interface DebateWrapperProps {
   existingQuestion?: Question;
@@ -173,11 +173,7 @@ export default function DebateWrapper({
         question={questionText}
         instructions={instructions}
         content={content}
-        answer={
-          stance === "for" || stance === "against" || stance === "random"
-            ? stance
-            : undefined
-        }
+        answer={stance as "for" || "against" || "random" || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -42,18 +42,23 @@ export default function ReadItWrapper({
   );
 
   // Parse content (PassageDto[]) to get paragraph
-  const initialParagraph = readItQuestion?.content?.[0]?.text || "";
-  const [paragraph, setParagraph] = useState(initialParagraph);
+  // Parse content (PassageDto[]) to get paragraph
+  const initialParagraph =
+    readItQuestion?.content && readItQuestion.content
+      ? readItQuestion.content
+      : "";
+  const [paragraph, setParagraph] = useState<string>(initialParagraph);
 
   // Parse subQuestions to get statements
   // We need to map subQuestions back to Statement[] format
-  const initialStatements: Statement[] = readItQuestion?.subQuestions?.map(
-    (sq: ReadItSubQuestion, index: number) => ({
-      id: sq.id || String(index),
-      text: sq.content || "", // subQuestion content is the statement text
-      correct: sq.correct || false, // Assuming answer is boolean or string boolean
-    })
-  ) || [{ id: "1", text: "", correct: true }];
+  const initialStatements: Statement[] =
+    readItQuestion?.subQuestions?.map(
+      (sq: ReadItSubQuestion, index: number) => ({
+        id: sq.id || String(index),
+        text: sq.content || "", // subQuestion content is the statement text
+        correct: sq.correct || false, // Assuming answer is boolean or string boolean
+      })
+    ) || [{ id: "1", text: "", correct: true }];
 
   const [statements, setStatements] = useState<Statement[]>(initialStatements);
 
@@ -67,29 +72,6 @@ export default function ReadItWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     readItQuestion?.maxAttempts || 1
   );
-
-  useEffect(() => {
-    if (readItQuestion) {
-      setQuestionText(readItQuestion?.question || "");
-      setInstructions(readItQuestion.instructions || "");
-      setParagraph(readItQuestion.content?.[0]?.text || "");
-
-      const stmts = readItQuestion.subQuestions?.map(
-        (sq: ReadItSubQuestion, index: number) => ({
-          id: sq.id || String(index),
-          text: sq.content || "",
-          correct: sq.correct || false,
-        })
-      ) || [{ id: "1", text: "", correct: true }];
-      setStatements(stmts);
-
-      setPoints(readItQuestion.points || 0);
-      const time = readItQuestion.timeLimit || 0;
-      setTimeMinutes(Math.floor(time / 60));
-      setTimeSeconds(time % 60);
-      setMaxAttempts(readItQuestion.maxAttempts || 1);
-    }
-  }, [readItQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
