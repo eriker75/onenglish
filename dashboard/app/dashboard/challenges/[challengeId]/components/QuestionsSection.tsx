@@ -353,6 +353,7 @@ export default function QuestionsSection({
             // Use the Wrapper component for existing questions
             <div className="bg-white rounded-lg border border-gray-200">
               <EditQuestionComponent
+                key={currentQuestion.id}
                 existingQuestion={currentQuestion}
                 onCancel={() => {
                   // For edit mode, cancel might mean just closing or doing nothing if we are in pagination mode.
