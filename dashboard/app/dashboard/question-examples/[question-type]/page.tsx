@@ -50,8 +50,7 @@ export default function QuestionTypeExamplePage() {
     // Vocabulary
     image_to_multiple_choice_text: QuestionBlocks.ImageToMultipleChoiceText,
     wordbox: QuestionBlocks.WordBox,
-    spell_image_with_voice: QuestionBlocks.SpellImageWithVoice,
-    spell_image_to_text: QuestionBlocks.SpellImageToText,
+    spelling: QuestionBlocks.Spelling,
     word_associations_with_text: QuestionBlocks.WordAssociationsWithText,
     // Grammar
     unscramble: QuestionBlocks.Unscramble,
@@ -61,7 +60,7 @@ export default function QuestionTypeExamplePage() {
     read_it: QuestionBlocks.ReadIt,
     // Listening
     word_match: QuestionBlocks.WordMatch,
-    gossip: QuestionBlocks.GossipEN,
+    gossip: QuestionBlocks.Gossip,
     topic_based_audio: QuestionBlocks.TopicBasedAudio,
     lyrics_training: QuestionBlocks.LyricsTraining,
     // Writing

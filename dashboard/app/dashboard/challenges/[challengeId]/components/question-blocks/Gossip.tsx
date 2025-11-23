@@ -1,54 +1,49 @@
 "use client";
 
 import React, { useState } from "react";
-import ImageUpload from "@/components/elements/ImageUpload";
+import AudioUpload from "@/components/elements/AudioUpload";
 
-interface WordAssociationsWithTextProps {
+interface GossipProps {
   question?: string;
   instructions?: string;
-  referenceWord?: string;
-  maxAssociations?: number;
-  imageUrl?: string;
+  audioUrl?: string;
+  correctTranscription?: string;
   points?: number;
   timeMinutes?: number;
   timeSeconds?: number;
   maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
   onInstructionsChange?: (instructions: string) => void;
-  onReferenceWordChange?: (word: string) => void;
-  onMaxAssociationsChange?: (max: number) => void;
-  onImageChange?: (imageUrl: string | null) => void;
+  onAudioChange?: (audioUrl: string | null) => void;
+  onCorrectTranscriptionChange?: (transcription: string) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
   onTimeSecondsChange?: (seconds: number) => void;
   onMaxAttemptsChange?: (attempts: number) => void;
 }
 
-export default function WordAssociationsWithText({
+export default function Gossip({
   question = "",
   instructions = "",
-  referenceWord = "",
-  maxAssociations: initialMaxAssociations = 3,
-  imageUrl: initialImageUrl,
+  audioUrl: initialAudioUrl,
+  correctTranscription = "",
   points: initialPoints = 0,
   timeMinutes: initialTimeMinutes = 0,
   timeSeconds: initialTimeSeconds = 0,
   maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
   onInstructionsChange,
-  onReferenceWordChange,
-  onMaxAssociationsChange,
-  onImageChange,
+  onAudioChange,
+  onCorrectTranscriptionChange,
   onPointsChange,
   onTimeMinutesChange,
   onTimeSecondsChange,
   onMaxAttemptsChange,
-}: WordAssociationsWithTextProps) {
+}: GossipProps) {
   const [questionText, setQuestionText] = useState(question);
   const [instructionsText, setInstructionsText] = useState(instructions);
-  const [referenceWordText, setReferenceWordText] = useState(referenceWord);
-  const [maxAssociationsValue, setMaxAssociationsValue] = useState(initialMaxAssociations);
-  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl || null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl || null);
+  const [correctTranscriptionText, setCorrectTranscriptionText] = useState(correctTranscription);
   const [pointsValue, setPointsValue] = useState(initialPoints);
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
@@ -64,20 +59,9 @@ export default function WordAssociationsWithText({
     onInstructionsChange?.(value);
   };
 
-  const handleReferenceWordChange = (value: string) => {
-    setReferenceWordText(value);
-    onReferenceWordChange?.(value);
-  };
-
-  const handleMaxAssociationsChange = (value: number) => {
-    const max = Math.max(1, Math.floor(value));
-    setMaxAssociationsValue(max);
-    onMaxAssociationsChange?.(max);
-  };
-
-  const handleImageChange = (url: string | null) => {
-    setImageUrl(url);
-    onImageChange?.(url);
+  const handleCorrectTranscriptionChange = (value: string) => {
+    setCorrectTranscriptionText(value);
+    onCorrectTranscriptionChange?.(value);
   };
 
   const handlePointsChange = (value: number) => {
@@ -106,8 +90,9 @@ export default function WordAssociationsWithText({
 
   return (
     <div className="w-full space-y-6">
+      {/* First Row: Question Text, Instructions, Correct Transcription */}
       <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-3">
+        <div className="col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Question Text *
           </label>
@@ -119,9 +104,9 @@ export default function WordAssociationsWithText({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Instructions *
+            Question Instructions *
           </label>
           <input
             type="text"
@@ -131,44 +116,35 @@ export default function WordAssociationsWithText({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
-        <div className="col-span-3">
+        <div className="col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Reference Word *
+            Correct Transcription *
           </label>
           <input
             type="text"
-            value={referenceWordText}
-            onChange={(e) => handleReferenceWordChange(e.target.value)}
-            placeholder="Enter reference word"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-          />
-        </div>
-        <div className="col-span-3">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Max Assoc. *
-          </label>
-          <input
-            type="number"
-            min="1"
-            value={maxAssociationsValue}
-            onChange={(e) => handleMaxAssociationsChange(parseInt(e.target.value) || 1)}
-            placeholder="3"
+            value={correctTranscriptionText}
+            onChange={(e) => handleCorrectTranscriptionChange(e.target.value)}
+            placeholder="Enter the correct transcription..."
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
       </div>
 
+      {/* Second Row: Audio File */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Image (Optional)
+          Audio File *
         </label>
-        <ImageUpload
-          imageUrl={imageUrl}
-          onImageChange={handleImageChange}
-          height="h-48"
+        <AudioUpload
+          audioUrl={audioUrl}
+          onAudioChange={(url) => {
+            setAudioUrl(url);
+            onAudioChange?.(url);
+          }}
         />
       </div>
 
+      {/* Third Row: Points, Time, and Max Attempts */}
       <div className="grid grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

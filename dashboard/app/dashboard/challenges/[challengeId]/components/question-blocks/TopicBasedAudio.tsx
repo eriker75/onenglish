@@ -2,9 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import MicIcon from "@mui/icons-material/Mic";
-import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AudioUpload from "@/components/elements/AudioUpload";
 
 interface Question {
   id: string;
@@ -44,24 +44,10 @@ export default function TopicBasedAudio({
           },
         ]
   );
-  const [isDragging, setIsDragging] = useState(false);
-  const audioInputRef = useRef<HTMLInputElement>(null);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
-  };
-
-  const handleAudioUpload = (file: File) => {
-    if (file && file.type.startsWith("audio/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setAudioUrl(result);
-        onAudioChange?.(result);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleQuestionTextChange = (id: string, text: string) => {
@@ -132,76 +118,13 @@ export default function TopicBasedAudio({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Audio File *
         </label>
-        {!audioUrl ? (
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-              const file = e.dataTransfer.files[0];
-              if (file) handleAudioUpload(file);
-            }}
-            onClick={() => audioInputRef.current?.click()}
-            className={`
-              relative w-full h-48 border-2 border-dashed rounded-lg cursor-pointer
-              transition-all duration-200
-              ${isDragging
-                ? "border-[#44b07f] bg-[#44b07f]/5"
-                : "border-gray-300 hover:border-gray-400 bg-gray-50"
-              }
-              flex flex-col items-center justify-center gap-3
-            `}
-          >
-            <MicIcon
-              className={`text-4xl ${isDragging ? "text-[#44b07f]" : "text-gray-400"}`}
-            />
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">
-                Drag and drop an audio file
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                or click to browse
-              </p>
-            </div>
-            <input
-              ref={audioInputRef}
-              type="file"
-              accept="audio/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleAudioUpload(file);
-              }}
-              className="hidden"
-            />
-          </div>
-        ) : (
-          <div className="relative w-full">
-            <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50 flex items-center justify-center">
-              <audio controls className="w-full">
-                <source src={audioUrl} />
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-            <button
-              onClick={() => {
-                setAudioUrl(null);
-                onAudioChange?.(null);
-                if (audioInputRef.current) audioInputRef.current.value = "";
-              }}
-              className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
-              title="Remove audio"
-            >
-              <DeleteIcon fontSize="small" />
-            </button>
-          </div>
-        )}
+        <AudioUpload
+          audioUrl={audioUrl}
+          onAudioChange={(url) => {
+            setAudioUrl(url);
+            onAudioChange?.(url);
+          }}
+        />
       </div>
 
       <div>

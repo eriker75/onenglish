@@ -13,8 +13,7 @@ export { default as ReadIt } from "./ReadIt";
 
 // Listening
 export { default as WordMatch } from "./WordMatch";
-export { default as GossipEN } from "./GossipEN";
-export { default as GossipES } from "./GossipES";
+export { default as Gossip } from "./Gossip";
 export { default as TopicBasedAudio } from "./TopicBasedAudio";
 export { default as LyricsTraining } from "./LyricsTraining";
 
