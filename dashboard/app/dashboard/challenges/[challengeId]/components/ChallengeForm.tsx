@@ -3,11 +3,9 @@
 import { useStepper } from "@/hooks/useStepper";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { useEffect } from "react";
-import QuestionsSection, { Question } from "./QuestionsSection";
+import QuestionsSection, { Question, QuestionFieldValue } from "./QuestionsSection";
 import FormNavigation from "./FormNavigation";
 import { QuestionType } from "./questionTypes";
-
-type QuestionFieldValue = string | string[] | undefined;
 
 interface ChallengeFormProps {
   questionsByArea: { [key: string]: Question[] };
@@ -95,7 +93,6 @@ export default function ChallengeForm({
         onQuestionChange={onQuestionChange}
         onOptionChange={onOptionChange}
       />
-
       {/* Navigation Buttons */}
       <FormNavigation
         isFirstStep={isFirstStep}
@@ -112,4 +109,4 @@ export default function ChallengeForm({
   );
 }
 
-export type { Question };
+export type { Question, QuestionFieldValue };

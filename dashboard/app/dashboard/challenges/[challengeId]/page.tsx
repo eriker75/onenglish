@@ -7,11 +7,13 @@ import DashboardContent from "@/components/DashboardContent";
 import OlympicStepper from "@/components/OlympicStepper";
 import ChallengeForm, {
   Question,
+  QuestionFieldValue,
 } from "@/app/dashboard/challenges/[challengeId]/components/ChallengeForm";
 import QuestionTypeNavigation from "./components/QuestionTypeNavigation";
 import { QuestionType } from "./components/questionTypes";
 import { getDemoChallenges } from "@/src/data/demo-data";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
+import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 
 export default function ChallengeEditPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function ChallengeEditPage() {
   const challengeId = params.challengeId as string;
   const [isLoading, setIsLoading] = useState(true);
   const { setCurrentChallengeId, addStage, stages } = useChallengeFormUIStore();
+  const { updateChallengeField } = useChallengeFormStore();
   const [grade, setGrade] = useState("");
   const [challengeType, setChallengeType] = useState<"regular" | "bilingual">(
     "regular"
@@ -41,6 +44,8 @@ export default function ChallengeEditPage() {
         setIsLoading(true);
         // Set challenge ID in UI store
         setCurrentChallengeId(challengeId);
+        // Set challenge ID in data store (needed for wrappers)
+        updateChallengeField("id", challengeId);
 
         // First, try to load from localStorage (for newly created challenges)
         const savedChallenge = localStorage.getItem(`challenge-${challengeId}`);
@@ -127,7 +132,7 @@ export default function ChallengeEditPage() {
     area: string,
     questionId: string,
     field: string,
-    value: string | string[] | undefined
+    value: QuestionFieldValue
   ) => {
     setQuestionsByArea((prev) => ({
       ...prev,

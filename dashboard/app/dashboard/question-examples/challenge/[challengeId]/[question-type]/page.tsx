@@ -7,8 +7,8 @@ import DashboardContent from "@/components/DashboardContent";
 import { questionTypesByArea, QuestionType } from "@/app/dashboard/challenges/[challengeId]/components/questionTypes";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import * as QuestionBlocks from "@/app/dashboard/challenges/[challengeId]/components/question-blocks";
-import TopicBasedAudioWrapper from "@/app/dashboard/question-blocks-wrappers/TopicBasedAudioWrapper";
-import ImageToMultipleChoiceWrapper from "@/app/dashboard/question-blocks-wrappers/ImageToMultipleChoiceWrapper";
+import TopicBasedAudioWrapper from "@/app/dashboard/challenges/[challengeId]/components/question-blocks-wrappers/TopicBasedAudioWrapper";
+import ImageToMultipleChoiceWrapper from "@/app/dashboard/challenges/[challengeId]/components/question-blocks-wrappers/ImageToMultipleChoiceWrapper";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 
 export default function QuestionTypeExampleWithChallengePage() {

@@ -27,6 +27,26 @@ import {
   Debate,
 } from "./question-blocks";
 
+import DebateWrapper from "./question-blocks-wrappers/DebateWrapper";
+import FastTestWrapper from "./question-blocks-wrappers/FastTestWrapper";
+import GossipWrapper from "./question-blocks-wrappers/GossipWrapper";
+import ImageToMultipleChoiceWrapper from "./question-blocks-wrappers/ImageToMultipleChoiceWrapper";
+import LyricsTrainingWrapper from "./question-blocks-wrappers/LyricsTrainingWrapper";
+import ReadItWrapper from "./question-blocks-wrappers/ReadItWrapper";
+import ReportItWrapper from "./question-blocks-wrappers/ReportItWrapper";
+import SentenceMakerWrapper from "./question-blocks-wrappers/SentenceMakerWrapper";
+import SpellingWrapper from "./question-blocks-wrappers/SpellingWrapper";
+import SuperBrainWrapper from "./question-blocks-wrappers/SuperBrainWrapper";
+import TagItWrapper from "./question-blocks-wrappers/TagItWrapper";
+import TalesWrapper from "./question-blocks-wrappers/TalesWrapper";
+import TellMeAboutItWrapper from "./question-blocks-wrappers/TellMeAboutItWrapper";
+import TensesWrapper from "./question-blocks-wrappers/TensesWrapper";
+import TopicBasedAudioWrapper from "./question-blocks-wrappers/TopicBasedAudioWrapper";
+import UnscrambleWrapper from "./question-blocks-wrappers/UnscrambleWrapper";
+import WordAssociationsWrapper from "./question-blocks-wrappers/WordAssociationsWrapper";
+import WordBoxWrapper from "./question-blocks-wrappers/WordBoxWrapper";
+import WordMatchWrapper from "./question-blocks-wrappers/WordMatchWrapper";
+
 export interface Question {
   id: string;
   question: string;
@@ -37,7 +57,13 @@ export interface Question {
   stage?: string; // Stage name
 }
 
-type QuestionFieldValue = string | string[] | undefined;
+export type QuestionFieldValue = string | string[] | Statement[] | undefined;
+
+export interface Statement {
+  id: string;
+  text: string;
+  correct: boolean;
+}
 
 interface QuestionsSectionProps {
   area: string;
@@ -58,7 +84,7 @@ interface QuestionsSectionProps {
   ) => void;
 }
 
-// Component map for question types
+// Component map for EDITING question types (using raw components)
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   image_to_multiple_choice_text: ImageToMultipleChoiceText,
   wordbox: WordBox,
@@ -79,6 +105,29 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   superbrain: SuperBrain,
   tell_me_about_it: TellMeAboutIt,
   debate: Debate,
+};
+
+// Component map for CREATING question types (using wrappers)
+const wrapperMap: { [key: string]: React.ComponentType<any> } = {
+  image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
+  wordbox: WordBoxWrapper,
+  spelling: SpellingWrapper,
+  word_associations_with_text: WordAssociationsWrapper,
+  unscramble: UnscrambleWrapper,
+  tenses: TensesWrapper,
+  tag_it: TagItWrapper,
+  report_it: ReportItWrapper,
+  read_it: ReadItWrapper,
+  word_match: WordMatchWrapper,
+  gossip: GossipWrapper,
+  topic_based_audio: TopicBasedAudioWrapper,
+  lyrics_training: LyricsTrainingWrapper,
+  sentence_maker: SentenceMakerWrapper,
+  fast_test: FastTestWrapper,
+  tales: TalesWrapper,
+  superbrain: SuperBrainWrapper,
+  tell_me_about_it: TellMeAboutItWrapper,
+  debate: DebateWrapper,
 };
 
 export default function QuestionsSection({
@@ -225,8 +274,11 @@ export default function QuestionsSection({
   const currentQuestionIndex = currentPage - 1;
   const currentQuestion = currentPage <= filteredQuestions.length ? filteredQuestions[currentQuestionIndex] : null;
 
-  // Get the form component for the selected question type
-  const FormComponent = selectedQuestionType ? componentMap[selectedQuestionType.id] : null;
+  // Get the component for editing the current question (RAW COMPONENT)
+  const EditQuestionComponent = currentQuestion?.type ? componentMap[currentQuestion.type] : null;
+
+  // Get the form component for the selected question type (WRAPPER COMPONENT)
+  const FormComponent = selectedQuestionType ? wrapperMap[selectedQuestionType.id] : null;
 
   // When currentQuestionType changes and we're on the grid, auto-select that type to create
   useEffect(() => {
@@ -356,28 +408,9 @@ export default function QuestionsSection({
           // Show question form for selected type
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="space-y-6">
-              <FormComponent
-                {...newQuestionData}
-                onQuestionChange={(value: string) => setNewQuestionData({ ...newQuestionData, question: value })}
-                onInstructionsChange={(value: string) => setNewQuestionData({ ...newQuestionData, instructions: value })}
-                onOptionsChange={(options: string[]) => setNewQuestionData({ ...newQuestionData, options })}
-                onCorrectAnswerChange={(answer: string) => setNewQuestionData({ ...newQuestionData, correctAnswer: answer })}
-                onAnswerChange={(answer: string[]) => setNewQuestionData({ ...newQuestionData, answer })}
-                onImageChange={(imageUrl: string | null) => setNewQuestionData({ ...newQuestionData, imageUrl })}
-                onAudioChange={(audioUrl: string | null) => setNewQuestionData({ ...newQuestionData, audioUrl })}
-                onContentChange={(content: any) => setNewQuestionData({ ...newQuestionData, content })}
-                onParagraphChange={(paragraph: string) => setNewQuestionData({ ...newQuestionData, paragraph })}
-                onStatementsChange={(statements: any[]) => setNewQuestionData({ ...newQuestionData, statements })}
-                onSentenceChange={(sentence: string) => setNewQuestionData({ ...newQuestionData, sentence })}
-                onWordsChange={(words: string[]) => setNewQuestionData({ ...newQuestionData, words })}
-                onCorrectSentenceChange={(sentence: string) => setNewQuestionData({ ...newQuestionData, correctSentence: sentence })}
-                onMaxWordsChange={(value: number) => setNewQuestionData({ ...newQuestionData, maxWords: value })}
-                onMaxAssociationsChange={(value: number) => setNewQuestionData({ ...newQuestionData, maxAssociations: value })}
-                onPointsChange={(points: number) => setNewQuestionData({ ...newQuestionData, points })}
-                onTimeMinutesChange={(minutes: number) => setNewQuestionData({ ...newQuestionData, timeMinutes: minutes })}
-                onTimeSecondsChange={(seconds: number) => setNewQuestionData({ ...newQuestionData, timeSeconds: seconds })}
-                onMaxAttemptsChange={(attempts: number) => setNewQuestionData({ ...newQuestionData, maxAttempts: attempts })}
-              />
+              {/* Use Wrapper component which handles its own state and saving */}
+              <FormComponent />
+              
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <button
                   onClick={handleCancelQuestion}
@@ -385,12 +418,11 @@ export default function QuestionsSection({
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSaveQuestion}
-                  className="px-6 py-2 bg-[#33CC00] text-white rounded-lg hover:bg-[#33CC00]/90 transition-colors font-medium"
-                >
-                  Save Question
-                </button>
+                {/* Wrappers have their own save button, so we hide this one or repurposed it.
+                    However, hiding it fully might confuse the user if they expect a global "Save" or 
+                    if the Wrapper doesn't close the form.
+                    For now, we will hide the "Save Question" button here since the wrapper handles it. 
+                */}
               </div>
             </div>
           </div>
@@ -425,96 +457,89 @@ export default function QuestionsSection({
       ) : currentQuestion ? (
         // Show current question - Use the same form component if available, otherwise QuestionCard
         <div className="space-y-4">
-          {currentQuestion.type && componentMap[currentQuestion.type] ? (
+          {EditQuestionComponent ? (
             // Use the question block component for existing questions
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              {(() => {
-                const QuestionComponent = componentMap[currentQuestion.type];
-                if (!QuestionComponent) return null;
-
-                return (
-                  <QuestionComponent
-                    {...currentQuestion}
-                    onQuestionChange={(value: string) =>
-                      onQuestionChange(area, currentQuestion.id, "question", value)
-                    }
-                    onInstructionsChange={(value: string) =>
-                      onQuestionChange(area, currentQuestion.id, "instructions", value)
-                    }
-                    onOptionsChange={(options: string[]) =>
-                      onQuestionChange(area, currentQuestion.id, "options", options)
-                    }
-                    onCorrectAnswerChange={(answer: string) =>
-                      onQuestionChange(area, currentQuestion.id, "correctAnswer", answer)
-                    }
-                    onAnswerChange={(answer: string[]) =>
-                      onQuestionChange(area, currentQuestion.id, "answer", answer)
-                    }
-                    onImageChange={(imageUrl: string | null) =>
-                      onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || "")
-                    }
-                    onAudioChange={(audioUrl: string | null) =>
-                      onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || "")
-                    }
-                    onContentChange={(content: string | string[]) =>
-                      onQuestionChange(area, currentQuestion.id, "content", content)
-                    }
-                    onParagraphChange={(paragraph: string) =>
-                      onQuestionChange(area, currentQuestion.id, "paragraph", paragraph)
-                    }
-                    onStatementsChange={(statements: Statement[]) =>
-                      onQuestionChange(area, currentQuestion.id, "statements", statements)
-                    }
-                    onSentenceChange={(sentence: string) =>
-                      onQuestionChange(area, currentQuestion.id, "sentence", sentence)
-                    }
-                    onWordsChange={(words: string[]) =>
-                      onQuestionChange(area, currentQuestion.id, "words", words)
-                    }
-                    onCorrectSentenceChange={(sentence: string) =>
-                      onQuestionChange(area, currentQuestion.id, "correctSentence", sentence)
-                    }
-                    onMaxWordsChange={(value: number) =>
-                      onQuestionChange(area, currentQuestion.id, "maxWords", value.toString())
-                    }
-                    onMaxAssociationsChange={(value: number) =>
-                      onQuestionChange(
-                        area,
-                        currentQuestion.id,
-                        "maxAssociations",
-                        value.toString()
-                      )
-                    }
-                    onPointsChange={(points: number) =>
-                      onQuestionChange(area, currentQuestion.id, "points", points.toString())
-                    }
-                    onTimeMinutesChange={(minutes: number) =>
-                      onQuestionChange(
-                        area,
-                        currentQuestion.id,
-                        "timeMinutes",
-                        minutes.toString()
-                      )
-                    }
-                    onTimeSecondsChange={(seconds: number) =>
-                      onQuestionChange(
-                        area,
-                        currentQuestion.id,
-                        "timeSeconds",
-                        seconds.toString()
-                      )
-                    }
-                    onMaxAttemptsChange={(attempts: number) =>
-                      onQuestionChange(
-                        area,
-                        currentQuestion.id,
-                        "maxAttempts",
-                        attempts.toString()
-                      )
-                    }
-                  />
-                );
-              })()}
+              <EditQuestionComponent
+                {...currentQuestion}
+                onQuestionChange={(value: string) =>
+                  onQuestionChange(area, currentQuestion.id, "question", value)
+                }
+                onInstructionsChange={(value: string) =>
+                  onQuestionChange(area, currentQuestion.id, "instructions", value)
+                }
+                onOptionsChange={(options: string[]) =>
+                  onQuestionChange(area, currentQuestion.id, "options", options)
+                }
+                onCorrectAnswerChange={(answer: string) =>
+                  onQuestionChange(area, currentQuestion.id, "correctAnswer", answer)
+                }
+                onAnswerChange={(answer: string[]) =>
+                  onQuestionChange(area, currentQuestion.id, "answer", answer)
+                }
+                onImageChange={(imageUrl: string | null) =>
+                  onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || "")
+                }
+                onAudioChange={(audioUrl: string | null) =>
+                  onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || "")
+                }
+                onContentChange={(content: string | string[]) =>
+                  onQuestionChange(area, currentQuestion.id, "content", content)
+                }
+                onParagraphChange={(paragraph: string) =>
+                  onQuestionChange(area, currentQuestion.id, "paragraph", paragraph)
+                }
+                onStatementsChange={(statements: Statement[]) =>
+                  onQuestionChange(area, currentQuestion.id, "statements", statements)
+                }
+                onSentenceChange={(sentence: string) =>
+                  onQuestionChange(area, currentQuestion.id, "sentence", sentence)
+                }
+                onWordsChange={(words: string[]) =>
+                  onQuestionChange(area, currentQuestion.id, "words", words)
+                }
+                onCorrectSentenceChange={(sentence: string) =>
+                  onQuestionChange(area, currentQuestion.id, "correctSentence", sentence)
+                }
+                onMaxWordsChange={(value: number) =>
+                  onQuestionChange(area, currentQuestion.id, "maxWords", value.toString())
+                }
+                onMaxAssociationsChange={(value: number) =>
+                  onQuestionChange(
+                    area,
+                    currentQuestion.id,
+                    "maxAssociations",
+                    value.toString()
+                  )
+                }
+                onPointsChange={(points: number) =>
+                  onQuestionChange(area, currentQuestion.id, "points", points.toString())
+                }
+                onTimeMinutesChange={(minutes: number) =>
+                  onQuestionChange(
+                    area,
+                    currentQuestion.id,
+                    "timeMinutes",
+                    minutes.toString()
+                  )
+                }
+                onTimeSecondsChange={(seconds: number) =>
+                  onQuestionChange(
+                    area,
+                    currentQuestion.id,
+                    "timeSeconds",
+                    seconds.toString()
+                  )
+                }
+                onMaxAttemptsChange={(attempts: number) =>
+                  onQuestionChange(
+                    area,
+                    currentQuestion.id,
+                    "maxAttempts",
+                    attempts.toString()
+                  )
+                }
+              />
               <div className="flex justify-end gap-3 pt-4 mt-6 border-t">
                 <button
                   onClick={() => {
