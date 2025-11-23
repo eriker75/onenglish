@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -9,31 +9,53 @@ import WordBox from "@/app/dashboard/challenges/[challengeId]/components/questio
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Question } from "../QuestionsSection"; // Import Question interface
 
 interface WordBoxWrapperProps {
+  existingQuestion?: Question; // Add existingQuestion prop
   onCancel?: () => void;
   onSuccess?: () => void;
 }
 
-export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperProps) {
+export default function WordBoxWrapper({ existingQuestion, onCancel, onSuccess }: WordBoxWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  // State
-  const [questionText, setQuestionText] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [maxWords, setMaxWords] = useState(5);
-  const [gridWidth, setGridWidth] = useState(3);
-  const [gridHeight, setGridHeight] = useState(3);
+  // Initialize State with existingQuestion data or defaults
+  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
+  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
+  const [maxWords, setMaxWords] = useState((existingQuestion as any)?.maxWords || 5);
+  const [gridWidth, setGridWidth] = useState((existingQuestion as any)?.gridWidth || 3);
+  const [gridHeight, setGridHeight] = useState((existingQuestion as any)?.gridHeight || 3);
   const [grid, setGrid] = useState<string[][]>(
-    Array(3).fill(null).map(() => Array(3).fill(""))
+    (existingQuestion as any)?.content || Array(3).fill(null).map(() => Array(3).fill(""))
   );
-  const [points, setPoints] = useState(0);
-  const [timeMinutes, setTimeMinutes] = useState(0);
-  const [timeSeconds, setTimeSeconds] = useState(0);
-  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  
+  // Calculate initial time values
+  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
+  const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
+  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
 
-  // Mutation
+  // Effect to update state if existingQuestion changes (e.g., switching between questions)
+  useEffect(() => {
+    if (existingQuestion) {
+      setQuestionText(existingQuestion.question || "");
+      setInstructions((existingQuestion as any).instructions || "");
+      setMaxWords((existingQuestion as any).maxWords || 5);
+      setGridWidth((existingQuestion as any).gridWidth || 3);
+      setGridHeight((existingQuestion as any).gridHeight || 3);
+      setGrid((existingQuestion as any).content || Array(3).fill(null).map(() => Array(3).fill("")));
+      setPoints((existingQuestion as any).points || 0);
+      const time = (existingQuestion as any).timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+    }
+  }, [existingQuestion]);
+
+  // Create Mutation
   const createQuestionMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await api.post("/questions/create/wordbox", data);
@@ -56,6 +78,32 @@ export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperPr
       });
     },
   });
+
+  // Update Mutation
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await api.patch(`/questions/wordbox/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "WordBox question updated successfully",
+        variant: "default",
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      console.error("Error updating question:", error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -80,7 +128,7 @@ export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperPr
 
     const totalSeconds = (timeMinutes * 60) + timeSeconds;
     
-    const data = {
+    const payload = {
       challengeId,
       gridWidth,
       gridHeight,
@@ -93,14 +141,18 @@ export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperPr
       instructions: instructions || undefined,
     };
 
-    createQuestionMutation.mutate(data);
+    if (existingQuestion) {
+      updateQuestionMutation.mutate({ id: existingQuestion.id, data: payload });
+    } else {
+      createQuestionMutation.mutate(payload);
+    }
   };
 
   return (
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          Create WordBox Question
+          {existingQuestion ? "Edit WordBox Question" : "Create WordBox Question"}
         </h2>
         <div className="flex gap-2">
           <Button
@@ -113,10 +165,10 @@ export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperPr
           </Button>
           <Button
             onClick={handleSave}
-            disabled={createQuestionMutation.isPending}
+            disabled={isPending}
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
-            {createQuestionMutation.isPending ? (
+            {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
@@ -124,7 +176,7 @@ export default function WordBoxWrapper({ onCancel, onSuccess }: WordBoxWrapperPr
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save Question
+                {existingQuestion ? "Update Question" : "Save Question"}
               </>
             )}
           </Button>

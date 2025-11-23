@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -9,27 +9,58 @@ import LyricsTraining from "@/app/dashboard/challenges/[challengeId]/components/
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Question } from "../QuestionsSection";
 
 interface LyricsTrainingWrapperProps {
+  existingQuestion?: Question;
   onCancel?: () => void;
   onSuccess?: () => void;
 }
 
-export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTrainingWrapperProps) {
+export default function LyricsTrainingWrapper({ existingQuestion, onCancel, onSuccess }: LyricsTrainingWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState("");
-  const [instructions, setInstructions] = useState("");
+  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
+  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
   const [hint, setHint] = useState("");
   const [videoUrl, setVideoUrl] = useState<string | null>(null); // Used for preview
   const [videoFile, setVideoFile] = useState<File | null>(null); // Used for upload
-  const [options, setOptions] = useState<string[]>(["", "", ""]);
-  const [correctAnswer, setCorrectAnswer] = useState("");
-  const [points, setPoints] = useState(0);
-  const [timeMinutes, setTimeMinutes] = useState(0);
-  const [timeSeconds, setTimeSeconds] = useState(0);
-  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [options, setOptions] = useState<string[]>((existingQuestion as any)?.options || ["", "", ""]);
+  const [correctAnswer, setCorrectAnswer] = useState((existingQuestion as any)?.answer || "");
+  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  
+  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
+  const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
+  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+
+  useEffect(() => {
+    if (existingQuestion) {
+      setQuestionText(existingQuestion.question || "");
+      let instr = (existingQuestion as any).instructions || "";
+      // Try to extract hint if it was appended like "... (Hint: ...)"
+      const hintMatch = instr.match(/\(Hint: (.*)\)$/);
+      if (hintMatch) {
+        setHint(hintMatch[1]);
+        instr = instr.replace(/\s*\(Hint: .*\)$/, "");
+      }
+      setInstructions(instr);
+      
+      setOptions((existingQuestion as any).options || ["", "", ""]);
+      setCorrectAnswer((existingQuestion as any).answer || "");
+      setPoints((existingQuestion as any).points || 0);
+      const time = (existingQuestion as any).timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+      
+      // Existing media might be a URL, but LyricsTraining component might need handling for it.
+      // Assuming `media` field or similar in question object holds the URL.
+      // However, `Question` interface doesn't explicit have media URL.
+      // We'll assume if it's editing, the component might handle fetching or we just don't show preview until new file.
+    }
+  }, [existingQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -57,6 +88,34 @@ export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTra
     },
   });
 
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const response = await api.patch(`/questions/lyrics_training/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Lyrics training question updated successfully",
+        variant: "default",
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+
   const handleSave = () => {
     if (!challengeId) {
       toast({
@@ -67,10 +126,7 @@ export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTra
       return;
     }
 
-    if (!videoFile && !videoUrl) {
-       // If we have a URL but no file, maybe it's an edit or external URL? 
-       // But creation usually requires file upload if backend expects it. 
-       // The DTO requires 'media' as file.
+    if (!existingQuestion && !videoFile && !videoUrl) {
        if (!videoFile) {
          toast({
             title: "Error",
@@ -123,13 +179,19 @@ export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTra
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "LISTENING"); 
 
-    createQuestionMutation.mutate(formData);
+    if (existingQuestion) {
+      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    } else {
+      createQuestionMutation.mutate(formData);
+    }
   };
 
   return (
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-xl font-bold text-gray-800">Create Lyrics Training Question</h2>
+        <h2 className="text-xl font-bold text-gray-800">
+          {existingQuestion ? "Edit Lyrics Training Question" : "Create Lyrics Training Question"}
+        </h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -141,13 +203,13 @@ export default function LyricsTrainingWrapper({ onCancel, onSuccess }: LyricsTra
           </Button>
           <Button
             onClick={handleSave}
-            disabled={createQuestionMutation.isPending}
+            disabled={isPending}
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
-            {createQuestionMutation.isPending ? (
+            {isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />Save Question</>
+              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
             )}
           </Button>
         </div>

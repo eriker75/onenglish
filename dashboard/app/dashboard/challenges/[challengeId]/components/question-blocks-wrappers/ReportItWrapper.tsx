@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -9,25 +9,42 @@ import ReportIt from "@/app/dashboard/challenges/[challengeId]/components/questi
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Question } from "../QuestionsSection";
 
 interface ReportItWrapperProps {
+  existingQuestion?: Question;
   onCancel?: () => void;
   onSuccess?: () => void;
 }
 
-export default function ReportItWrapper({ onCancel, onSuccess }: ReportItWrapperProps) {
+export default function ReportItWrapper({ existingQuestion, onCancel, onSuccess }: ReportItWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [originalSentence, setOriginalSentence] = useState("");
+  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
+  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
+  const [originalSentence, setOriginalSentence] = useState((existingQuestion as any)?.content || "");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [points, setPoints] = useState(0);
-  const [timeMinutes, setTimeMinutes] = useState(0);
-  const [timeSeconds, setTimeSeconds] = useState(0);
-  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  
+  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
+  const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
+  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+
+  useEffect(() => {
+    if (existingQuestion) {
+      setQuestionText(existingQuestion.question || "");
+      setInstructions((existingQuestion as any).instructions || "");
+      setOriginalSentence((existingQuestion as any).content || "");
+      setPoints((existingQuestion as any).points || 0);
+      const time = (existingQuestion as any).timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+    }
+  }, [existingQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -54,6 +71,34 @@ export default function ReportItWrapper({ onCancel, onSuccess }: ReportItWrapper
       });
     },
   });
+
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const response = await api.patch(`/questions/report_it/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Reported speech question updated successfully",
+        variant: "default",
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -94,13 +139,19 @@ export default function ReportItWrapper({ onCancel, onSuccess }: ReportItWrapper
     // stage GRAMMAR likely
     formData.append("stage", "GRAMMAR");
 
-    createQuestionMutation.mutate(formData);
+    if (existingQuestion) {
+      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    } else {
+      createQuestionMutation.mutate(formData);
+    }
   };
 
   return (
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-xl font-bold text-gray-800">Create Reported Speech Question (ReportIt)</h2>
+        <h2 className="text-xl font-bold text-gray-800">
+          {existingQuestion ? "Edit Reported Speech Question" : "Create Reported Speech Question"} (ReportIt)
+        </h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -112,13 +163,13 @@ export default function ReportItWrapper({ onCancel, onSuccess }: ReportItWrapper
           </Button>
           <Button
             onClick={handleSave}
-            disabled={createQuestionMutation.isPending}
+            disabled={isPending}
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
-            {createQuestionMutation.isPending ? (
+            {isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />Save Question</>
+              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
             )}
           </Button>
         </div>

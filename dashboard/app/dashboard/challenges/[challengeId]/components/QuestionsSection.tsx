@@ -84,29 +84,6 @@ interface QuestionsSectionProps {
   ) => void;
 }
 
-// Component map for EDITING question types (using raw components)
-const componentMap: { [key: string]: React.ComponentType<any> } = {
-  image_to_multiple_choice_text: ImageToMultipleChoiceText,
-  wordbox: WordBox,
-  spelling: Spelling,
-  word_associations_with_text: WordAssociationsWithText,
-  unscramble: Unscramble,
-  tenses: Tenses,
-  tag_it: TagIt,
-  report_it: ReportIt,
-  read_it: ReadIt,
-  word_match: WordMatch,
-  gossip: Gossip,
-  topic_based_audio: TopicBasedAudio,
-  lyrics_training: LyricsTraining,
-  sentence_maker: SentenceMaker,
-  fast_test: FastTest,
-  tales: Tales,
-  superbrain: SuperBrain,
-  tell_me_about_it: TellMeAboutIt,
-  debate: Debate,
-};
-
 // Component map for CREATING question types (using wrappers)
 const wrapperMap: { [key: string]: React.ComponentType<any> } = {
   image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
@@ -138,11 +115,16 @@ export default function QuestionsSection({
   onQuestionChange,
   onOptionChange,
 }: QuestionsSectionProps) {
-  const { currentStage, currentQuestionType, setCurrentQuestionType } = useChallengeFormUIStore();
+  const { currentStage, currentQuestionType, setCurrentQuestionType } =
+    useChallengeFormUIStore();
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedQuestionType, setSelectedQuestionType] = useState<QuestionType | null>(null);
+  const [selectedQuestionType, setSelectedQuestionType] =
+    useState<QuestionType | null>(null);
   const [newQuestionData, setNewQuestionData] = useState<any>({});
-  const [pendingQuestionData, setPendingQuestionData] = useState<{data: any, previousLength: number} | null>(null);
+  const [pendingQuestionData, setPendingQuestionData] = useState<{
+    data: any;
+    previousLength: number;
+  } | null>(null);
 
   // Filter questions by selected type from store
   const filteredQuestions = React.useMemo(() => {
@@ -151,7 +133,7 @@ export default function QuestionsSection({
     }
     return questions.filter((q) => q.type === currentQuestionType);
   }, [questions, currentQuestionType]);
-  
+
   const previousQuestionsLengthRef = React.useRef(filteredQuestions.length);
 
   const totalPages = filteredQuestions.length || 1;
@@ -171,10 +153,13 @@ export default function QuestionsSection({
 
   // When a new question is added and we have pending data, update it
   useEffect(() => {
-    if (pendingQuestionData && filteredQuestions.length > pendingQuestionData.previousLength) {
+    if (
+      pendingQuestionData &&
+      filteredQuestions.length > pendingQuestionData.previousLength
+    ) {
       // A new question was added, find it and update it with pending data
       const newQuestion = filteredQuestions[filteredQuestions.length - 1];
-      
+
       if (newQuestion) {
         Object.keys(pendingQuestionData.data).forEach((key) => {
           const value = pendingQuestionData.data[key];
@@ -183,18 +168,24 @@ export default function QuestionsSection({
           }
         });
       }
-      
+
       // Clear pending data
       setPendingQuestionData(null);
-      
+
       // Reset selected type and data
       setSelectedQuestionType(null);
       setNewQuestionData({});
-      
+
       // Go to the grid page (one page beyond questions)
       setCurrentPage(filteredQuestions.length + 1);
     }
-  }, [filteredQuestions.length, pendingQuestionData, area, onQuestionChange, filteredQuestions]);
+  }, [
+    filteredQuestions.length,
+    pendingQuestionData,
+    area,
+    onQuestionChange,
+    filteredQuestions,
+  ]);
 
   // Adjust current page when questions change (e.g., after deletion)
   useEffect(() => {
@@ -203,10 +194,11 @@ export default function QuestionsSection({
       previousQuestionsLengthRef.current = filteredQuestions.length;
       return;
     }
-    
+
     // Detect if we deleted a question (length decreased)
-    const questionsLengthDecreased = filteredQuestions.length < previousQuestionsLengthRef.current;
-    
+    const questionsLengthDecreased =
+      filteredQuestions.length < previousQuestionsLengthRef.current;
+
     if (questionsLengthDecreased) {
       // After deletion, navigate to grid page
       if (filteredQuestions.length === 0) {
@@ -217,7 +209,7 @@ export default function QuestionsSection({
         setCurrentPage(filteredQuestions.length + 1);
       }
     }
-    
+
     // Update ref for next comparison
     previousQuestionsLengthRef.current = filteredQuestions.length;
   }, [filteredQuestions.length, selectedQuestionType, pendingQuestionData]);
@@ -225,34 +217,14 @@ export default function QuestionsSection({
   const handleSelectQuestionType = (questionType: QuestionType) => {
     // Show the form for the selected question type
     setSelectedQuestionType(questionType);
-    
+
     // Set default question text based on question type
-    let initialData: any = {};
+    const initialData: any = {};
     if (questionType.id === "image_to_multiple_choice_text") {
       initialData.question = "Select the correct word for the image";
     }
-    
+
     setNewQuestionData(initialData);
-  };
-
-  const handleSaveQuestion = () => {
-    // Add the question with the selected type and captured data
-    if (selectedQuestionType) {
-      // Store the data and previous length before adding
-      const dataToSave = { ...newQuestionData };
-      const currentQuestionsLength = filteredQuestions.length;
-
-      // Set pending data to be applied when question is added
-      setPendingQuestionData({
-        data: dataToSave,
-        previousLength: currentQuestionsLength
-      });
-
-      // Add question via the parent handler (this creates the question in state)
-      onAddQuestion(area, selectedQuestionType);
-
-      // The useEffect will handle updating the question data and navigating to grid
-    }
   };
 
   const handleCancelQuestion = () => {
@@ -270,15 +242,24 @@ export default function QuestionsSection({
 
   // Determine what to show on current page
   const isShowingQuestionForm = selectedQuestionType !== null;
-  const isShowingGrid = !isShowingQuestionForm && (filteredQuestions.length === 0 || currentPage > filteredQuestions.length);
+  const isShowingGrid =
+    !isShowingQuestionForm &&
+    (filteredQuestions.length === 0 || currentPage > filteredQuestions.length);
   const currentQuestionIndex = currentPage - 1;
-  const currentQuestion = currentPage <= filteredQuestions.length ? filteredQuestions[currentQuestionIndex] : null;
+  const currentQuestion =
+    currentPage <= filteredQuestions.length
+      ? filteredQuestions[currentQuestionIndex]
+      : null;
 
-  // Get the component for editing the current question (RAW COMPONENT)
-  const EditQuestionComponent = currentQuestion?.type ? componentMap[currentQuestion.type] : null;
+  // Get the component for editing the current question (WRAPPER COMPONENT with existingQuestion)
+  const EditQuestionComponent = currentQuestion?.type
+    ? wrapperMap[currentQuestion.type]
+    : null;
 
   // Get the form component for the selected question type (WRAPPER COMPONENT)
-  const FormComponent = selectedQuestionType ? wrapperMap[selectedQuestionType.id] : null;
+  const FormComponent = selectedQuestionType
+    ? wrapperMap[selectedQuestionType.id]
+    : null;
 
   // When currentQuestionType changes and we're on the grid, auto-select that type to create
   useEffect(() => {
@@ -286,11 +267,11 @@ export default function QuestionsSection({
       // Find the question type from questionTypesByArea
       const allTypes = Object.values(questionTypesByArea).flat();
       const typeToSelect = allTypes.find((t) => t.id === currentQuestionType);
-      
+
       if (typeToSelect) {
         setSelectedQuestionType(typeToSelect);
         // Set default question text based on question type
-        let initialData: any = {};
+        const initialData: any = {};
         if (typeToSelect.id === "image_to_multiple_choice_text") {
           initialData.question = "Select the correct word for the image";
         }
@@ -309,8 +290,10 @@ export default function QuestionsSection({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-gray-900">{area} Questions</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-900">
+              {area} Questions
+            </h2>
+
             {/* Close button (X) - show when viewing a specific question */}
             {!isShowingQuestionForm && !isShowingGrid && currentQuestion && (
               <button
@@ -343,13 +326,13 @@ export default function QuestionsSection({
             {isShowingQuestionForm
               ? `Creating new ${selectedQuestionType?.name || "question"}`
               : isShowingGrid
-              ? filteredQuestions.length === 0
-                ? `Start building your question set by selecting a type`
-                : `Select a question type to add another question`
-              : `Manage and edit your ${filteredQuestions.length} ${filteredQuestions.length === 1 ? "question" : "questions"}`}
+                ? filteredQuestions.length === 0
+                  ? `Start building your question set by selecting a type`
+                  : `Select a question type to add another question`
+                : `Manage and edit your ${filteredQuestions.length} ${filteredQuestions.length === 1 ? "question" : "questions"}`}
           </p>
         </div>
-        
+
         {/* Pagination with numbers - Always visible when there are questions or grid */}
         {(displayPages > 0 || filteredQuestions.length === 0) && (
           <div className="flex items-center gap-2">
@@ -360,34 +343,37 @@ export default function QuestionsSection({
             >
               Previous
             </button>
-            
+
             {/* Page numbers - only show for existing questions */}
             {displayPages > 0 && (
               <div className="flex items-center gap-1">
-                {Array.from({ length: displayPages }, (_, i) => i + 1).map((pageNum) => {
-                  const isCurrentPage = pageNum === currentPage;
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      disabled={isCurrentPage}
-                      className={`
+                {Array.from({ length: displayPages }, (_, i) => i + 1).map(
+                  (pageNum) => {
+                    const isCurrentPage = pageNum === currentPage;
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        disabled={isCurrentPage}
+                        className={`
                         w-8 h-8 rounded-lg text-sm font-medium transition-colors
-                        ${isCurrentPage
-                          ? "bg-[#FF0098] text-white"
-                          : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]"
+                        ${
+                          isCurrentPage
+                            ? "bg-[#FF0098] text-white"
+                            : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]"
                         }
                         disabled:cursor-default
                       `}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  }
+                )}
               </div>
             )}
-            
+
             <button
               onClick={() => {
                 // Always allow going to grid page (filteredQuestions.length + 1)
@@ -408,26 +394,26 @@ export default function QuestionsSection({
           // Show question form for selected type
           <div className="bg-white rounded-lg border border-gray-200">
             {/* Use Wrapper component which handles its own state and saving */}
-            <FormComponent 
+            <FormComponent
               onCancel={handleCancelQuestion}
               onSuccess={() => {
                 // Refresh/navigate logic if needed
                 // But wrappers usually handle saving. We just need to close form.
                 // However, wrapper onSuccess just toasts. It doesn't callback.
                 // We need to update Wrappers to accept `onSuccess` callback.
-                
-                // For now, rely on pendingQuestionData pattern if wrappers used that, 
+
+                // For now, rely on pendingQuestionData pattern if wrappers used that,
                 // BUT wrappers call API directly. They don't use `pendingQuestionData` from QuestionsSection.
                 // This means QuestionsSection won't know a question was added unless we refetch or manage state differently.
-                
+
                 // The original logic used `onAddQuestion` which updated local state.
                 // The wrappers create data on backend directly.
                 // This causes a disconnect: local state vs backend state.
-                
-                // Ideally, wrappers should return the created question data to parent 
+
+                // Ideally, wrappers should return the created question data to parent
                 // OR parent should refetch questions.
-                
-                // Given the wrappers are already implemented to call API, 
+
+                // Given the wrappers are already implemented to call API,
                 // we should pass an `onSuccess` prop to them, which then calls `handleCancelQuestion` (to close form)
                 // AND ideally triggers a refresh of the questions list.
                 handleCancelQuestion();
@@ -439,7 +425,8 @@ export default function QuestionsSection({
           <div className="bg-white rounded-lg border border-red-200 p-6">
             <div className="text-center">
               <p className="text-red-600 font-medium mb-2">
-                Component not found for question type: {selectedQuestionType.name}
+                Component not found for question type:{" "}
+                {selectedQuestionType.name}
               </p>
               <p className="text-gray-600 text-sm mb-4">
                 Type ID: {selectedQuestionType.id}
@@ -466,98 +453,35 @@ export default function QuestionsSection({
         // Show current question - Use the same form component if available, otherwise QuestionCard
         <div className="space-y-4">
           {EditQuestionComponent ? (
-            // Use the question block component for existing questions
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            // Use the Wrapper component for existing questions
+            <div className="bg-white rounded-lg border border-gray-200">
               <EditQuestionComponent
-                {...currentQuestion}
-                onQuestionChange={(value: string) =>
-                  onQuestionChange(area, currentQuestion.id, "question", value)
-                }
-                onInstructionsChange={(value: string) =>
-                  onQuestionChange(area, currentQuestion.id, "instructions", value)
-                }
-                onOptionsChange={(options: string[]) =>
-                  onQuestionChange(area, currentQuestion.id, "options", options)
-                }
-                onCorrectAnswerChange={(answer: string) =>
-                  onQuestionChange(area, currentQuestion.id, "correctAnswer", answer)
-                }
-                onAnswerChange={(answer: string[]) =>
-                  onQuestionChange(area, currentQuestion.id, "answer", answer)
-                }
-                onImageChange={(imageUrl: string | null) =>
-                  onQuestionChange(area, currentQuestion.id, "imageUrl", imageUrl || "")
-                }
-                onAudioChange={(audioUrl: string | null) =>
-                  onQuestionChange(area, currentQuestion.id, "audioUrl", audioUrl || "")
-                }
-                onContentChange={(content: string | string[]) =>
-                  onQuestionChange(area, currentQuestion.id, "content", content)
-                }
-                onParagraphChange={(paragraph: string) =>
-                  onQuestionChange(area, currentQuestion.id, "paragraph", paragraph)
-                }
-                onStatementsChange={(statements: Statement[]) =>
-                  onQuestionChange(area, currentQuestion.id, "statements", statements)
-                }
-                onSentenceChange={(sentence: string) =>
-                  onQuestionChange(area, currentQuestion.id, "sentence", sentence)
-                }
-                onWordsChange={(words: string[]) =>
-                  onQuestionChange(area, currentQuestion.id, "words", words)
-                }
-                onCorrectSentenceChange={(sentence: string) =>
-                  onQuestionChange(area, currentQuestion.id, "correctSentence", sentence)
-                }
-                onMaxWordsChange={(value: number) =>
-                  onQuestionChange(area, currentQuestion.id, "maxWords", value.toString())
-                }
-                onMaxAssociationsChange={(value: number) =>
-                  onQuestionChange(
-                    area,
-                    currentQuestion.id,
-                    "maxAssociations",
-                    value.toString()
-                  )
-                }
-                onPointsChange={(points: number) =>
-                  onQuestionChange(area, currentQuestion.id, "points", points.toString())
-                }
-                onTimeMinutesChange={(minutes: number) =>
-                  onQuestionChange(
-                    area,
-                    currentQuestion.id,
-                    "timeMinutes",
-                    minutes.toString()
-                  )
-                }
-                onTimeSecondsChange={(seconds: number) =>
-                  onQuestionChange(
-                    area,
-                    currentQuestion.id,
-                    "timeSeconds",
-                    seconds.toString()
-                  )
-                }
-                onMaxAttemptsChange={(attempts: number) =>
-                  onQuestionChange(
-                    area,
-                    currentQuestion.id,
-                    "maxAttempts",
-                    attempts.toString()
-                  )
-                }
+                existingQuestion={currentQuestion}
+                onCancel={() => {
+                  // For edit mode, cancel might mean just closing or doing nothing if we are in pagination mode.
+                  // The current UI shows pagination. If we want to "close" edit view, we go to grid.
+                  setCurrentQuestionType(null);
+                  setCurrentPage(filteredQuestions.length + 1);
+                }}
+                onSuccess={() => {
+                  // After update, maybe we want to stay on the same page or go to grid.
+                  // Usually "save" implies done.
+                  setCurrentQuestionType(null);
+                  setCurrentPage(filteredQuestions.length + 1);
+                }}
               />
-              <div className="flex justify-end gap-3 pt-4 mt-6 border-t">
-                <button
-                  onClick={() => {
-                    onRemoveQuestion(area, currentQuestion.id);
-                    // The useEffect will handle navigating to grid page after deletion
-                  }}
-                  className="px-6 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  Delete Question
-                </button>
+              <div className="px-4 pb-4">
+                <div className="flex justify-end gap-3 pt-4 mt-6 border-t">
+                  <button
+                    onClick={() => {
+                      onRemoveQuestion(area, currentQuestion.id);
+                      // The useEffect will handle navigating to grid page after deletion
+                    }}
+                    className="px-6 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    Delete Question
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
@@ -9,26 +9,44 @@ import WordMatch from "@/app/dashboard/challenges/[challengeId]/components/quest
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Question } from "../QuestionsSection";
 
 interface WordMatchWrapperProps {
+  existingQuestion?: Question;
   onCancel?: () => void;
   onSuccess?: () => void;
 }
 
-export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapperProps) {
+export default function WordMatchWrapper({ existingQuestion, onCancel, onSuccess }: WordMatchWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  const [questionText, setQuestionText] = useState("");
-  const [instructions, setInstructions] = useState("");
+  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
+  const [instructions, setInstructions] = useState((existingQuestion as any)?.instructions || "");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [options, setOptions] = useState<string[]>([""]);
-  const [correctAnswer, setCorrectAnswer] = useState("");
-  const [points, setPoints] = useState(0);
-  const [timeMinutes, setTimeMinutes] = useState(0);
-  const [timeSeconds, setTimeSeconds] = useState(0);
-  const [maxAttempts, setMaxAttempts] = useState(1);
+  const [options, setOptions] = useState<string[]>((existingQuestion as any)?.options || [""]);
+  const [correctAnswer, setCorrectAnswer] = useState((existingQuestion as any)?.answer || "");
+  const [points, setPoints] = useState((existingQuestion as any)?.points || 0);
+  
+  const initialTime = (existingQuestion as any)?.timeLimit || 0;
+  const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
+  const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
+  const [maxAttempts, setMaxAttempts] = useState((existingQuestion as any)?.maxAttempts || 1);
+
+  useEffect(() => {
+    if (existingQuestion) {
+      setQuestionText(existingQuestion.question || "");
+      setInstructions((existingQuestion as any).instructions || "");
+      setOptions((existingQuestion as any).options || [""]);
+      setCorrectAnswer((existingQuestion as any).answer || "");
+      setPoints((existingQuestion as any).points || 0);
+      const time = (existingQuestion as any).timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts((existingQuestion as any).maxAttempts || 1);
+    }
+  }, [existingQuestion]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (formData: FormData) => {
@@ -56,6 +74,34 @@ export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapp
     },
   });
 
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const response = await api.patch(`/questions/word_match/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Word match question updated successfully",
+        variant: "default",
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+
   const handleSave = () => {
     if (!challengeId) {
       toast({
@@ -66,7 +112,7 @@ export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapp
       return;
     }
 
-    if (!audioFile) {
+    if (!existingQuestion && !audioFile) {
       toast({
         title: "Error",
         description: "Please upload an audio file",
@@ -98,7 +144,9 @@ export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapp
     formData.append("challengeId", challengeId);
     formData.append("text", questionText);
     formData.append("instructions", instructions);
-    formData.append("media", audioFile);
+    if (audioFile) {
+      formData.append("media", audioFile);
+    }
     
     // Check if backend expects comma-separated or array for options
     // Assuming array for now as standard
@@ -115,13 +163,19 @@ export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapp
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "LISTENING");
 
-    createQuestionMutation.mutate(formData);
+    if (existingQuestion) {
+      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    } else {
+      createQuestionMutation.mutate(formData);
+    }
   };
 
   return (
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
-        <h2 className="text-xl font-bold text-gray-800">Create Word Match Question</h2>
+        <h2 className="text-xl font-bold text-gray-800">
+          {existingQuestion ? "Edit Word Match Question" : "Create Word Match Question"}
+        </h2>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -133,13 +187,13 @@ export default function WordMatchWrapper({ onCancel, onSuccess }: WordMatchWrapp
           </Button>
           <Button
             onClick={handleSave}
-            disabled={createQuestionMutation.isPending}
+            disabled={isPending}
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
-            {createQuestionMutation.isPending ? (
+            {isPending ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />Save Question</>
+              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
             )}
           </Button>
         </div>
