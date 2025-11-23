@@ -15,22 +15,43 @@ interface Question {
 
 interface TopicBasedAudioProps {
   question?: string;
+  instructions?: string;
   audioUrl?: string;
   questions?: Question[];
+  points?: number;
+  timeMinutes?: number;
+  timeSeconds?: number;
+  maxAttempts?: number;
   onQuestionChange?: (question: string) => void;
+  onInstructionsChange?: (instructions: string) => void;
   onAudioChange?: (audioUrl: string | null) => void;
   onQuestionsChange?: (questions: Question[]) => void;
+  onPointsChange?: (points: number) => void;
+  onTimeMinutesChange?: (minutes: number) => void;
+  onTimeSecondsChange?: (seconds: number) => void;
+  onMaxAttemptsChange?: (attempts: number) => void;
 }
 
 export default function TopicBasedAudio({
   question = "",
+  instructions = "",
   audioUrl: initialAudioUrl,
   questions = [],
+  points: initialPoints = 0,
+  timeMinutes: initialTimeMinutes = 0,
+  timeSeconds: initialTimeSeconds = 0,
+  maxAttempts: initialMaxAttempts = 1,
   onQuestionChange,
+  onInstructionsChange,
   onAudioChange,
   onQuestionsChange,
+  onPointsChange,
+  onTimeMinutesChange,
+  onTimeSecondsChange,
+  onMaxAttemptsChange,
 }: TopicBasedAudioProps) {
   const [questionText, setQuestionText] = useState(question);
+  const [instructionsText, setInstructionsText] = useState(instructions);
   const [audioUrl, setAudioUrl] = useState<string | null>(initialAudioUrl || null);
   const [questionsList, setQuestionsList] = useState<Question[]>(
     questions.length > 0
@@ -44,10 +65,19 @@ export default function TopicBasedAudio({
           },
         ]
   );
+  const [pointsValue, setPointsValue] = useState(initialPoints);
+  const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
+  const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
+  const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
     onQuestionChange?.(value);
+  };
+
+  const handleInstructionsChange = (value: string) => {
+    setInstructionsText(value);
+    onInstructionsChange?.(value);
   };
 
   const handleQuestionTextChange = (id: string, text: string) => {
@@ -99,21 +129,61 @@ export default function TopicBasedAudio({
     }
   };
 
+  const handlePointsChange = (value: number) => {
+    const points = Math.max(0, value);
+    setPointsValue(points);
+    onPointsChange?.(points);
+  };
+
+  const handleTimeMinutesChange = (value: number) => {
+    const minutes = Math.max(0, Math.floor(value));
+    setTimeMinutesValue(minutes);
+    onTimeMinutesChange?.(minutes);
+  };
+
+  const handleTimeSecondsChange = (value: number) => {
+    const seconds = Math.max(0, Math.min(59, Math.floor(value)));
+    setTimeSecondsValue(seconds);
+    onTimeSecondsChange?.(seconds);
+  };
+
+  const handleMaxAttemptsChange = (value: number) => {
+    const attempts = Math.max(1, Math.floor(value));
+    setMaxAttemptsValue(attempts);
+    onMaxAttemptsChange?.(attempts);
+  };
+
   return (
     <div className="w-full space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Topic Description *
-        </label>
-        <textarea
-          value={questionText}
-          onChange={(e) => handleQuestionChange(e.target.value)}
-          placeholder="Enter the topic description..."
-          rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
-        />
+      {/* First Row: Question Text and Instructions */}
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Topic Description *
+          </label>
+          <input
+            type="text"
+            value={questionText}
+            onChange={(e) => handleQuestionChange(e.target.value)}
+            placeholder="Enter the topic description..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
+        <div className="col-span-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Instructions
+          </label>
+          <input
+            type="text"
+            value={instructionsText}
+            onChange={(e) => handleInstructionsChange(e.target.value)}
+            placeholder="Enter instructions..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+        </div>
       </div>
 
+      {/* Second Row: Audio File */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Audio File *
@@ -127,6 +197,7 @@ export default function TopicBasedAudio({
         />
       </div>
 
+      {/* Third Row: Multiple Choice Questions */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <label className="block text-sm font-medium text-gray-700">
@@ -156,11 +227,11 @@ export default function TopicBasedAudio({
                   </button>
                 )}
               </div>
-              <textarea
+              <input
+                type="text"
                 value={q.text}
                 onChange={(e) => handleQuestionTextChange(q.id, e.target.value)}
                 placeholder="Enter question text..."
-                rows={2}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent mb-3"
               />
               <div className="space-y-2">
@@ -198,6 +269,80 @@ export default function TopicBasedAudio({
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Fourth Row: Points, Time, and Max Attempts */}
+      <div className="grid grid-cols-4 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Minutes) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="60"
+            value={timeMinutesValue}
+            onChange={(e) =>
+              handleTimeMinutesChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">Minutes to answer</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Time (Seconds) *
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="59"
+            value={timeSecondsValue}
+            onChange={(e) =>
+              handleTimeSecondsChange(parseInt(e.target.value) || 0)
+            }
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Additional seconds (0-59)
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Points *
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={pointsValue}
+            onChange={(e) => handlePointsChange(parseInt(e.target.value) || 0)}
+            placeholder="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Points awarded for correct answer
+          </p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Max Attempts *
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={maxAttemptsValue}
+            onChange={(e) =>
+              handleMaxAttemptsChange(parseInt(e.target.value) || 1)
+            }
+            placeholder="1"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Maximum number of attempts allowed
+          </p>
         </div>
       </div>
     </div>
