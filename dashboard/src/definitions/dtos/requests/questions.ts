@@ -24,7 +24,7 @@ export interface BaseCreateQuestionDto {
 // ==================== VOCABULARY CREATE DTOs ====================
 
 export interface CreateImageToMultipleChoicesDto extends BaseCreateQuestionDto {
-  media: File; // Single image file (jpeg/png/webp, max 5MB)
+  image: File; // Single image file (jpeg/png/webp, max 5MB)
   options: string[]; // Minimum 2 options
   answer: string; // Must be one of the options
 }
@@ -191,7 +191,7 @@ export interface UpdateImageToMultipleChoicesDto {
   points?: number;
   options?: string[];
   answer?: string;
-  media?: File; // Replace image (single file)
+  image?: File; // Replace image (single file)
 }
 
 export interface UpdateReadItDto {

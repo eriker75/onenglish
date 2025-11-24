@@ -127,7 +127,7 @@ export default function ImageToMultipleChoiceWrapper({
     const formData = new FormData();
     formData.append("challengeId", challengeId);
     if (imageFile) {
-      formData.append("media", imageFile);
+      formData.append("image", imageFile);
     }
     formData.append("text", questionText);
     formData.append("options", validOptions.join(","));
