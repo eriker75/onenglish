@@ -322,6 +322,14 @@ export class QuestionFormatterService {
   private formatUnscramble(
     question: EnrichedQuestion,
   ): FormattedUnscrambleQuestion {
+    // Convert answer array to string for correctSentence
+    let correctSentence = '';
+    if (Array.isArray(question.answer)) {
+      correctSentence = question.answer.join(' ');
+    } else if (question.answer) {
+      correctSentence = String(question.answer);
+    }
+
     return {
       id: question.id,
       type: question.type,
@@ -335,8 +343,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Scrambled words
       scrambledWords: question.content || [],
-      // Correct sentence
-      correctSentence: question.answer,
+      // Correct sentence (convert array to string)
+      correctSentence,
       // Optional reference image URL
       image: this.getMediaUrl(question.media, 'image'),
       // Metadata

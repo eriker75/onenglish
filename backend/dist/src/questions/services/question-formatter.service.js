@@ -211,6 +211,13 @@ let QuestionFormatterService = class QuestionFormatterService {
         };
     }
     formatUnscramble(question) {
+        let correctSentence = '';
+        if (Array.isArray(question.answer)) {
+            correctSentence = question.answer.join(' ');
+        }
+        else if (question.answer) {
+            correctSentence = String(question.answer);
+        }
         return {
             id: question.id,
             type: question.type,
@@ -223,7 +230,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             scrambledWords: question.content || [],
-            correctSentence: question.answer,
+            correctSentence,
             image: this.getMediaUrl(question.media, 'image'),
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,

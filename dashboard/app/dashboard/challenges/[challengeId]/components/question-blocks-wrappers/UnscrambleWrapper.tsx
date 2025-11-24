@@ -53,15 +53,27 @@ export default function UnscrambleWrapper({
     return [];
   });
 
-  // Backend returns 'correctSentence' (string) or 'answer' (array or string)
-  // Prefer correctSentence as that's what the backend formatter returns
-  const initialCorrectSentence = unscrambleQuestion?.correctSentence 
-    ? String(unscrambleQuestion.correctSentence)
-    : Array.isArray(unscrambleQuestion?.answer)
-    ? (unscrambleQuestion?.answer.join(" ") || "")
-    : unscrambleQuestion?.answer 
-    ? String(unscrambleQuestion.answer)
-    : "";
+  // Backend returns 'correctSentence' (string or array) or 'answer' (array or string)
+  // The formatter might return answer as array, so handle both cases
+  let initialCorrectSentence = "";
+  if (unscrambleQuestion) {
+    if (unscrambleQuestion.correctSentence) {
+      const cs: unknown = unscrambleQuestion.correctSentence;
+      if (typeof cs === 'string') {
+        initialCorrectSentence = cs;
+      } else if (Array.isArray(cs)) {
+        initialCorrectSentence = (cs as string[]).join(" ");
+      } else {
+        initialCorrectSentence = String(cs);
+      }
+    } else if (unscrambleQuestion.answer) {
+      if (Array.isArray(unscrambleQuestion.answer)) {
+        initialCorrectSentence = unscrambleQuestion.answer.join(" ") || "";
+      } else {
+        initialCorrectSentence = String(unscrambleQuestion.answer);
+      }
+    }
+  }
 
   const [correctSentence, setCorrectSentence] = useState(
     initialCorrectSentence
@@ -109,18 +121,25 @@ export default function UnscrambleWrapper({
       setScrambledWords(contentArray);
       console.log('[UnscrambleWrapper] Set scrambledWords:', contentArray);
       
-      // Backend returns 'correctSentence' (string) or 'answer' (array or string)
-      // Prefer correctSentence as that's what the backend formatter returns
+      // Backend returns 'correctSentence' (string or array) or 'answer' (array or string)
+      // The formatter might return answer as array, so handle both cases
       let correctSentenceStr = "";
-      if (question.correctSentence && typeof question.correctSentence === 'string') {
-        correctSentenceStr = question.correctSentence;
+      if (question.correctSentence) {
+        const cs: unknown = question.correctSentence;
+        if (typeof cs === 'string') {
+          correctSentenceStr = cs;
+        } else if (Array.isArray(cs)) {
+          correctSentenceStr = (cs as string[]).join(" ");
+        } else {
+          correctSentenceStr = String(cs);
+        }
       } else if (Array.isArray(question.answer)) {
         correctSentenceStr = question.answer.join(" ");
       } else if (question.answer) {
         correctSentenceStr = String(question.answer);
       }
       setCorrectSentence(correctSentenceStr);
-      console.log('[UnscrambleWrapper] Set correctSentence:', correctSentenceStr);
+      console.log('[UnscrambleWrapper] Set correctSentence:', correctSentenceStr, 'from:', { correctSentence: question.correctSentence, answer: question.answer });
       
       setImageUrl(question.image || question.mediaUrl || null);
       setPoints(question.points || 0);
@@ -258,10 +277,18 @@ export default function UnscrambleWrapper({
                 : [];
               setScrambledWords(contentArray);
               
-              // Backend returns 'correctSentence' (string) or 'answer' (array or string)
+              // Backend returns 'correctSentence' (string or array) or 'answer' (array or string)
+              // The formatter might return answer as array, so handle both cases
               let correctSentenceStr = "";
-              if (question.correctSentence && typeof question.correctSentence === 'string') {
-                correctSentenceStr = question.correctSentence;
+              if (question.correctSentence) {
+                const cs: unknown = question.correctSentence;
+                if (typeof cs === 'string') {
+                  correctSentenceStr = cs;
+                } else if (Array.isArray(cs)) {
+                  correctSentenceStr = (cs as string[]).join(" ");
+                } else {
+                  correctSentenceStr = String(cs);
+                }
               } else if (Array.isArray(question.answer)) {
                 correctSentenceStr = question.answer.join(" ");
               } else if (question.answer) {
