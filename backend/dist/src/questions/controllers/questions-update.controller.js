@@ -393,6 +393,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateTellMeAboutIt", null);
 __decorate([
     (0, common_1.Patch)('debate/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update debate question',
         description: 'Update a debate question.',

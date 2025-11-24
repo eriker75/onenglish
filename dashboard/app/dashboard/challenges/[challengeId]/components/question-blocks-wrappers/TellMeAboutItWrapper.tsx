@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import TellMeAboutIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TellMeAboutIt";
@@ -31,7 +31,7 @@ export default function TellMeAboutItWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to TellMeAboutItQuestion for type safety
   const tellMeAboutItQuestion = (freshQuestionData || existingQuestion) as
@@ -39,7 +39,7 @@ export default function TellMeAboutItWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || ""
+    tellMeAboutItQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     tellMeAboutItQuestion?.instructions || ""
@@ -58,12 +58,43 @@ export default function TellMeAboutItWrapper({
     tellMeAboutItQuestion?.maxAttempts || 1
   );
 
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as TellMeAboutItQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setContent(question.content || "");
+      setImageUrl(question.image || question.mediaUrl || null);
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
+
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'image/png' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -88,8 +119,30 @@ export default function TellMeAboutItWrapper({
     formData.append("instructions", instructions);
     formData.append("content", content);
 
-    if (imageFile) {
-      formData.append("media", imageFile);
+    // Handle image file - for updates, preserve existing if no new file is provided
+    // Backend expects 'image' field, not 'media'
+    if (existingQuestion) {
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (imageUrl && imageUrl.trim() !== "") {
+        try {
+          const urlParts = imageUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'image.png';
+          const file = await urlToFile(imageUrl, filename);
+          formData.append("image", file);
+        } catch (error) {
+          console.error('Failed to convert image URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing image. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
     }
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
@@ -109,7 +162,25 @@ export default function TellMeAboutItWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state from response
+            if (data) {
+              const question = data as TellMeAboutItQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setContent(question.content || "");
+              setImageUrl(question.image || question.mediaUrl || null);
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              setImageFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",

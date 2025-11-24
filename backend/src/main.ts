@@ -138,5 +138,3 @@ bootstrap()
   .catch((err) => {
     console.error('Error during application bootstrap:', err);
   });
-
-  

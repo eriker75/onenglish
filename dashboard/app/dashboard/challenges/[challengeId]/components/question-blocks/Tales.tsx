@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ImageUpload from "@/components/elements/ImageUpload";
 
 interface TalesProps {
@@ -50,6 +50,39 @@ export default function Tales({
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
   const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setQuestionText(question);
+  }, [question]);
+
+  useEffect(() => {
+    setInstructionsText(instructions);
+  }, [instructions]);
+
+  useEffect(() => {
+    setImageUrl(initialImageUrl || null);
+  }, [initialImageUrl]);
+
+  useEffect(() => {
+    setExampleStoryText(exampleStory);
+  }, [exampleStory]);
+
+  useEffect(() => {
+    setPointsValue(initialPoints);
+  }, [initialPoints]);
+
+  useEffect(() => {
+    setTimeMinutesValue(initialTimeMinutes);
+  }, [initialTimeMinutes]);
+
+  useEffect(() => {
+    setTimeSecondsValue(initialTimeSeconds);
+  }, [initialTimeSeconds]);
+
+  useEffect(() => {
+    setMaxAttemptsValue(initialMaxAttempts);
+  }, [initialMaxAttempts]);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);

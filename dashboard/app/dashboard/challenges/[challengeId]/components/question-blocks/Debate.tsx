@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ImageUpload from "@/components/elements/ImageUpload";
 
 interface DebateProps {
@@ -17,6 +17,7 @@ interface DebateProps {
   onInstructionsChange?: (instructions: string) => void;
   onContentChange?: (content: string) => void;
   onImageChange?: (imageUrl: string | null) => void;
+  onFileChange?: (file: File | null) => void;
   onAnswerChange?: (answer: string) => void;
   onPointsChange?: (points: number) => void;
   onTimeMinutesChange?: (minutes: number) => void;
@@ -38,6 +39,7 @@ export default function Debate({
   onInstructionsChange,
   onContentChange,
   onImageChange,
+  onFileChange,
   onAnswerChange,
   onPointsChange,
   onTimeMinutesChange,
@@ -55,6 +57,44 @@ export default function Debate({
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
   const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setQuestionText(question);
+  }, [question]);
+
+  useEffect(() => {
+    setInstructionsText(instructions);
+  }, [instructions]);
+
+  useEffect(() => {
+    setContentText(content);
+  }, [content]);
+
+  useEffect(() => {
+    setImageUrl(initialImageUrl || null);
+  }, [initialImageUrl]);
+
+  useEffect(() => {
+    const ans = initialAnswer as "for" | "against" | "random";
+    setSelectedPosition(ans || "random");
+  }, [initialAnswer]);
+
+  useEffect(() => {
+    setPointsValue(initialPoints);
+  }, [initialPoints]);
+
+  useEffect(() => {
+    setTimeMinutesValue(initialTimeMinutes);
+  }, [initialTimeMinutes]);
+
+  useEffect(() => {
+    setTimeSecondsValue(initialTimeSeconds);
+  }, [initialTimeSeconds]);
+
+  useEffect(() => {
+    setMaxAttemptsValue(initialMaxAttempts);
+  }, [initialMaxAttempts]);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
@@ -159,6 +199,7 @@ export default function Debate({
                 setImageUrl(url);
                 onImageChange?.(url);
               }}
+              onFileChange={onFileChange}
               height="h-48"
             />
           </div>

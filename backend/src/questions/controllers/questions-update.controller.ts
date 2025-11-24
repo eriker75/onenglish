@@ -324,6 +324,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('debate/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update debate question',
     description: 'Update a debate question.',
