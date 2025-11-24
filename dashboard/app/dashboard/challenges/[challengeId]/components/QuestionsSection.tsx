@@ -155,8 +155,14 @@ export default function QuestionsSection({
   // Reset to page 1 when question type filter changes (during render)
   if (currentQuestionType !== prevQuestionType) {
     setPrevQuestionType(currentQuestionType);
-    if (currentQuestionType && currentPage !== 1) {
+    setSelectedQuestionType(null); // Clear any selected question type form
+    if (currentQuestionType) {
+      // If filtering and there are no questions, go to page 1 (will show grid)
+      // Otherwise, go to page 1 to show first filtered question
       setCurrentPage(1);
+    } else {
+      // If filter is cleared, go to grid page
+      setCurrentPage(questions.length + 1);
     }
   }
 
@@ -200,15 +206,22 @@ export default function QuestionsSection({
   const isShowingGrid =
     !isShowingQuestionForm &&
     (filteredQuestions.length === 0 || currentPage > filteredQuestions.length);
+  
+  // Calculate current question index and question
+  // Make sure we're using the correct index based on filtered questions
   const currentQuestionIndex = currentPage - 1;
   const currentQuestion =
-    currentPage <= filteredQuestions.length
+    currentPage > 0 &&
+    currentPage <= filteredQuestions.length &&
+    currentQuestionIndex >= 0 &&
+    currentQuestionIndex < filteredQuestions.length
       ? filteredQuestions[currentQuestionIndex]
       : null;
 
   // Get the component for editing the current question (WRAPPER COMPONENT with existingQuestion)
+  // Make sure we're matching the question type correctly
   const EditQuestionComponent = currentQuestion?.type
-    ? wrapperMap[currentQuestion.type]
+    ? wrapperMap[currentQuestion.type] || null
     : null;
 
   // Get the form component for the selected question type (WRAPPER COMPONENT)
@@ -217,7 +230,8 @@ export default function QuestionsSection({
     : null;
 
   // When currentQuestionType changes and we're on the grid, auto-select that type to create (during render)
-  if (currentQuestionType && isShowingGrid && !selectedQuestionType) {
+  // Only auto-select if there are questions (we're on the grid page after questions), not when filteredQuestions is empty
+  if (currentQuestionType && isShowingGrid && !selectedQuestionType && filteredQuestions.length > 0) {
     // Find the question type from questionTypesByArea
     const allTypes = Object.values(questionTypesByArea).flat();
     const typeToSelect = allTypes.find((t) => t.id === currentQuestionType);
@@ -228,7 +242,8 @@ export default function QuestionsSection({
   }
 
   // Calculate pagination info - only show pages for existing questions
-  const displayPages = Math.max(1, filteredQuestions.length);
+  // Don't show page numbers if there are no filtered questions
+  const displayPages = filteredQuestions.length > 0 ? filteredQuestions.length : 0;
 
   return (
     <div className="space-y-6">
@@ -270,11 +285,15 @@ export default function QuestionsSection({
           </div>
         </div>
 
-        {/* Pagination with numbers - Always visible when there are questions or grid */}
-        {(displayPages > 0 || filteredQuestions.length === 0) && (
+        {/* Pagination with numbers - Only show when there are questions */}
+        {displayPages > 0 && (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => {
+                // Clear any selected question type form to show the existing question
+                setSelectedQuestionType(null);
+                setCurrentPage(Math.max(1, currentPage - 1));
+              }}
               disabled={currentPage === 1}
               className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
@@ -282,35 +301,39 @@ export default function QuestionsSection({
             </button>
 
             {/* Page numbers - only show for existing questions */}
-            {displayPages > 0 && (
-              <div className="flex items-center gap-1">
-                {Array.from({ length: displayPages }, (_, i) => i + 1).map(
-                  (pageNum) => {
-                    const isCurrentPage = pageNum === currentPage;
+            <div className="flex items-center gap-1">
+              {Array.from({ length: displayPages }, (_, i) => i + 1).map(
+                (pageNum) => {
+                  const isCurrentPage = pageNum === currentPage;
 
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        disabled={isCurrentPage}
-                        className={cn(
-                          "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
-                          isCurrentPage
-                            ? "bg-[#FF0098] text-white"
-                            : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]",
-                          "disabled:cursor-default"
-                        )}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  }
-                )}
-              </div>
-            )}
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => {
+                        // Clear any selected question type form to show the existing question
+                        setSelectedQuestionType(null);
+                        setCurrentPage(pageNum);
+                      }}
+                      disabled={isCurrentPage}
+                      className={cn(
+                        "w-8 h-8 rounded-lg text-sm font-medium transition-colors",
+                        isCurrentPage
+                          ? "bg-[#FF0098] text-white"
+                          : "border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-[#FF0098]",
+                        "disabled:cursor-default"
+                      )}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+              )}
+            </div>
 
             <button
               onClick={() => {
+                // Clear any selected question type form
+                setSelectedQuestionType(null);
                 // Always allow going to grid page (filteredQuestions.length + 1)
                 setCurrentPage(currentPage + 1);
               }}
@@ -318,6 +341,18 @@ export default function QuestionsSection({
               className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
             >
               Next
+            </button>
+          </div>
+        )}
+        
+        {/* Show grid navigation when no filtered questions but filter is active */}
+        {filteredQuestions.length === 0 && currentQuestionType && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentQuestionType(null)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm"
+            >
+              Clear Filter
             </button>
           </div>
         )}
