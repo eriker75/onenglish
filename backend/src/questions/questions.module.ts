@@ -45,9 +45,9 @@ import { QuestionsUpdateController } from './controllers/questions-update.contro
   ],
   controllers: [
     QuestionsCreationController,
+    QuestionsUpdateController, // Move before QueryController to ensure DELETE route is registered
     QuestionsQueryController,
     QuestionsAnswerController,
-    QuestionsUpdateController,
   ],
   providers: [
     QuestionsService,

@@ -1,4 +1,4 @@
-import { Controller, Patch, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Patch, Delete, Param, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -358,6 +358,7 @@ export class QuestionsUpdateController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete a question',
     description:

@@ -55,9 +55,9 @@ exports.QuestionsModule = QuestionsModule = __decorate([
         ],
         controllers: [
             questions_creation_controller_1.QuestionsCreationController,
+            questions_update_controller_1.QuestionsUpdateController,
             questions_query_controller_1.QuestionsQueryController,
             questions_answer_controller_1.QuestionsAnswerController,
-            questions_update_controller_1.QuestionsUpdateController,
         ],
         providers: [
             questions_service_1.QuestionsService,

@@ -94,6 +94,7 @@ export default function ChallengeEditPage() {
 
       await deleteQuestionMutation.mutateAsync({
         questionId,
+        challengeId, // Pass challengeId for specific cache update
         questionType: question.type,
       });
     } catch (error) {

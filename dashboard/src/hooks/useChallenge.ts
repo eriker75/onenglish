@@ -242,18 +242,64 @@ export function useDeleteQuestion() {
   return useMutation({
     mutationFn: async ({
       questionId,
+      challengeId,
     }: {
       questionId: string;
+      challengeId?: string;
       questionType?: string; // Optional, kept for backwards compatibility but not used
     }) => {
       const response = await api.delete(`/questions/${questionId}`);
       return response.data;
     },
     onSuccess: (_, variables) => {
-      // Invalidate the challenge query to refetch all questions
-      queryClient.invalidateQueries({ queryKey: challengeKeys.all });
       // Remove the specific question from cache
       queryClient.removeQueries({ queryKey: questionKeys.detail(variables.questionId) });
+      
+      // If challengeId is provided, update that specific challenge's cache
+      if (variables.challengeId) {
+        queryClient.setQueryData<Challenge>(
+          challengeKeys.detail(variables.challengeId),
+          (oldData) => {
+            if (!oldData) return oldData;
+            
+            // Remove the question from the challenge's questions array
+            const updatedQuestions = oldData.questions?.filter(
+              (q) => q.id !== variables.questionId
+            ) || [];
+            
+            return {
+              ...oldData,
+              questions: updatedQuestions,
+            };
+          }
+        );
+        
+        // Also invalidate related queries for this challenge
+        queryClient.invalidateQueries({ 
+          queryKey: challengeKeys.detail(variables.challengeId) 
+        });
+      } else {
+        // If no challengeId, update all challenge caches
+        queryClient.setQueriesData<Challenge>(
+          { queryKey: challengeKeys.all },
+          (oldData) => {
+            if (!oldData) return oldData;
+            
+            // Remove the question from the challenge's questions array
+            const updatedQuestions = oldData.questions?.filter(
+              (q) => q.id !== variables.questionId
+            ) || [];
+            
+            return {
+              ...oldData,
+              questions: updatedQuestions,
+            };
+          }
+        );
+        
+        // Invalidate all challenge queries to ensure consistency
+        queryClient.invalidateQueries({ queryKey: challengeKeys.all });
+      }
     },
   });
 }

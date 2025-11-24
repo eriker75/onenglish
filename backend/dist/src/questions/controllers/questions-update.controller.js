@@ -429,6 +429,7 @@ __decorate([
 ], QuestionsUpdateController.prototype, "bulkUpdateQuestions", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({
         summary: 'Delete a question',
         description: 'Delete a question. If the question has sub-questions, they will be deleted as well (cascade). If this is a sub-question, the parent points will be recalculated.',
