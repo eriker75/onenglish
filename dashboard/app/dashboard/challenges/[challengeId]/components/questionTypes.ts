@@ -30,7 +30,7 @@ export interface QuestionType {
 export const questionTypesByArea: { [key: string]: QuestionType[] } = {
   Vocabulary: [
     {
-      id: "image_to_multiple_choice_text",
+      id: "image_to_multiple_choices",
       name: "Image to Multiple Choice",
       description: "Choose the correct word for the image",
       icon: ImageIcon,
@@ -51,7 +51,7 @@ export const questionTypesByArea: { [key: string]: QuestionType[] } = {
       category: "Vocabulary",
     },
     {
-      id: "word_associations_with_text",
+      id: "word_associations",
       name: "Word Associations",
       description: "20 questions associated with reference word",
       icon: LinkIcon,

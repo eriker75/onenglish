@@ -6,7 +6,7 @@ const wrapperConfigs = {
   'DebateWrapper.tsx': { endpoint: 'debate', type: 'debate' },
   'FastTestWrapper.tsx': { endpoint: 'fast_test', type: 'fast_test' },
   'GossipWrapper.tsx': { endpoint: 'gossip', type: 'gossip' },
-  'ImageToMultipleChoiceWrapper.tsx': { endpoint: 'image_to_multiple_choices', type: 'image_to_multiple_choice_text' },
+  'ImageToMultipleChoiceWrapper.tsx': { endpoint: 'image_to_multiple_choices', type: 'image_to_multiple_choices' },
   'LyricsTrainingWrapper.tsx': { endpoint: 'lyrics_training', type: 'lyrics_training' },
   'ReadItWrapper.tsx': { endpoint: 'read_it', type: 'read_it' },
   'ReportItWrapper.tsx': { endpoint: 'report_it', type: 'report_it' },
@@ -19,7 +19,7 @@ const wrapperConfigs = {
   'TensesWrapper.tsx': { endpoint: 'tenses', type: 'tenses' },
   'TopicBasedAudioWrapper.tsx': { endpoint: 'topic_based_audio', type: 'topic_based_audio' },
   'UnscrambleWrapper.tsx': { endpoint: 'unscramble', type: 'unscramble' },
-  'WordAssociationsWrapper.tsx': { endpoint: 'word_associations', type: 'word_associations_with_text' },
+  'WordAssociationsWrapper.tsx': { endpoint: 'word_associations', type: 'word_associations' },
   'WordMatchWrapper.tsx': { endpoint: 'word_match', type: 'word_match' },
 };
 

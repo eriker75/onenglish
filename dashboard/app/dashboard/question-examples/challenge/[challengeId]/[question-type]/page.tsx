@@ -62,10 +62,10 @@ export default function QuestionTypeExampleWithChallengePage() {
   // Mapeo de IDs de tipos de pregunta a componentes
   const componentMap: { [key: string]: React.ComponentType<any> } = {
     // Vocabulary
-    image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
+    image_to_multiple_choices: ImageToMultipleChoiceWrapper,
     wordbox: QuestionBlocks.WordBox,
     spelling: QuestionBlocks.Spelling,
-    word_associations_with_text: QuestionBlocks.WordAssociationsWithText,
+    word_associations: QuestionBlocks.WordAssociationsWithText,
     // Grammar
     unscramble: QuestionBlocks.Unscramble,
     tenses: QuestionBlocks.Tenses,
