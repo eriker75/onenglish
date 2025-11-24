@@ -18,10 +18,11 @@ export interface BaseQuestionData {
 
 // WordBox specific types
 export interface WordBoxQuestion extends Question, BaseQuestionData {
-  maxWords?: number;
-  gridWidth?: number;
-  gridHeight?: number;
-  content?: string[][];
+  maxWords?: number | string; // Backend may return as string
+  gridWidth?: number | string; // Backend may return as string
+  gridHeight?: number | string; // Backend may return as string
+  content?: string[][]; // Legacy - kept for compatibility
+  grid?: string[][]; // Backend returns 'grid' property
 }
 
 export interface WordBoxPayload {

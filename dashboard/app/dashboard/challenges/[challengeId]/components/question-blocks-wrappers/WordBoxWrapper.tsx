@@ -41,6 +41,14 @@ export default function WordBoxWrapper({
     | WordBoxQuestion
     | undefined;
 
+  // Helper function to parse string or number to number
+  const parseNumber = (value: string | number | undefined, defaultValue: number): number => {
+    if (value === undefined || value === null) return defaultValue;
+    if (typeof value === 'number') return value;
+    const parsed = parseInt(String(value), 10);
+    return isNaN(parsed) ? defaultValue : parsed;
+  };
+
   // Initialize State with question data or defaults
   const [questionText, setQuestionText] = useState(
     wordBoxQuestion?.text || ""
@@ -48,13 +56,13 @@ export default function WordBoxWrapper({
   const [instructions, setInstructions] = useState(
     wordBoxQuestion?.instructions || ""
   );
-  const [maxWords, setMaxWords] = useState(wordBoxQuestion?.maxWords || 5);
-  const [gridWidth, setGridWidth] = useState(wordBoxQuestion?.gridWidth || 3);
+  const [maxWords, setMaxWords] = useState(parseNumber(wordBoxQuestion?.maxWords, 5));
+  const [gridWidth, setGridWidth] = useState(parseNumber(wordBoxQuestion?.gridWidth, 3));
   const [gridHeight, setGridHeight] = useState(
-    wordBoxQuestion?.gridHeight || 3
+    parseNumber(wordBoxQuestion?.gridHeight, 3)
   );
   const [grid, setGrid] = useState<string[][]>(
-    wordBoxQuestion?.content ||
+    wordBoxQuestion?.grid || wordBoxQuestion?.content ||
       Array(3)
         .fill(null)
         .map(() => Array(3).fill(""))
@@ -75,10 +83,10 @@ export default function WordBoxWrapper({
       const question = freshQuestionData as WordBoxQuestion;
       setQuestionText(question.text || "");
       setInstructions(question.instructions || "");
-      setMaxWords(question.maxWords || 5);
-      setGridWidth(question.gridWidth || 3);
-      setGridHeight(question.gridHeight || 3);
-      setGrid(question.content || Array(3).fill(null).map(() => Array(3).fill("")));
+      setMaxWords(parseNumber(question.maxWords, 5));
+      setGridWidth(parseNumber(question.gridWidth, 3));
+      setGridHeight(parseNumber(question.gridHeight, 3));
+      setGrid(question.grid || question.content || Array(3).fill(null).map(() => Array(3).fill("")));
       setPoints(question.points || 0);
       const time = question.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
@@ -147,10 +155,10 @@ export default function WordBoxWrapper({
               const question = data as WordBoxQuestion;
               setQuestionText(question.text || "");
               setInstructions(question.instructions || "");
-              setMaxWords(question.maxWords || 5);
-              setGridWidth(question.gridWidth || 3);
-              setGridHeight(question.gridHeight || 3);
-              setGrid(question.content || Array(3).fill(null).map(() => Array(3).fill("")));
+              setMaxWords(parseNumber(question.maxWords, 5));
+              setGridWidth(parseNumber(question.gridWidth, 3));
+              setGridHeight(parseNumber(question.gridHeight, 3));
+              setGrid(question.grid || question.content || Array(3).fill(null).map(() => Array(3).fill("")));
               setPoints(question.points || 0);
               const time = question.timeLimit || 0;
               setTimeMinutes(Math.floor(time / 60));
