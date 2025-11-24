@@ -33,8 +33,8 @@ export default function SentenceMakerWrapper({
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
 
-  // Cast existingQuestion to SentenceMakerQuestion for type safety
-  const sentenceMakerQuestion = existingQuestion as
+  // Use fresh data if available, otherwise use existing
+  const sentenceMakerQuestion = (freshQuestionData || existingQuestion) as
     | SentenceMakerQuestion
     | undefined;
 

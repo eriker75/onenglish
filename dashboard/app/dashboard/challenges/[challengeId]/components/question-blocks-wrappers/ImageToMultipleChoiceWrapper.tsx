@@ -33,8 +33,8 @@ export default function ImageToMultipleChoiceWrapper({
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
 
-  // Cast existingQuestion to ImageToMultipleChoiceQuestion for type safety
-  const imageQuestion = existingQuestion as
+  // Use fresh data if available, otherwise use existing
+  const imageQuestion = (freshQuestionData || existingQuestion) as
     | ImageToMultipleChoiceQuestion
     | undefined;
 

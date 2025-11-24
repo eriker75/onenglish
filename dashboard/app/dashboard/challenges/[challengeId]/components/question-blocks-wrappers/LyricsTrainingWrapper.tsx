@@ -33,8 +33,8 @@ export default function LyricsTrainingWrapper({
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
 
-  // Cast existingQuestion to LyricsTrainingQuestion for type safety
-  const lyricsTrainingQuestion = existingQuestion as
+  // Use fresh data if available, otherwise use existing
+  const lyricsTrainingQuestion = (freshQuestionData || existingQuestion) as
     | LyricsTrainingQuestion
     | undefined;
 
