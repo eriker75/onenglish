@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ImageUpload from "@/components/elements/ImageUpload";
 
 interface SpellingProps {
@@ -50,6 +50,41 @@ export default function Spelling({
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
   const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
+
+  // Sync state with props when they change (e.g., when data is loaded from backend)
+  useEffect(() => {
+    setQuestionText(question);
+  }, [question]);
+
+  useEffect(() => {
+    setInstructionsText(instructions);
+  }, [instructions]);
+
+  useEffect(() => {
+    setCorrectWordText(correctWord);
+  }, [correctWord]);
+
+  useEffect(() => {
+    if (initialImageUrl !== undefined) {
+      setImageUrl(initialImageUrl || null);
+    }
+  }, [initialImageUrl]);
+
+  useEffect(() => {
+    setPointsValue(initialPoints);
+  }, [initialPoints]);
+
+  useEffect(() => {
+    setTimeMinutesValue(initialTimeMinutes);
+  }, [initialTimeMinutes]);
+
+  useEffect(() => {
+    setTimeSecondsValue(initialTimeSeconds);
+  }, [initialTimeSeconds]);
+
+  useEffect(() => {
+    setMaxAttemptsValue(initialMaxAttempts);
+  }, [initialMaxAttempts]);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);

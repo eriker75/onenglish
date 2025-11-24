@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import WordBox from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordBox";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
@@ -32,7 +32,7 @@ export default function WordBoxWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // 🆕 Fetch fresh data when editing (optional - use if you want latest data)
-  const { data: freshQuestionData } = useQuestion(
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(
     existingQuestion?.id // Only fetch if editing
   );
 
@@ -68,6 +68,24 @@ export default function WordBoxWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     wordBoxQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as WordBoxQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setMaxWords(question.maxWords || 5);
+      setGridWidth(question.gridWidth || 3);
+      setGridHeight(question.gridHeight || 3);
+      setGrid(question.content || Array(3).fill(null).map(() => Array(3).fill("")));
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   // 🆕 Use generic mutations with auto cache invalidation
   const createMutation = useCreateQuestion();
@@ -123,7 +141,26 @@ export default function WordBoxWrapper({
           challengeId,
         },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as WordBoxQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setMaxWords(question.maxWords || 5);
+              setGridWidth(question.gridWidth || 3);
+              setGridHeight(question.gridHeight || 3);
+              setGrid(question.content || Array(3).fill(null).map(() => Array(3).fill("")));
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "WordBox question updated successfully",

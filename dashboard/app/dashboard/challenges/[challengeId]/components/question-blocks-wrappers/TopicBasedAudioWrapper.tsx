@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import TopicBasedAudio from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TopicBasedAudio";
@@ -39,7 +39,7 @@ export default function TopicBasedAudioWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Use fresh data if available, otherwise use existing
   const topicBasedAudioQuestion = (freshQuestionData || existingQuestion) as
@@ -53,7 +53,7 @@ export default function TopicBasedAudioWrapper({
   const [instructions, setInstructions] = useState(
     topicBasedAudioQuestion?.instructions || ""
   );
-  const [audioUrl] = useState<string | null>(
+  const [audioUrl, setAudioUrl] = useState<string | null>(
     topicBasedAudioQuestion?.audio || topicBasedAudioQuestion?.mediaUrl || null
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -73,6 +73,29 @@ export default function TopicBasedAudioWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     topicBasedAudioQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as TopicBasedAudioQuestion;
+      setQuestionText(question.content || "");
+      setInstructions(question.instructions || "");
+      setAudioUrl(question.audio || question.mediaUrl || null);
+      setSubQuestions(
+        question.subQuestions?.map((q) => ({
+          id: q.id || "",
+          text: q.text ?? "",
+          options: q.options ?? [],
+          correctAnswer: q.answer ?? q.correctAnswer ?? "",
+          points: q.points,
+        })) || []
+      );
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   // Mutation
 
@@ -160,7 +183,33 @@ export default function TopicBasedAudioWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as TopicBasedAudioQuestion;
+              setQuestionText(question.content || "");
+              setInstructions(question.instructions || "");
+              setAudioUrl(question.audio || question.mediaUrl || null);
+              setSubQuestions(
+                question.subQuestions?.map((q) => ({
+                  id: q.id || "",
+                  text: q.text ?? "",
+                  options: q.options ?? [],
+                  correctAnswer: q.answer ?? q.correctAnswer ?? "",
+                  points: q.points,
+                })) || []
+              );
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              // Clear the audio file since it's now saved
+              setAudioFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
@@ -258,6 +307,7 @@ export default function TopicBasedAudioWrapper({
         maxAttempts={maxAttempts}
         onQuestionChange={setQuestionText}
         onInstructionsChange={setInstructions}
+        onAudioChange={setAudioUrl}
         onAudioFileChange={setAudioFile}
         onQuestionsChange={setSubQuestions}
         onTimeMinutesChange={setTimeMinutes}

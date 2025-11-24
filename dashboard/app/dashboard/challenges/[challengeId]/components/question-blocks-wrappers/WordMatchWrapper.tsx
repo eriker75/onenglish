@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import WordMatch from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordMatch";
@@ -32,7 +32,7 @@ export default function WordMatchWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   const wordMatchQuestion = (freshQuestionData || existingQuestion) as
     | WordMatchQuestion
@@ -62,6 +62,23 @@ export default function WordMatchWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     wordMatchQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as WordMatchQuestion;
+      setQuestionText(question.text || question.question || "");
+      setInstructions(question.instructions || "");
+      setAudioUrl(question.audio || question.mediaUrl || null);
+      setOptions(question.options || [""]);
+      setCorrectAnswer(question.answer || "");
+      setPoints(question.points || 10);
+      const time = question.timeLimit || 60;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -138,7 +155,27 @@ export default function WordMatchWrapper({
           challengeId,
         },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as WordMatchQuestion;
+              setQuestionText(question.text || question.question || "");
+              setInstructions(question.instructions || "");
+              setAudioUrl(question.audio || question.mediaUrl || null);
+              setOptions(question.options || [""]);
+              setCorrectAnswer(question.answer || "");
+              setPoints(question.points || 10);
+              const time = question.timeLimit || 60;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              // Clear the audio file since it's now saved
+              setAudioFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",

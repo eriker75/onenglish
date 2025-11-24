@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import Unscramble from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Unscramble";
@@ -31,7 +31,7 @@ export default function UnscrambleWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to UnscrambleQuestion for type safety
   const unscrambleQuestion = (freshQuestionData || existingQuestion) as
@@ -53,7 +53,7 @@ export default function UnscrambleWrapper({
   // The backend might store it as `answer[]`.
   // If `existingQuestion` has `answer` as array, join it.
   const initialCorrectSentence = Array.isArray(unscrambleQuestion?.answer)
-    ? unscrambleQuestion.answer.join(" ")
+    ? unscrambleQuestion?.answer.join(" ") || ""
     : unscrambleQuestion?.answer || "";
 
   const [correctSentence, setCorrectSentence] = useState(
@@ -71,6 +71,31 @@ export default function UnscrambleWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     unscrambleQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as UnscrambleQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setScrambledWords(question.content || []);
+      
+      // Handle answer as array or string
+      const answerArray = Array.isArray(question.answer)
+        ? question.answer
+        : question.answer
+        ? [question.answer]
+        : [];
+      setCorrectSentence(answerArray.join(" "));
+      
+      setImageUrl(question.image || question.mediaUrl || null);
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -123,7 +148,7 @@ export default function UnscrambleWrapper({
     );
 
     if (imageFile) {
-      formData.append("media", imageFile);
+      formData.append("image", imageFile);
     }
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
@@ -143,7 +168,35 @@ export default function UnscrambleWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as UnscrambleQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setScrambledWords(question.content || []);
+              
+              // Handle answer as array or string
+              const answerArray = Array.isArray(question.answer)
+                ? question.answer
+                : question.answer
+                ? [question.answer]
+                : [];
+              setCorrectSentence(answerArray.join(" "));
+              
+              setImageUrl(question.image || question.mediaUrl || null);
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              // Clear the image file since it's now saved
+              setImageFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",

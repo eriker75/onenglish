@@ -31,7 +31,7 @@ export default function SpellingWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData, isLoading: isLoadingQuestion, dataUpdatedAt } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, isLoading: isLoadingQuestion, dataUpdatedAt, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to SpellingQuestion for type safety
   const spellingQuestion = (freshQuestionData || existingQuestion) as
@@ -170,7 +170,7 @@ export default function SpellingWrapper({
     const formData = new FormData();
     formData.append("challengeId", challengeId);
     if (imageFile) {
-      formData.append("media", imageFile);
+      formData.append("image", imageFile);
     }
     formData.append("answer", correctWord);
 
@@ -193,7 +193,25 @@ export default function SpellingWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as SpellingQuestion;
+              setQuestionText(question.text || question.question || "");
+              setInstructions(question.instructions || "");
+              setCorrectWord(question.answer || question.correctAnswer || "");
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              // Clear the image file since it's now saved
+              setImageFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
@@ -285,6 +303,7 @@ export default function SpellingWrapper({
         question={questionText}
         instructions={instructions}
         correctWord={correctWord}
+        imageUrl={spellingQuestion?.image || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

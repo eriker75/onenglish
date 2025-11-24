@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import Tenses from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Tenses";
@@ -31,7 +31,7 @@ export default function TensesWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to TensesQuestion for type safety
   const tensesQuestion = (freshQuestionData || existingQuestion) as
@@ -59,6 +59,23 @@ export default function TensesWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     tensesQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as TensesQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setSentence(question.content || "");
+      setOptions(question.options || []);
+      setCorrectAnswer(question.answer || "");
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -124,7 +141,25 @@ export default function TensesWrapper({
           challengeId,
         },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state immediately from response
+            if (data) {
+              const question = data as TensesQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setSentence(question.content || "");
+              setOptions(question.options || []);
+              setCorrectAnswer(question.answer || "");
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Tenses question updated successfully",
