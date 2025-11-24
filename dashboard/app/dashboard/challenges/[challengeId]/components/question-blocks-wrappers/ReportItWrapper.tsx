@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import ReportIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/ReportIt";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { ReportItQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface ReportItWrapperProps {
   existingQuestion?: Question;
@@ -24,13 +28,15 @@ export default function ReportItWrapper({
   onSuccess,
 }: ReportItWrapperProps) {
   const { toast } = useToast();
-  // Cast existingQuestion to ReportItQuestion for type safety
-  const reportItQuestion = (freshQuestionData || existingQuestion) as ReportItQuestion | undefined;
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
+
+  // Cast existingQuestion to ReportItQuestion for type safety
+  const reportItQuestion = (freshQuestionData || existingQuestion) as
+    | ReportItQuestion
+    | undefined;
 
   const [questionText, setQuestionText] = useState(
     existingQuestion?.question || ""
@@ -51,48 +57,6 @@ export default function ReportItWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     reportItQuestion?.maxAttempts || 1
   );
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Reported speech question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Reported speech question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -138,15 +102,20 @@ export default function ReportItWrapper({
     // stage GRAMMAR likely
     formData.append("stage", "GRAMMAR");
 
-    if (reportItQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    if (existingQuestion) {
+      updateMutation.mutate({
+        endpoint: "/questions/report_it",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/report_it",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -155,15 +124,17 @@ export default function ReportItWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

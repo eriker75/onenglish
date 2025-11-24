@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import WordAssociationsWithText from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordAssociationsWithText";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { WordAssociationsQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface WordAssociationsWrapperProps {
   existingQuestion?: Question;
@@ -32,7 +36,6 @@ export default function WordAssociationsWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // State
   const [questionText, setQuestionText] = useState(
@@ -61,33 +64,6 @@ export default function WordAssociationsWrapper({
   );
 
   // Mutation
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error creating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -133,15 +109,20 @@ export default function WordAssociationsWrapper({
 
     formData.append("maxAttempts", maxAttempts.toString());
 
-    if (wordAssociationsQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    if (existingQuestion) {
+      updateMutation.mutate({
+        endpoint: "/questions/word_associations",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/word_associations",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -150,15 +131,17 @@ export default function WordAssociationsWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

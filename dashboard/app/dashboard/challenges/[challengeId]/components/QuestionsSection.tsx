@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 
 export interface Question {
   id: string;
-  question: string;
+  question?: string;  // Made optional to match backend type
   type: string;
   questionTypeName?: string;
   options?: string[];

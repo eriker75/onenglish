@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import TellMeAboutIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TellMeAboutIt";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { TellMeAboutItQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface TellMeAboutItWrapperProps {
   existingQuestion?: Question;
@@ -18,69 +22,41 @@ interface TellMeAboutItWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuccess }: TellMeAboutItWrapperProps) {
+export default function TellMeAboutItWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: TellMeAboutItWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to TellMeAboutItQuestion for type safety
-  const tellMeAboutItQuestion = (freshQuestionData || existingQuestion) as TellMeAboutItQuestion | undefined;
+  const tellMeAboutItQuestion = (freshQuestionData || existingQuestion) as
+    | TellMeAboutItQuestion
+    | undefined;
 
-  const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
-  const [instructions, setInstructions] = useState(tellMeAboutItQuestion?.instructions || "");
+  const [questionText, setQuestionText] = useState(
+    existingQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    tellMeAboutItQuestion?.instructions || ""
+  );
   const [content, setContent] = useState(tellMeAboutItQuestion?.content || "");
-  const [imageUrl, setImageUrl] = useState<string | null>(tellMeAboutItQuestion?.mediaUrl || null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    tellMeAboutItQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(tellMeAboutItQuestion?.points || 0);
-  
+
   const initialTime = tellMeAboutItQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState(tellMeAboutItQuestion?.maxAttempts || 1);
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
+  const [maxAttempts, setMaxAttempts] = useState(
+    tellMeAboutItQuestion?.maxAttempts || 1
+  );
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -111,29 +87,34 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
     formData.append("text", questionText);
     formData.append("instructions", instructions);
     formData.append("content", content);
-    
+
     if (imageFile) {
       formData.append("media", imageFile);
     }
 
-    const totalSeconds = (timeMinutes * 60) + timeSeconds;
+    const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
       formData.append("timeLimit", totalSeconds.toString());
     }
-    
+
     formData.append("points", points.toString());
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "SPEAKING");
 
-    if (tellMeAboutItQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    if (existingQuestion) {
+      updateMutation.mutate({
+        endpoint: "/questions/tell_me_about_it",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/tell_me_about_it",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -142,15 +123,17 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }
@@ -160,7 +143,9 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
     <div className="space-y-6 p-4">
       <div className="flex justify-between items-center border-b pb-4">
         <h2 className="text-xl font-bold text-gray-800">
-          {existingQuestion ? "Edit Tell Me About It Question" : "Create Tell Me About It Question"}
+          {existingQuestion
+            ? "Edit Tell Me About It Question"
+            : "Create Tell Me About It Question"}
         </h2>
         <div className="flex gap-2">
           <Button
@@ -177,9 +162,15 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {existingQuestion ? "Update Question" : "Save Question"}
+              </>
             )}
           </Button>
         </div>

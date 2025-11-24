@@ -5,11 +5,15 @@ import { useToast } from "@/hooks/use-toast";
 import WordBox from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordBox";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { WordBoxQuestion, WordBoxPayload } from "./types";
+import { isAxiosError } from "axios";
 
 interface WordBoxWrapperProps {
   existingQuestion?: Question;
@@ -33,7 +37,9 @@ export default function WordBoxWrapper({
   );
 
   // Use fresh data if available, otherwise use prop data
-  const wordBoxQuestion = (freshQuestionData || existingQuestion) as WordBoxQuestion | undefined;
+  const wordBoxQuestion = (freshQuestionData || existingQuestion) as
+    | WordBoxQuestion
+    | undefined;
 
   // Initialize State with question data or defaults
   const [questionText, setQuestionText] = useState(
@@ -125,13 +131,15 @@ export default function WordBoxWrapper({
             });
             if (onSuccess) onSuccess();
           },
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to update question",
-              variant: "destructive",
-            });
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
           },
         }
       );
@@ -152,13 +160,15 @@ export default function WordBoxWrapper({
             });
             if (onSuccess) onSuccess();
           },
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
           },
         }
       );

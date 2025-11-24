@@ -15,7 +15,7 @@ import type {
   Question,
   QuestionType,
   QuestionStage,
-} from '@/definitions/types/Question';
+} from '@/src/definitions/types/Question';
 
 // ==================== TYPES ====================
 
@@ -339,7 +339,6 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
             lastSync: new Map(),
             currentChallengeId: null,
             currentStage: null,
-            currentPhase: null,
             searchFilter: '',
             typeFilter: null,
             sortBy: 'position',
@@ -358,7 +357,6 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
           lastSync: Array.from(state.lastSync.entries()),
           currentChallengeId: state.currentChallengeId,
           currentStage: state.currentStage,
-          currentPhase: state.currentPhase,
         }),
       }
     ),
@@ -371,16 +369,15 @@ export const useChallengeQuestionsStore = create<ChallengeQuestionsState>()(
 // Convenience selectors for common operations
 export const useCurrentPhaseQuestions = () => {
   const store = useChallengeQuestionsStore();
-  const { currentChallengeId, currentStage, currentPhase } = store;
+  const { currentChallengeId, currentStage } = store;
 
-  if (!currentChallengeId || !currentStage || !currentPhase) {
+  if (!currentChallengeId || !currentStage) {
     return [];
   }
 
   return store.getFilteredQuestions(
     currentChallengeId,
-    currentStage,
-    currentPhase
+    currentStage
   );
 };
 

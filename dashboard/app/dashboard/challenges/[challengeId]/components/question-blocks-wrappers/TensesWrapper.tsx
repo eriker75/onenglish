@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import Tenses from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Tenses";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { TensesQuestion, TensesPayload } from "./types";
+import { isAxiosError } from "axios";
 
 interface TensesWrapperProps {
   existingQuestion?: Question;
@@ -18,52 +22,43 @@ interface TensesWrapperProps {
   onSuccess?: () => void;
 }
 
-export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }: TensesWrapperProps) {
+export default function TensesWrapper({
+  existingQuestion,
+  onCancel,
+  onSuccess,
+}: TensesWrapperProps) {
   const { toast } = useToast();
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to TensesQuestion for type safety
-  const tensesQuestion = (freshQuestionData || existingQuestion) as TensesQuestion | undefined;
+  const tensesQuestion = (freshQuestionData || existingQuestion) as
+    | TensesQuestion
+    | undefined;
 
-  const [questionText, setQuestionText] = useState(tensesQuestion?.question || "");
-  const [instructions, setInstructions] = useState(tensesQuestion?.instructions || "");
+  const [questionText, setQuestionText] = useState(
+    tensesQuestion?.question || ""
+  );
+  const [instructions, setInstructions] = useState(
+    tensesQuestion?.instructions || ""
+  );
   const [sentence, setSentence] = useState(tensesQuestion?.content || "");
-  const [options, setOptions] = useState<string[]>(tensesQuestion?.options || []);
-  const [correctAnswer, setCorrectAnswer] = useState(tensesQuestion?.answer || "");
+  const [options, setOptions] = useState<string[]>(
+    tensesQuestion?.options || []
+  );
+  const [correctAnswer, setCorrectAnswer] = useState(
+    tensesQuestion?.answer || ""
+  );
   const [points, setPoints] = useState(tensesQuestion?.points || 0);
 
   const initialTime = tensesQuestion?.timeLimit || 0;
   const [timeMinutes, setTimeMinutes] = useState(Math.floor(initialTime / 60));
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
-  const [maxAttempts, setMaxAttempts] = useState(tensesQuestion?.maxAttempts || 1);
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
+  const [maxAttempts, setMaxAttempts] = useState(
+    tensesQuestion?.maxAttempts || 1
+  );
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -115,9 +110,9 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
       options: options,
       answer: correctAnswer,
       points,
-      timeLimit: (timeMinutes * 60) + timeSeconds,
+      timeLimit: timeMinutes * 60 + timeSeconds,
       maxAttempts,
-      stage: "GRAMMAR"
+      stage: "GRAMMAR",
     };
 
     if (existingQuestion) {
@@ -127,7 +122,7 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
           questionId: existingQuestion.id,
           data: payload,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -136,15 +131,17 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to update question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     } else {
@@ -153,7 +150,7 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
           endpoint: "/questions/create/tenses",
           data: payload,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -162,15 +159,17 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }
@@ -197,9 +196,15 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
             className="bg-[#44b07f] hover:bg-[#3a966b] text-white"
           >
             {isPending ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
             ) : (
-              <><Save className="mr-2 h-4 w-4" />{existingQuestion ? "Update Question" : "Save Question"}</>
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                {existingQuestion ? "Update Question" : "Save Question"}
+              </>
             )}
           </Button>
         </div>

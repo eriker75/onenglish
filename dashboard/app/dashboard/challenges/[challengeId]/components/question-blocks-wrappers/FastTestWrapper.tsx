@@ -5,12 +5,16 @@ import { useToast } from "@/hooks/use-toast";
 
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { FastTestQuestion, FastTestPayload } from "./types";
 import FastTest from "../question-blocks/FastTest";
+import { isAxiosError } from "axios";
 
 interface FastTestWrapperProps {
   existingQuestion?: Question;
@@ -28,10 +32,11 @@ export default function FastTestWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to FastTestQuestion for type safety
-  const fastTestQuestion = (freshQuestionData || existingQuestion) as FastTestQuestion | undefined;
+  const fastTestQuestion = (freshQuestionData || existingQuestion) as
+    | FastTestQuestion
+    | undefined;
 
   const [questionText, setQuestionText] = useState(
     existingQuestion?.question || ""
@@ -56,32 +61,6 @@ export default function FastTestWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     fastTestQuestion?.maxAttempts || 1
   );
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -136,7 +115,7 @@ export default function FastTestWrapper({
           questionId: existingQuestion.id,
           data: payload,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -145,15 +124,17 @@ export default function FastTestWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to update question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     } else {
@@ -162,7 +143,7 @@ export default function FastTestWrapper({
           endpoint: "/questions/create/fast_test",
           data: payload,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -171,15 +152,17 @@ export default function FastTestWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

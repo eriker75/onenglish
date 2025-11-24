@@ -9,8 +9,33 @@ import ChallengeForm from "@/app/dashboard/challenges/[challengeId]/components/C
 import QuestionTypeNavigation from "./components/QuestionTypeNavigation";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import { useChallenge, groupQuestionsByStage, useDeleteQuestion } from "@/src/hooks/useChallenge";
+import { useChallenge, useDeleteQuestion, Question } from "@/src/hooks/useChallenge";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+
+// Helper function to group questions by stage (flat structure)
+function flatGroupQuestionsByStage(questions: Question[]): { [key: string]: Question[] } {
+  const grouped: { [key: string]: Question[] } = {
+    Vocabulary: [],
+    Grammar: [],
+    Listening: [],
+    Writing: [],
+    Speaking: [],
+  };
+
+  questions.forEach((q) => {
+    const formatStage = (stage: string) => {
+      if (!stage) return "Vocabulary"; // Default fallback
+      return stage.charAt(0).toUpperCase() + stage.slice(1).toLowerCase();
+    };
+
+    const stageName = formatStage(q.stage || "");
+    if (grouped[stageName]) {
+      grouped[stageName].push(q);
+    }
+  });
+
+  return grouped;
+}
 
 export default function ChallengeEditPage() {
   const router = useRouter();
@@ -51,7 +76,7 @@ export default function ChallengeEditPage() {
 
   // Derive questionsByArea from React Query data
   const questionsByArea = challenge?.questions
-    ? groupQuestionsByStage(challenge.questions)
+    ? flatGroupQuestionsByStage(challenge.questions)
     : {
         Vocabulary: [],
         Grammar: [],

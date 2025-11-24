@@ -1,4 +1,3 @@
-export { useQuestionsByPhase } from './useQuestionsByPhase';
 export { useCreateQuestion } from './useCreateQuestion';
 export { useUpdateQuestion } from './useUpdateQuestion';
 export { useDeleteQuestion } from './useDeleteQuestion';

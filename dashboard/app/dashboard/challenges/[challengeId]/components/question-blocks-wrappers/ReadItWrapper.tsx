@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import ReadIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/ReadIt";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { ReadItQuestion, ReadItSubQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface Statement {
   id: string;
@@ -30,13 +34,15 @@ export default function ReadItWrapper({
   onSuccess,
 }: ReadItWrapperProps) {
   const { toast } = useToast();
-  // Cast existingQuestion to ReadItQuestion for type safety
-  const readItQuestion = (freshQuestionData || existingQuestion) as ReadItQuestion | undefined;
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
+
+  // Cast existingQuestion to ReadItQuestion for type safety
+  const readItQuestion = (freshQuestionData || existingQuestion) as
+    | ReadItQuestion
+    | undefined;
 
   const [questionText, setQuestionText] = useState(
     existingQuestion?.question || ""
@@ -46,23 +52,25 @@ export default function ReadItWrapper({
   );
 
   // Parse content (PassageDto[]) to get paragraph
-  // Parse content (PassageDto[]) to get paragraph
   const initialParagraph =
-    readItQuestion?.content && readItQuestion.content
-      ? readItQuestion.content
-      : "";
+    readItQuestion?.content &&
+    Array.isArray(readItQuestion.content) &&
+    readItQuestion.content.length > 0
+      ? readItQuestion.content[0]?.text || ""
+      : typeof readItQuestion?.content === "string"
+        ? readItQuestion.content
+        : "";
   const [paragraph, setParagraph] = useState<string>(initialParagraph);
 
   // Parse subQuestions to get statements
   // We need to map subQuestions back to Statement[] format
-  const initialStatements: Statement[] =
-    readItQuestion?.subQuestions?.map(
-      (sq: ReadItSubQuestion, index: number) => ({
-        id: sq.id || String(index),
-        text: sq.content || "", // subQuestion content is the statement text
-        correct: sq.correct || false, // Assuming answer is boolean or string boolean
-      })
-    ) || [{ id: "1", text: "", correct: true }];
+  const initialStatements: Statement[] = readItQuestion?.subQuestions?.map(
+    (sq: ReadItSubQuestion, index: number) => ({
+      id: sq.id || String(index),
+      text: sq.content || "", // subQuestion content is the statement text
+      correct: sq.correct || false, // Assuming answer is boolean or string boolean
+    })
+  ) || [{ id: "1", text: "", correct: true }];
 
   const [statements, setStatements] = useState<Statement[]>(initialStatements);
 
@@ -76,48 +84,6 @@ export default function ReadItWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     readItQuestion?.maxAttempts || 1
   );
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Reading comprehension question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Reading comprehension question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -162,7 +128,7 @@ export default function ReadItWrapper({
     const contentPayload = [
       {
         text: paragraph,
-
+      },
     ];
     formData.append("content", JSON.stringify(contentPayload));
 
@@ -189,14 +155,19 @@ export default function ReadItWrapper({
     formData.append("stage", "READING");
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+      updateMutation.mutate({
+        endpoint: "/questions/read_it",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/read_it",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -205,15 +176,17 @@ export default function ReadItWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

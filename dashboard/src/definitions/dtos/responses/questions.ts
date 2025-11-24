@@ -8,7 +8,7 @@ import {
   QuestionStage,
   ValidationMethod,
   QuestionType,
-} from '@/definitions/types/Question';
+} from '../../types/Question';
 
 // ==================== MAIN RESPONSE DTO ====================
 

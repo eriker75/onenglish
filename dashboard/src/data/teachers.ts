@@ -8,7 +8,7 @@ export const teachers: Teacher[] = [
     phone: "+58 412-1234567",
     birthDate: "1978-05-15",
     school: "School Bolivariano Andrés Bello",
-    liceoType: "Bilingüe",
+    schoolType: "bilingual",
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const teachers: Teacher[] = [
     phone: "+58 414-2345678",
     birthDate: "1990-03-22",
     school: "U.E. Juan XXIII",
-    liceoType: "Regular",
+    schoolType: "regular",
   },
   {
     id: 3,
@@ -26,7 +26,7 @@ export const teachers: Teacher[] = [
     phone: "+58 416-3456789",
     birthDate: "1985-09-10",
     school: "Colegio Emmanuel",
-    liceoType: "Bilingüe",
+    schoolType: "bilingual",
   },
   {
     id: 4,
@@ -35,7 +35,7 @@ export const teachers: Teacher[] = [
     phone: "+58 412-4567890",
     birthDate: "1972-11-28",
     school: "School Bolivariano Andrés Bello",
-    liceoType: "Bilingüe",
+    schoolType: "bilingual",
   },
   {
     id: 5,
@@ -44,7 +44,7 @@ export const teachers: Teacher[] = [
     phone: "+58 414-5678901",
     birthDate: "1995-07-04",
     school: "Colegio Emmanuel",
-    liceoType: "Bilingüe",
+    schoolType: "bilingual",
   },
   {
     id: 6,
@@ -53,6 +53,6 @@ export const teachers: Teacher[] = [
     phone: "+58 416-6789012",
     birthDate: "1988-12-17",
     school: "U.E. Juan XXIII",
-    liceoType: "Regular",
+    schoolType: "regular",
   },
 ];

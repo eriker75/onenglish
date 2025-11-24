@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import LyricsTraining from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/LyricsTraining";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { LyricsTrainingQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface LyricsTrainingWrapperProps {
   existingQuestion?: Question;
@@ -28,7 +32,6 @@ export default function LyricsTrainingWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to LyricsTrainingQuestion for type safety
   const lyricsTrainingQuestion = existingQuestion as
@@ -97,32 +100,6 @@ export default function LyricsTrainingWrapper({
       setMaxAttempts(lyricsTrainingQuestion.maxAttempts || 1);
     }
   }
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -196,14 +173,19 @@ export default function LyricsTrainingWrapper({
     formData.append("stage", "LISTENING");
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+      updateMutation.mutate({
+        endpoint: "/questions/lyrics_training",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/lyrics_training",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -212,15 +194,17 @@ export default function LyricsTrainingWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

@@ -49,6 +49,9 @@ export interface SpellingPayload {
 export interface WordAssociationsQuestion extends Question, BaseQuestionData {
   words?: string[];
   correctWord?: string;
+  content?: string;          // Add for compatibility
+  maxAssociations?: number;  // Add for compatibility
+  mediaUrl?: string;          // Add for compatibility
 }
 
 export interface WordAssociationsPayload {
@@ -106,6 +109,8 @@ export interface TensesPayload {
 export interface TagItQuestion extends Question, BaseQuestionData {
   text?: string;
   tags?: Array<{ word: string; tag: string }>;
+  content?: string[] | any;  // Add for compatibility with wrapper
+  answer?: string[] | any;    // Add for compatibility with wrapper
 }
 
 export interface TagItPayload {
@@ -174,6 +179,9 @@ export interface ReadItPayload {
 // WordMatch specific types
 export interface WordMatchQuestion extends Question, BaseQuestionData {
   pairs?: Array<{ word: string; match: string }>;
+  audioUrl?: string;  // Add for compatibility
+  options?: string[];  // Add for compatibility
+  answer?: string;     // Add for compatibility
 }
 
 export interface WordMatchPayload {
@@ -302,6 +310,7 @@ export interface FastTestPayload {
 // Tales specific types
 export interface TalesQuestion extends Question, BaseQuestionData {
   story?: string;
+  mediaUrl?: string;  // Add for compatibility
   questions?: Array<{
     question: string;
     options: string[];
@@ -347,6 +356,8 @@ export interface SuperBrainPayload {
 export interface TellMeAboutItQuestion extends Question, BaseQuestionData {
   topic?: string;
   prompts?: string[];
+  content?: string;   // Add for compatibility
+  mediaUrl?: string;  // Add for compatibility
 }
 
 export interface TellMeAboutItPayload {

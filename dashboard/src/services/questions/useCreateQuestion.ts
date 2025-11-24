@@ -1,106 +1,29 @@
 /**
- * Hook to create a question with optimistic updates
- * Supports all 19 question types
+ * Hook to create a question
+ * DEPRECATED: Use useCreateQuestion from @/src/hooks/useQuestionMutations instead
+ * This file is kept for backwards compatibility but should not be used
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createQuestion } from '@/src/requests/questions';
-import { QUERY_KEYS } from '@/src/definitions/constants/QUERY_KEYS';
-import { QuestionType, Question } from '@/src/definitions/types/Question';
-import { useChallengeQuestionsStore } from '@/src/stores/challenge-questions.store';
+import { QuestionType } from '@/src/definitions/types/Question';
 import { toast } from 'sonner';
 
 export const useCreateQuestion = (type: QuestionType) => {
   const queryClient = useQueryClient();
-  const store = useChallengeQuestionsStore();
-  const { currentStage, currentChallengeId } = store;
 
   return useMutation({
     mutationFn: async (data: FormData | Record<string, unknown>) => {
       return await createQuestion(type, data);
     },
 
-    // ⭐ OPTIMISTIC UPDATE
-    onMutate: async (newQuestionData) => {
-      // Cancel outgoing queries to prevent overwriting optimistic update
-      if (currentChallengeId && currentStage) {
-        const queryKey = QUERY_KEYS.byStage(
-          currentChallengeId,
-          currentStage
-        );
-        await queryClient.cancelQueries({ queryKey });
-      }
-
-      // Snapshot previous value for rollback
-      const previousQuestions = currentChallengeId && currentStage
-        ? queryClient.getQueryData(
-            QUERY_KEYS.byStage(currentChallengeId, currentStage)
-          )
-        : undefined;
-
-      // Create optimistic question with temp ID
-      const tempQuestion: Question = {
-        id: `temp-${Date.now()}`,
-        challengeId: currentChallengeId || '',
-        stage: currentStage!,
-        position: 0, // Backend will assign actual position
-        type,
-        points: 0, // Will be set from data
-        timeLimit: 60,
-        maxAttempts: 1,
-        text: 'Creating question...',
-        instructions: '',
-        validationMethod: 'AUTO' as any,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      // Add to Zustand cache immediately
-      store.addQuestionToCache(tempQuestion);
-
-      // Return context for error rollback
-      return { previousQuestions, tempQuestion };
-    },
-
-    // ⭐ SUCCESS: Replace temp ID with real ID
-    onSuccess: (serverQuestion, variables, context) => {
-      // Remove temp question from cache
-      if (context?.tempQuestion) {
-        store.removeQuestionFromCache(context.tempQuestion.id);
-      }
-
-      // Add real question from server
-      store.addQuestionToCache(serverQuestion);
-
-      // Invalidate to re-fetch fresh data
-      if (currentChallengeId && currentStage) {
-        queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.byStage(
-            currentChallengeId,
-            currentStage
-          ),
-        });
-      }
-
+    onSuccess: () => {
       toast.success('Question created successfully');
+      // Invalidate all challenge queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['challenge'] });
     },
 
-    // ⭐ ERROR: Rollback optimistic update
-    onError: (error, variables, context) => {
-      // Remove temp question
-      if (context?.tempQuestion) {
-        store.removeQuestionFromCache(context.tempQuestion.id);
-      }
-
-      // Restore previous state in React Query cache
-      if (context?.previousQuestions && currentChallengeId && currentStage) {
-        const queryKey = QUERY_KEYS.byStage(
-          currentChallengeId,
-          currentStage
-        );
-        queryClient.setQueryData(queryKey, context.previousQuestions);
-      }
-
+    onError: (error) => {
       const errorMessage =
         (error as any)?.response?.data?.message ||
         (error as Error)?.message ||
@@ -108,17 +31,6 @@ export const useCreateQuestion = (type: QuestionType) => {
 
       toast.error(`Error creating question: ${errorMessage}`);
       console.error('Create question error:', error);
-    },
-
-    // ⭐ SETTLED: Always run cleanup
-    onSettled: (data, error, variables, context) => {
-      // Sync to localStorage
-      store.syncToLocalStorage();
-
-      // Log for debugging
-      if (error) {
-        console.error('Create question settled with error:', error);
-      }
     },
   });
 };

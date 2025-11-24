@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import Tales from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Tales";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { TalesQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface TalesWrapperProps {
   existingQuestion?: Question;
@@ -28,10 +32,11 @@ export default function TalesWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to TalesQuestion for type safety
-  const talesQuestion = (freshQuestionData || existingQuestion) as TalesQuestion | undefined;
+  const talesQuestion = (freshQuestionData || existingQuestion) as
+    | TalesQuestion
+    | undefined;
 
   // Extract example story from instructions if possible
   // This assumes a specific format: "instructions\n\nExample Story:\nexampleStory"
@@ -57,49 +62,6 @@ export default function TalesWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     talesQuestion?.maxAttempts || 1
   );
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Tales question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Tales question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -151,15 +113,20 @@ export default function TalesWrapper({
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "WRITING");
 
-    if (talesQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    if (existingQuestion) {
+      updateMutation.mutate({
+        endpoint: "/questions/tales",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/tales",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -168,15 +135,17 @@ export default function TalesWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import SentenceMaker from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/SentenceMaker";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { SentenceMakerQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface SentenceMakerWrapperProps {
   existingQuestion?: Question;
@@ -28,7 +32,6 @@ export default function SentenceMakerWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to SentenceMakerQuestion for type safety
   const sentenceMakerQuestion = existingQuestion as
@@ -52,32 +55,6 @@ export default function SentenceMakerWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     sentenceMakerQuestion?.maxAttempts || 1
   );
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -126,15 +103,20 @@ export default function SentenceMakerWrapper({
     formData.append("maxAttempts", maxAttempts.toString());
     formData.append("stage", "WRITING");
 
-    if (sentenceMakerQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+    if (existingQuestion) {
+      updateMutation.mutate({
+        endpoint: "/questions/sentence_maker",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/sentence_maker",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -143,15 +125,17 @@ export default function SentenceMakerWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

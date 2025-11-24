@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import TopicBasedAudio from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TopicBasedAudio";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { TopicBasedAudioQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface SubQuestion {
   id: string;
@@ -36,7 +40,6 @@ export default function TopicBasedAudioWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to TopicBasedAudioQuestion for type safety
   const topicBasedAudioQuestion = existingQuestion as
@@ -72,33 +75,6 @@ export default function TopicBasedAudioWrapper({
   );
 
   // Mutation
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error creating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -177,14 +153,19 @@ export default function TopicBasedAudioWrapper({
     formData.append("maxAttempts", maxAttempts.toString());
 
     if (topicBasedAudioQuestion && existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+      updateMutation.mutate({
+        endpoint: "/questions/topic_based_audio",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/topic_based_audio",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -193,15 +174,17 @@ export default function TopicBasedAudioWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }

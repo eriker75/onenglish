@@ -6,11 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 import Spelling from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Spelling";
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
-import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
+import {
+  useCreateQuestion,
+  useUpdateQuestion,
+} from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
 import { SpellingQuestion } from "./types";
+import { isAxiosError } from "axios";
 
 interface SpellingWrapperProps {
   existingQuestion?: Question;
@@ -28,10 +32,11 @@ export default function SpellingWrapper({
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
-  
 
   // Cast existingQuestion to SpellingQuestion for type safety
-  const spellingQuestion = (freshQuestionData || existingQuestion) as SpellingQuestion | undefined;
+  const spellingQuestion = (freshQuestionData || existingQuestion) as
+    | SpellingQuestion
+    | undefined;
 
   // State
   const [questionText, setQuestionText] = useState(
@@ -52,51 +57,6 @@ export default function SpellingWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     spellingQuestion?.maxAttempts || 1
   );
-
-  // Mutation
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Spelling question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error creating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-
-  });
-
-  
-      return response.data;
-
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Spelling question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-
-  });
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
@@ -150,14 +110,19 @@ export default function SpellingWrapper({
     formData.append("maxAttempts", maxAttempts.toString());
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
+      updateMutation.mutate({
+        endpoint: "/questions/spelling",
+        questionId: existingQuestion.id,
+        data: formData,
+        challengeId,
+      });
     } else {
       createMutation.mutate(
         {
           endpoint: "/questions/create/spelling",
           data: formData,
           challengeId,
-
+        },
         {
           onSuccess: () => {
             toast({
@@ -166,15 +131,17 @@ export default function SpellingWrapper({
               variant: "default",
             });
             if (onSuccess) onSuccess();
-
-          onError: (error: any) => {
-            toast({
-              title: "Error",
-              description:
-                error.response?.data?.message || "Failed to create question",
-              variant: "destructive",
-            });
-
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to create question",
+                variant: "destructive",
+              });
+            }
+          },
         }
       );
     }
