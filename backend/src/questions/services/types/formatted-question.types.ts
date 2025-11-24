@@ -68,19 +68,19 @@ export interface EnrichedQuestion extends BaseQuestionFields {
 
 export interface FormattedImageToMultipleChoicesQuestion
   extends Omit<BaseQuestionFields, 'configurations'> {
-  image: MediaFile | null;
+  image: string | null;
   options: string[];
   answer: string;
 }
 
 export interface FormattedSpellingQuestion
   extends Omit<BaseQuestionFields, 'configurations'> {
-  image: MediaFile | null;
+  image: string | null;
   answer: string;
 }
 
 export interface FormattedWordMatchQuestion extends BaseQuestionFields {
-  audio: MediaFile | null;
+  audio: string | null;
   options: string[];
   answer: string;
 }
@@ -97,7 +97,7 @@ export interface FormattedWordboxQuestion
 
 export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
   centralWord: string;
-  image: MediaFile | null; // Optional reference image
+  image: string | null; // Optional reference image URL
   maxAssociations: number; // Maximum number of associations for scoring
 }
 
@@ -106,7 +106,7 @@ export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
 export interface FormattedUnscrambleQuestion extends BaseQuestionFields {
   scrambledWords: string[];
   correctSentence: string;
-  image: MediaFile | null;
+  image: string | null;
 }
 
 export interface FormattedFillInTheBlankQuestion extends BaseQuestionFields {
@@ -127,12 +127,12 @@ export interface FormattedVerbConjugationQuestion extends BaseQuestionFields {
 
 export interface FormattedGossipQuestion
   extends Omit<BaseQuestionFields, 'configurations'> {
-  audio: MediaFile | null;
+  audio: string | null;
   answer: string;
 }
 
 export interface FormattedTopicBasedAudioQuestion extends BaseQuestionFields {
-  audio: MediaFile | null;
+  audio: string | null;
   subQuestions: FormattedQuestion[];
 }
 
@@ -145,7 +145,7 @@ export interface FormattedTopicBasedAudioSubquestion
 }
 
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
-  video: MediaFile | null;
+  video: string | null;
   options: string[];
   answer: string;
 }
@@ -153,24 +153,24 @@ export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
 // ==================== WRITING FORMATTED QUESTIONS ====================
 
 export interface FormattedSentenceMakerQuestion extends BaseQuestionFields {
-  images: MediaFile[];
+  images: string[];
 }
 
 export interface FormattedTalesQuestion extends BaseQuestionFields {
-  image: MediaFile | null;
+  image: string | null;
 }
 
 export interface FormattedTagItQuestion extends BaseQuestionFields {
   content: string[]; // Sentence parts (e.g., ["He is responsible for the project,", "?"])
   answer: string[]; // Multiple acceptable answers (e.g., ["isn't he", "is not he"])
-  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
+  image: string | null; // Optional reference image URL
 }
 
 // ==================== SPEAKING FORMATTED QUESTIONS ====================
 
 export interface FormattedReadItQuestion extends BaseQuestionFields {
   content: string; // Reading passage text
-  image: MediaFile | null; // Optional reference image
+  image: string | null; // Optional reference image URL
   subQuestions: FormattedQuestion[];
 }
 
@@ -182,15 +182,15 @@ export interface FormattedReadItSubquestion extends BaseQuestionFields {
 }
 
 export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
-  image: MediaFile | null;
-  video: MediaFile | null;
+  image: string | null;
+  video: string | null;
   prompt: string;
   minDuration: number;
 }
 
 export interface FormattedReportItQuestion extends BaseQuestionFields {
   content: string; // Direct speech sentence to convert
-  image: MediaFile | null; // Optional reference image (PNG with transparency recommended)
+  image: string | null; // Optional reference image URL
 }
 
 export interface FormattedDebateQuestion extends BaseQuestionFields {
@@ -209,14 +209,14 @@ export interface FormattedFastTestQuestion extends BaseQuestionFields {
 
 export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
   content: string;
-  image: MediaFile | null;
+  image: string | null;
 }
 
 export interface FormattedTensesQuestion extends BaseQuestionFields {
   content: string; // Sentence to identify tense from
   options: string[]; // Tense options
   answer: string; // Correct tense
-  image: MediaFile | null; // Optional reference image
+  image: string | null; // Optional reference image URL
 }
 
 // ==================== DEFAULT FORMATTED QUESTION ====================
@@ -225,7 +225,11 @@ export interface FormattedDefaultQuestion extends BaseQuestionFields {
   content?: any;
   options?: any;
   answer?: any;
-  media: MediaFile[];
+  image?: string | null;
+  audio?: string | null;
+  video?: string | null;
+  images?: string[];
+  audios?: string[];
   subQuestions: FormattedQuestion[];
 }
 

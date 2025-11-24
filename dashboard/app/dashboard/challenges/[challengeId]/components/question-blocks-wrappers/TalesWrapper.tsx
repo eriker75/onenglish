@@ -51,7 +51,7 @@ export default function TalesWrapper({
   const [instructions, setInstructions] = useState(initialInstructions);
   const [exampleStory, setExampleStory] = useState(initialExampleStory);
   const [imageUrl, setImageUrl] = useState<string | null>(
-    talesQuestion?.mediaUrl || null
+    talesQuestion?.image || talesQuestion?.mediaUrl || null
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(talesQuestion?.points || 0);

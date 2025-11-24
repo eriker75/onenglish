@@ -61,7 +61,9 @@ export default function LyricsTrainingWrapper({
     initialInstructions.cleanInstructions
   );
   const [hint, setHint] = useState(initialInstructions.hint);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null); // Used for preview
+  const [videoUrl, setVideoUrl] = useState<string | null>(
+    lyricsTrainingQuestion?.video || lyricsTrainingQuestion?.audio || lyricsTrainingQuestion?.mediaUrl || null
+  ); // Used for preview
   const [videoFile, setVideoFile] = useState<File | null>(null); // Used for upload
   const [options, setOptions] = useState<string[]>(
     lyricsTrainingQuestion?.options || ["", "", ""]

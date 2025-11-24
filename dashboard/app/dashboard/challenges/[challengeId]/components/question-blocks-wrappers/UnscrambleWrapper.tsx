@@ -59,7 +59,9 @@ export default function UnscrambleWrapper({
   const [correctSentence, setCorrectSentence] = useState(
     initialCorrectSentence
   );
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    unscrambleQuestion?.image || unscrambleQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(unscrambleQuestion?.points || 0);
 
@@ -213,7 +215,7 @@ export default function UnscrambleWrapper({
         instructions={instructions}
         words={scrambledWords}
         correctSentence={correctSentence}
-        imageUrl={imageUrl ?? undefined}
+        imageUrl={imageUrl || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

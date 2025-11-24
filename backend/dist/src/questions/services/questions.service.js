@@ -916,7 +916,34 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             orderBy: { position: 'asc' },
         });
         const enrichedQuestions = questions.map((question) => this.questionMediaService.enrichQuestionWithMedia(question));
-        return this.questionFormatterService.formatQuestions(enrichedQuestions);
+        const formattedQuestions = this.questionFormatterService.formatQuestions(enrichedQuestions);
+        if (!filters?.stage && !filters?.type) {
+            const groupedByStage = {};
+            formattedQuestions.forEach((question) => {
+                const stage = question.stage;
+                const type = question.type;
+                if (!groupedByStage[stage]) {
+                    groupedByStage[stage] = {};
+                }
+                if (!groupedByStage[stage][type]) {
+                    groupedByStage[stage][type] = [];
+                }
+                groupedByStage[stage][type].push(question);
+            });
+            return groupedByStage;
+        }
+        if (filters?.stage && !filters?.type) {
+            const groupedByType = {};
+            formattedQuestions.forEach((question) => {
+                const type = question.type;
+                if (!groupedByType[type]) {
+                    groupedByType[type] = [];
+                }
+                groupedByType[type].push(question);
+            });
+            return groupedByType;
+        }
+        return formattedQuestions;
     }
     async findOne(id) {
         const question = await this.prisma.question.findUnique({

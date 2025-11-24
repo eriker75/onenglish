@@ -24,7 +24,7 @@ export declare class QuestionsController {
     createTellMeAboutIt(dto: QuestionDtos.CreateTellMeAboutItDto): Promise<import("../services").FormattedQuestion | null>;
     createDebate(dto: QuestionDtos.CreateDebateDto): Promise<import("../services").FormattedQuestion | null>;
     findAll(challengeId?: string, stage?: QuestionStage): Promise<import("../services").FormattedQuestion[]>;
-    findByChallengeId(challengeId: string, stage?: QuestionStage, type?: string): Promise<import("../services").FormattedQuestion[]>;
+    findByChallengeId(challengeId: string, stage?: QuestionStage, type?: string): Promise<import("../services").FormattedQuestion[] | Record<string, import("../services").FormattedQuestion[]> | Record<string, Record<string, import("../services").FormattedQuestion[]>>>;
     getSchoolStats(schoolId: string, questionId?: string): Promise<{
         questionId: string;
         questionText: string;

@@ -1,6 +1,11 @@
 import { EnrichedQuestion, FormattedQuestion } from './types';
+import { FileService } from '../../files/services/file.service';
 export declare class QuestionFormatterService {
+    private readonly fileService;
+    constructor(fileService: FileService);
     private getConfigurationsIfNotEmpty;
+    private getMediaUrl;
+    private getMediaUrls;
     private removeNullFields;
     formatQuestion(question: EnrichedQuestion): FormattedQuestion | null;
     private formatQuestionInternal;

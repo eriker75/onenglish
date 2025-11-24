@@ -32,4 +32,5 @@ export declare class FileService {
     private cleanupBackup;
     private verifyFileExists;
     getFileUrl(type: string, filename: string): string;
+    getFullUrl(pathOrUrl: string | null | undefined): string | null;
 }

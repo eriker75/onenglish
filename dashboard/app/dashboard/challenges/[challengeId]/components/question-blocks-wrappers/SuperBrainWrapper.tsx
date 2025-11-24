@@ -45,7 +45,9 @@ export default function SuperBrainWrapper({
     superBrainQuestion?.instructions || ""
   );
   const [content, setContent] = useState(superBrainQuestion?.content || "");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    superBrainQuestion?.image || superBrainQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null); // Not used for upload currently
   const [points, setPoints] = useState(superBrainQuestion?.points || 0);
@@ -179,7 +181,7 @@ export default function SuperBrainWrapper({
         question={questionText}
         instructions={instructions}
         content={content}
-        imageUrl={imageUrl ?? undefined}
+        imageUrl={imageUrl || undefined}
         audioUrl={audioUrl ?? undefined}
         points={points}
         timeMinutes={timeMinutes}

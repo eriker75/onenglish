@@ -47,7 +47,9 @@ export default function ReportItWrapper({
   const [originalSentence, setOriginalSentence] = useState(
     reportItQuestion?.content || ""
   );
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    reportItQuestion?.image || reportItQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(reportItQuestion?.points || 0);
 

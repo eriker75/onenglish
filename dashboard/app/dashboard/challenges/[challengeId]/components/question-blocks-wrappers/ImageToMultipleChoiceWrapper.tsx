@@ -201,6 +201,7 @@ export default function ImageToMultipleChoiceWrapper({
         question={questionText}
         options={options}
         correctAnswer={correctAnswer}
+        imageUrl={imageQuestion?.image || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

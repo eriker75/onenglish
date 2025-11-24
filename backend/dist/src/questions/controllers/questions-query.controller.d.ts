@@ -4,7 +4,7 @@ export declare class QuestionsQueryController {
     private readonly questionsService;
     constructor(questionsService: QuestionsService);
     findAll(challengeId?: string, stage?: QuestionStage): Promise<import("../services").FormattedQuestion[]>;
-    findByChallengeId(challengeId: string, stage?: QuestionStage, type?: string): Promise<import("../services").FormattedQuestion[]>;
+    findByChallengeId(challengeId: string, stage?: QuestionStage, type?: string): Promise<import("../services").FormattedQuestion[] | Record<string, import("../services").FormattedQuestion[]> | Record<string, Record<string, import("../services").FormattedQuestion[]>>>;
     getSchoolStats(schoolId: string, questionId?: string): Promise<{
         questionId: string;
         questionText: string;

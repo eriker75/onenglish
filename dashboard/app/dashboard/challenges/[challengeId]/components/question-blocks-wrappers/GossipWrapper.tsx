@@ -57,10 +57,9 @@ export default function GossipWrapper({
     gossipQuestion?.answer || ""
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  // Note: We might need to handle existing media URL if we want to show it,
-  // but `Gossip` component might need an update to accept `audioUrl` if it doesn't already.
-  // Looking at previous usage: `Gossip` does NOT seem to take `audioUrl`. It takes `onAudioFileChange`.
-  // If editing, we might want to show the existing audio.
+  const [audioUrl] = useState<string | null>(
+    gossipQuestion?.audio || gossipQuestion?.mediaUrl || null
+  );
 
   const [points, setPoints] = useState(gossipQuestion?.points || 0);
 

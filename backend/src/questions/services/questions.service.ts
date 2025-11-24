@@ -13,6 +13,7 @@ import {
   getDefaultText,
   getDefaultInstructions,
 } from '../helpers';
+import { FormattedQuestion } from './types';
 
 @Injectable()
 export class QuestionsService {
@@ -1360,14 +1361,13 @@ export class QuestionsService {
     await this.validateChallenge(challengeId);
 
     // Build where clause conditionally - all filters must match (AND logic)
-    // Each filter is exclusive: if provided, it MUST match exactly
     const where: Prisma.QuestionWhereInput = {
       challengeId,
       parentQuestionId: null,
       deletedAt: null,
     };
 
-    // Apply filters only if they have valid values - all filters use AND logic
+    // Apply filters only if they have valid values
     if (filters?.stage) {
       where.stage = filters.stage;
     }
@@ -1403,7 +1403,7 @@ export class QuestionsService {
         },
         challenge: true,
       },
-      orderBy: { position: 'asc' }, // Order by position from 0 to n
+      orderBy: { position: 'asc' },
     });
 
     // Enrich all questions with media and configurations (including subQuestions recursively)
@@ -1412,7 +1412,53 @@ export class QuestionsService {
     );
 
     // Format each question based on its type
-    return this.questionFormatterService.formatQuestions(enrichedQuestions);
+    const formattedQuestions =
+      this.questionFormatterService.formatQuestions(enrichedQuestions);
+
+    // Case 1: Only challengeId - group by stage, then by type
+    if (!filters?.stage && !filters?.type) {
+      const groupedByStage: Record<
+        string,
+        Record<string, FormattedQuestion[]>
+      > = {};
+
+      formattedQuestions.forEach((question) => {
+        const stage = question.stage;
+        const type = question.type;
+
+        if (!groupedByStage[stage]) {
+          groupedByStage[stage] = {};
+        }
+
+        if (!groupedByStage[stage][type]) {
+          groupedByStage[stage][type] = [];
+        }
+
+        groupedByStage[stage][type].push(question);
+      });
+
+      return groupedByStage;
+    }
+
+    // Case 2: challengeId + stage - group by type
+    if (filters?.stage && !filters?.type) {
+      const groupedByType: Record<string, FormattedQuestion[]> = {};
+
+      formattedQuestions.forEach((question) => {
+        const type = question.type;
+
+        if (!groupedByType[type]) {
+          groupedByType[type] = [];
+        }
+
+        groupedByType[type].push(question);
+      });
+
+      return groupedByType;
+    }
+
+    // Case 3: challengeId + stage + type - return array of questions
+    return formattedQuestions;
   }
 
   async findOne(id: string) {

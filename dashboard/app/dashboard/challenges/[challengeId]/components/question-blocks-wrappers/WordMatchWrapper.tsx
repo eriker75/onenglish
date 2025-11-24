@@ -44,7 +44,7 @@ export default function WordMatchWrapper({
     wordMatchQuestion?.instructions || ""
   );
   const [audioUrl, setAudioUrl] = useState<string | null>(
-    wordMatchQuestion?.audioUrl || null
+    wordMatchQuestion?.audio || wordMatchQuestion?.mediaUrl || null
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [options, setOptions] = useState<string[]>(
@@ -206,7 +206,7 @@ export default function WordMatchWrapper({
       <WordMatch
         question={questionText}
         instructions={instructions}
-        audioUrl={audioUrl ?? undefined}
+        audioUrl={audioUrl || undefined}
         options={options}
         correctAnswer={correctAnswer}
         points={points}

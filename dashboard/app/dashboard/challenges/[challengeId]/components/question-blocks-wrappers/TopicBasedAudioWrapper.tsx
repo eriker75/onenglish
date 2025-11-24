@@ -54,7 +54,7 @@ export default function TopicBasedAudioWrapper({
     topicBasedAudioQuestion?.instructions || ""
   );
   const [audioUrl] = useState<string | null>(
-    topicBasedAudioQuestion?.mediaUrl || null
+    topicBasedAudioQuestion?.audio || topicBasedAudioQuestion?.mediaUrl || null
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [subQuestions, setSubQuestions] = useState<SubQuestion[]>(

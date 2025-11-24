@@ -74,7 +74,9 @@ export default function ReadItWrapper({
 
   const [statements, setStatements] = useState<Statement[]>(initialStatements);
 
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    readItQuestion?.image || readItQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(readItQuestion?.points || 0);
 
@@ -235,7 +237,7 @@ export default function ReadItWrapper({
         instructions={instructions}
         paragraph={paragraph}
         statements={statements}
-        imageUrl={imageUrl ?? undefined}
+        imageUrl={imageUrl || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

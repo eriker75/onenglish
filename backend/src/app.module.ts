@@ -48,11 +48,18 @@ import { join } from 'path';
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
       serveStaticOptions: {
-        setHeaders: (res) => {
-          res.setHeader(
-            'Access-Control-Allow-Origin',
-            process.env.FRONTEND_URL,
-          );
+        setHeaders: (res, path, stat) => {
+          // In development, allow all origins
+          if (process.env.NODE_ENV === 'development') {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          } else {
+            // In production, use FRONTEND_URL or CORS_ORIGINS
+            const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [process.env.FRONTEND_URL];
+            res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0] || '*');
+          }
+          res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         },
       },
     }),

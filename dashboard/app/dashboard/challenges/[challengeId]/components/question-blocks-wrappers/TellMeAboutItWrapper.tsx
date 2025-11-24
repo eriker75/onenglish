@@ -46,7 +46,7 @@ export default function TellMeAboutItWrapper({
   );
   const [content, setContent] = useState(tellMeAboutItQuestion?.content || "");
   const [imageUrl, setImageUrl] = useState<string | null>(
-    tellMeAboutItQuestion?.mediaUrl || null
+    tellMeAboutItQuestion?.image || tellMeAboutItQuestion?.mediaUrl || null
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(tellMeAboutItQuestion?.points || 0);

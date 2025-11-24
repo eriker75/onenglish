@@ -6,6 +6,14 @@ export interface BaseQuestionData {
   points?: number;
   timeLimit?: number;
   maxAttempts?: number;
+  position?: number;
+  validationMethod?: string;
+
+  // Media URLs - Backend returns simple strings
+  image?: string;      // Path like "/uploads/image/xxx.png"
+  audio?: string;      // Path like "/uploads/audio/xxx.mp3"
+  video?: string;      // Path like "/uploads/video/xxx.mp4"
+  mediaUrl?: string;   // Legacy compatibility
 }
 
 // WordBox specific types
@@ -374,7 +382,6 @@ export interface TellMeAboutItPayload {
 // Debate specific types
 export interface DebateQuestion extends Question, BaseQuestionData {
   topic?: string;
-  position?: string;
   arguments?: string[];
   content?: string; // debate topic/content
   stance?: string; // random/for/against/support/oppose

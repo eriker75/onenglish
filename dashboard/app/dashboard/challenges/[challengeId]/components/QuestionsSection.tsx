@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
-import QuestionCard from "./QuestionCard";
 import QuestionTypeGrid from "./QuestionTypeGrid";
 import { QuestionType, questionTypesByArea } from "./questionTypes";
 import {
@@ -30,12 +29,30 @@ import { cn } from "@/lib/utils";
 
 export interface Question {
   id: string;
-  question?: string;  // Made optional to match backend type
+  question?: string;
+  text?: string;
   type: string;
   questionTypeName?: string;
   options?: string[];
   correctAnswer?: string;
-  stage?: string; // Stage name
+  answer?: string | string[];
+  stage?: string;
+  instructions?: string;
+  content?: unknown;
+  points?: number;
+  timeLimit?: number;
+  maxAttempts?: number;
+  position?: number;
+
+  // Media fields - Backend returns paths as strings
+  image?: string;
+  audio?: string;
+  video?: string;
+  mediaUrl?: string;
+
+  // Additional fields
+  subQuestions?: unknown[];
+  [key: string]: unknown; // Allow additional backend fields
 }
 
 export type QuestionFieldValue = string | string[] | Statement[] | undefined;
@@ -72,23 +89,29 @@ interface WrapperProps {
 }
 
 // Component map for mapping question types to their wrapper components
+// Keys match EXACTLY the backend question type names
 const wrapperMap: Record<string, React.ComponentType<WrapperProps>> = {
-  image_to_multiple_choice_text: ImageToMultipleChoiceWrapper,
+  // Vocabulary
+  image_to_multiple_choices: ImageToMultipleChoiceWrapper,
   wordbox: WordBoxWrapper,
   spelling: SpellingWrapper,
-  word_associations_with_text: WordAssociationsWrapper,
+  word_associations: WordAssociationsWrapper,
+  // Grammar
   unscramble: UnscrambleWrapper,
   tenses: TensesWrapper,
   tag_it: TagItWrapper,
   report_it: ReportItWrapper,
   read_it: ReadItWrapper,
+  // Listening
   word_match: WordMatchWrapper,
   gossip: GossipWrapper,
   topic_based_audio: TopicBasedAudioWrapper,
   lyrics_training: LyricsTrainingWrapper,
+  // Writing
   sentence_maker: SentenceMakerWrapper,
   fast_test: FastTestWrapper,
   tales: TalesWrapper,
+  // Speaking
   superbrain: SuperBrainWrapper,
   tell_me_about_it: TellMeAboutItWrapper,
   debate: DebateWrapper,
@@ -347,7 +370,7 @@ export default function QuestionsSection({
           />
         </div>
       ) : currentQuestion ? (
-        // Show current question - Use the same form component if available, otherwise QuestionCard
+        // Show current question - Use the same form component if available, otherwise show error message
         <div className="space-y-4">
           {EditQuestionComponent ? (
             // Use the Wrapper component for existing questions
@@ -386,23 +409,25 @@ export default function QuestionsSection({
               </div>
             </div>
           ) : (
-            // Fallback to QuestionCard for old questions
-            <QuestionCard
-              key={currentQuestion.id}
-              question={currentQuestion}
-              index={currentQuestionIndex}
-              area={area}
-              onRemove={() => {
-                onRemoveQuestion(area, currentQuestion.id);
-                // The useEffect will handle navigating to grid page after deletion
-              }}
-              onQuestionChange={(field, value) =>
-                onQuestionChange(area, currentQuestion.id, field, value)
-              }
-              onOptionChange={(optionIndex, value) =>
-                onOptionChange(area, currentQuestion.id, optionIndex, value)
-              }
-            />
+            // No component available for this question type
+            <div className="bg-white rounded-lg border border-yellow-200 p-6">
+              <div className="text-center">
+                <p className="text-yellow-600 font-medium mb-2">
+                  Question type not supported for editing
+                </p>
+                <p className="text-gray-600 text-sm mb-4">
+                  Type: {currentQuestion.type || "Unknown"}
+                </p>
+                <button
+                  onClick={() => {
+                    onRemoveQuestion(area, currentQuestion.id);
+                  }}
+                  className="px-6 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Delete Question
+                </button>
+              </div>
+            </div>
           )}
         </div>
       ) : null}

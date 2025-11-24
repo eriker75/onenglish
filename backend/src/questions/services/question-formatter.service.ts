@@ -26,7 +26,9 @@ import {
   FormattedSuperbrainQuestion,
   FormattedTensesQuestion,
   FormattedDefaultQuestion,
+  MediaFile,
 } from './types';
+import { FileService } from '../../files/services/file.service';
 
 /**
  * Service to format questions based on their type
@@ -34,6 +36,8 @@ import {
  */
 @Injectable()
 export class QuestionFormatterService {
+  constructor(private readonly fileService: FileService) {}
+
   /**
    * Helper to include configurations only if not empty
    */
@@ -44,6 +48,40 @@ export class QuestionFormatterService {
       return undefined;
     }
     return configurations;
+  }
+
+  /**
+   * Helper to extract URL from a single media file by type
+   * Converts relative paths to full URLs
+   */
+  private getMediaUrl(
+    media: MediaFile[] | undefined,
+    type: 'image' | 'audio' | 'video',
+  ): string | null {
+    if (!media || media.length === 0) return null;
+    const file = media.find((m) => m.type === type);
+    if (!file?.url) return null;
+    return this.fileService.getFullUrl(file.url);
+  }
+
+  /**
+   * Helper to extract URLs from multiple media files by type
+   * Converts relative paths to full URLs
+   */
+  private getMediaUrls(
+    media: MediaFile[] | undefined,
+    type: 'image' | 'audio' | 'video',
+  ): string[] {
+    if (!media || media.length === 0) return [];
+    const filteredMedia = media.filter((m) => m.type === type);
+    return filteredMedia
+      .map((m) => ({
+        url: this.fileService.getFullUrl(m.url),
+        position: m.position || 0,
+      }))
+      .filter((item): item is { url: string; position: number } => item.url !== null)
+      .sort((a, b) => a.position - b.position)
+      .map((item) => item.url);
   }
 
   /**
@@ -168,8 +206,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling - single image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Media handling - single image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Options and answer
       options: question.options || [],
       answer: question.answer,
@@ -193,8 +231,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling - solo imagen
-      image: question.media?.[0] || null,
+      // Media handling - single image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Answer
       answer: question.answer,
       createdAt: question.createdAt,
@@ -216,10 +254,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Audio handling
-      audio:
-        question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
-        null,
+      // Audio handling - URL
+      audio: this.getMediaUrl(question.media, 'audio') || this.getMediaUrl(question.media, 'video'),
       // Options and answer
       options: question.options || [],
       answer: question.answer,
@@ -272,8 +308,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Central word
       centralWord: question.content,
-      // Optional reference image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Maximum number of associations for scoring
       maxAssociations: parseInt(question.configurations?.maxAssociations || '10'),
       createdAt: question.createdAt,
@@ -301,8 +337,8 @@ export class QuestionFormatterService {
       scrambledWords: question.content || [],
       // Correct sentence
       correctSentence: question.answer,
-      // Optional reference image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
         configurations: question.configurations,
@@ -385,8 +421,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      audio: question.media?.find((m) => m.type === 'audio') || null,
+      // Media handling - audio URL
+      audio: this.getMediaUrl(question.media, 'audio'),
       // Expected transcription
       answer: question.answer,
       // Metadata
@@ -409,8 +445,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      audio: question.media?.find((m) => m.type === 'audio') || null,
+      // Media handling - audio URL
+      audio: this.getMediaUrl(question.media, 'audio'),
       // Sub-questions
       subQuestions:
         question.subQuestions
@@ -467,10 +503,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Video handling
-      video:
-        question.media?.find((m) => m.type === 'video') ||
-        null,
+      // Video handling - URL
+      video: this.getMediaUrl(question.media, 'video'),
       // Word options and answer
       options: question.options || [],
       answer: question.answer,
@@ -496,8 +530,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      images: question.media?.filter((m) => m.type === 'image') || [],
+      // Media handling - image URLs array
+      images: this.getMediaUrls(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -516,10 +550,8 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Image handling
-      image:
-        question.media?.find((m) => m.type === 'image') ||
-        null,
+      // Image handling - URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -542,8 +574,8 @@ export class QuestionFormatterService {
       content: question.content,
       // Correct answer(s) - multiple acceptable answers (e.g., ["isn't he", "is not he"])
       answer: question.answer,
-      // Optional reference image (PNG with transparency recommended)
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -566,8 +598,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Text to read
       content: question.content,
-      // Optional reference image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Sub-questions
       subQuestions: question.subQuestions
         ?.map((sq) => this.formatQuestion(sq))
@@ -623,9 +655,9 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      image: question.media?.find((m) => m.type === 'image') || null,
-      video: question.media?.find((m) => m.type === 'video') || null,
+      // Media handling - URLs
+      image: this.getMediaUrl(question.media, 'image'),
+      video: this.getMediaUrl(question.media, 'video'),
       // Prompt
       prompt: question.content,
       // Speaking duration
@@ -655,8 +687,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Direct speech to convert
       content: question.content,
-      // Optional reference image (PNG with transparency recommended)
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -731,8 +763,8 @@ export class QuestionFormatterService {
       validationMethod: question.validationMethod,
       // Question prompt
       content: question.content,
-      // Optional decorative image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional decorative image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -757,8 +789,8 @@ export class QuestionFormatterService {
       options: question.options || [],
       // Correct tense
       answer: question.answer,
-      // Optional reference image
-      image: question.media?.find((m) => m.type === 'image') || null,
+      // Optional reference image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
         configurations: question.configurations,
@@ -771,7 +803,7 @@ export class QuestionFormatterService {
   // ==================== DEFAULT FORMATTER ====================
 
   private formatDefault(question: EnrichedQuestion): FormattedDefaultQuestion {
-    return {
+    const result: FormattedDefaultQuestion = {
       id: question.id,
       type: question.type,
       stage: question.stage,
@@ -785,10 +817,6 @@ export class QuestionFormatterService {
       content: question.content,
       options: question.options,
       answer: question.answer,
-      media: question.media || [],
-      ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
-        configurations: question.configurations,
-      }),
       subQuestions:
         question.subQuestions
           ?.map((sq) => this.formatQuestion(sq))
@@ -796,5 +824,24 @@ export class QuestionFormatterService {
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
+
+    // Extract media URLs by type
+    const imageUrl = this.getMediaUrl(question.media, 'image');
+    const audioUrl = this.getMediaUrl(question.media, 'audio');
+    const videoUrl = this.getMediaUrl(question.media, 'video');
+    const imageUrls = this.getMediaUrls(question.media, 'image');
+    const audioUrls = this.getMediaUrls(question.media, 'audio');
+
+    if (imageUrl) result.image = imageUrl;
+    if (audioUrl) result.audio = audioUrl;
+    if (videoUrl) result.video = videoUrl;
+    if (imageUrls.length > 0) result.images = imageUrls;
+    if (audioUrls.length > 0) result.audios = audioUrls;
+
+    if (this.getConfigurationsIfNotEmpty(question.configurations)) {
+      result.configurations = question.configurations;
+    }
+
+    return result;
   }
 }

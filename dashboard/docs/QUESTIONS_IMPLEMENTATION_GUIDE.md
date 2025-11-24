@@ -153,7 +153,7 @@ export function StagePhaseSelector() {
 
 import { useQuestionsByPhase } from '@/src/services/questions';
 import { useChallengeQuestionsStore } from '@/src/stores/challenge-questions.store';
-import { QuestionCard } from './QuestionCard';
+// Use appropriate question component based on question type
 
 export function QuestionsList() {
   const { currentChallengeId, currentStage, currentPhase } = useChallengeQuestionsStore();
@@ -184,7 +184,7 @@ export function QuestionsList() {
   return (
     <div className="space-y-4">
       {questions.map((question) => (
-        <QuestionCard key={question.id} question={question} />
+        <div key={question.id}>{/* Render question using appropriate component based on type */}</div>
       ))}
     </div>
   );
@@ -247,55 +247,26 @@ export function CreateQuestionButton() {
 ### Step 5: Edit Question
 
 ```typescript
-// components/QuestionCard.tsx
+// Use the appropriate wrapper component based on question type
+// Each question type has its own wrapper component (e.g., ImageToMultipleChoiceWrapper, 
+// WordBoxWrapper, etc.) that handles editing for that specific type.
 
-import { useState } from 'react';
-import { useUpdateQuestion } from '@/src/services/questions';
-import { Question } from '@/definitions/types/Question';
+// Example: Editing a question using the wrapper component
+import { ImageToMultipleChoiceWrapper } from './question-blocks-wrappers';
 
-interface QuestionCardProps {
-  question: Question;
-}
-
-export function QuestionCard({ question }: QuestionCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const { mutate: updateQuestion, isPending } = useUpdateQuestion();
-
-  const handleUpdate = () => {
-    updateQuestion({
-      id: question.id,
-      data: {
-        text: 'Updated question text',
-        points: 15,
-      },
-    }, {
-      onSuccess: () => {
-        setIsEditing(false);
-      },
-    });
-  };
+export function EditQuestion({ question, onSuccess, onCancel }) {
+  const WrapperComponent = getWrapperForType(question.type);
+  
+  if (!WrapperComponent) {
+    return <div>Question type not supported for editing</div>;
+  }
 
   return (
-    <div className="border p-4 rounded">
-      <h3>{question.text}</h3>
-      <p>Points: {question.points}</p>
-      <p>Type: {question.type}</p>
-
-      <div className="mt-2 flex gap-2">
-        <button onClick={() => setIsEditing(true)}>Edit</button>
-        <DeleteButton question={question} />
-      </div>
-
-      {isEditing && (
-        <div className="mt-4">
-          {/* Edit form fields */}
-          <button onClick={handleUpdate} disabled={isPending}>
-            {isPending ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button onClick={() => setIsEditing(false)}>Cancel</button>
-        </div>
-      )}
-    </div>
+    <WrapperComponent
+      existingQuestion={question}
+      onCancel={onCancel}
+      onSuccess={onSuccess}
+    />
   );
 }
 ```

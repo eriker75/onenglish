@@ -38,21 +38,21 @@ export declare class QuestionMediaService {
         mediaFile: {
             id: string;
             type: string;
-            createdAt: Date;
-            updatedAt: Date;
             filename: string;
             pathName: string;
             url: string;
             size: number;
             mimeType: string;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     } & {
         id: string;
-        position: number;
         createdAt: Date;
         questionId: string;
         mediaFileId: string;
+        position: number;
         context: string | null;
     })[]>;
     enrichQuestionWithMedia(question: QuestionWithRelations): EnrichedQuestion;

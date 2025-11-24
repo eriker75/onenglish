@@ -301,4 +301,36 @@ export class FileService {
   getFileUrl(type: string, filename: string): string {
     return this.storageService.getFileUrl(type, filename);
   }
+
+  /**
+   * Converts a relative file path to a full URL
+   * If the path is already a full URL (starts with http/https), returns it as is
+   * Otherwise, constructs the full URL using APP_URL or builds from PORT/HOST
+   */
+  getFullUrl(pathOrUrl: string | null | undefined): string | null {
+    if (!pathOrUrl) return null;
+
+    // If already a full URL, return as is
+    if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+      return pathOrUrl;
+    }
+
+    // Get base URL from environment
+    const appUrl = this.configService.get<string>('APP_URL');
+    if (appUrl) {
+      // Remove trailing slash from APP_URL if present
+      const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+      // Ensure path starts with /
+      const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+      return `${baseUrl}${path}`;
+    }
+
+    // Fallback: construct from PORT and HOST if APP_URL is not set
+    const port = this.configService.get<string>('PORT') || '3000';
+    const host = this.configService.get<string>('HOST') || 'localhost';
+    const protocol = this.configService.get<string>('NODE_ENV') === 'production' ? 'https' : 'http';
+    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+    
+    return `${protocol}://${host}:${port}${path}`;
+  }
 }

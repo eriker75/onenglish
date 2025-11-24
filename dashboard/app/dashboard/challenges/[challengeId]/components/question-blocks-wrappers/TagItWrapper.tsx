@@ -48,7 +48,9 @@ export default function TagItWrapper({
     tagItQuestion?.content || []
   );
   const [answer, setAnswer] = useState<string[]>(tagItQuestion?.answer || [""]);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(
+    tagItQuestion?.image || tagItQuestion?.mediaUrl || null
+  );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(tagItQuestion?.points || 0);
 
@@ -192,7 +194,7 @@ export default function TagItWrapper({
         instructions={instructions}
         content={content}
         answer={answer}
-        imageUrl={imageUrl ?? undefined}
+        imageUrl={imageUrl || undefined}
         points={points}
         timeMinutes={timeMinutes}
         timeSeconds={timeSeconds}

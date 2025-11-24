@@ -5,15 +5,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestionFormatterService = void 0;
 const common_1 = require("@nestjs/common");
+const file_service_1 = require("../../files/services/file.service");
 let QuestionFormatterService = class QuestionFormatterService {
+    fileService;
+    constructor(fileService) {
+        this.fileService = fileService;
+    }
     getConfigurationsIfNotEmpty(configurations) {
         if (!configurations || Object.keys(configurations).length === 0) {
             return undefined;
         }
         return configurations;
+    }
+    getMediaUrl(media, type) {
+        if (!media || media.length === 0)
+            return null;
+        const file = media.find((m) => m.type === type);
+        if (!file?.url)
+            return null;
+        return this.fileService.getFullUrl(file.url);
+    }
+    getMediaUrls(media, type) {
+        if (!media || media.length === 0)
+            return [];
+        const filteredMedia = media.filter((m) => m.type === type);
+        return filteredMedia
+            .map((m) => ({
+            url: this.fileService.getFullUrl(m.url),
+            position: m.position || 0,
+        }))
+            .filter((item) => item.url !== null)
+            .sort((a, b) => a.position - b.position)
+            .map((item) => item.url);
     }
     removeNullFields(obj) {
         if (obj === null || obj === undefined) {
@@ -96,7 +125,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             options: question.options || [],
             answer: question.answer,
             createdAt: question.createdAt,
@@ -115,7 +144,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.[0] || null,
+            image: this.getMediaUrl(question.media, 'image'),
             answer: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
@@ -133,8 +162,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            audio: question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
-                null,
+            audio: this.getMediaUrl(question.media, 'audio') || this.getMediaUrl(question.media, 'video'),
             options: question.options || [],
             answer: question.answer,
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
@@ -176,7 +204,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             centralWord: question.content,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             maxAssociations: parseInt(question.configurations?.maxAssociations || '10'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
@@ -196,7 +224,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             scrambledWords: question.content || [],
             correctSentence: question.answer,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,
             }),
@@ -262,7 +290,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            audio: question.media?.find((m) => m.type === 'audio') || null,
+            audio: this.getMediaUrl(question.media, 'audio'),
             answer: question.answer,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
@@ -280,7 +308,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            audio: question.media?.find((m) => m.type === 'audio') || null,
+            audio: this.getMediaUrl(question.media, 'audio'),
             subQuestions: question.subQuestions
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],
@@ -323,8 +351,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            video: question.media?.find((m) => m.type === 'video') ||
-                null,
+            video: this.getMediaUrl(question.media, 'video'),
             options: question.options || [],
             answer: question.answer,
             createdAt: question.createdAt,
@@ -343,7 +370,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            images: question.media?.filter((m) => m.type === 'image') || [],
+            images: this.getMediaUrls(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -360,8 +387,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.find((m) => m.type === 'image') ||
-                null,
+            image: this.getMediaUrl(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -380,7 +406,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             content: question.content,
             answer: question.answer,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -398,7 +424,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             content: question.content,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             subQuestions: question.subQuestions
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],
@@ -441,8 +467,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            image: question.media?.find((m) => m.type === 'image') || null,
-            video: question.media?.find((m) => m.type === 'video') || null,
+            image: this.getMediaUrl(question.media, 'image'),
+            video: this.getMediaUrl(question.media, 'video'),
             prompt: question.content,
             minDuration: parseInt(question.configurations?.minDuration || '30'),
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
@@ -465,7 +491,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             content: question.content,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -521,7 +547,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             instructions: question.instructions,
             validationMethod: question.validationMethod,
             content: question.content,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -541,7 +567,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             content: question.content || '',
             options: question.options || [],
             answer: question.answer,
-            image: question.media?.find((m) => m.type === 'image') || null,
+            image: this.getMediaUrl(question.media, 'image'),
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,
             }),
@@ -550,7 +576,7 @@ let QuestionFormatterService = class QuestionFormatterService {
         };
     }
     formatDefault(question) {
-        return {
+        const result = {
             id: question.id,
             type: question.type,
             stage: question.stage,
@@ -564,20 +590,36 @@ let QuestionFormatterService = class QuestionFormatterService {
             content: question.content,
             options: question.options,
             answer: question.answer,
-            media: question.media || [],
-            ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
-                configurations: question.configurations,
-            }),
             subQuestions: question.subQuestions
                 ?.map((sq) => this.formatQuestion(sq))
                 .filter((q) => q !== null) || [],
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
+        const imageUrl = this.getMediaUrl(question.media, 'image');
+        const audioUrl = this.getMediaUrl(question.media, 'audio');
+        const videoUrl = this.getMediaUrl(question.media, 'video');
+        const imageUrls = this.getMediaUrls(question.media, 'image');
+        const audioUrls = this.getMediaUrls(question.media, 'audio');
+        if (imageUrl)
+            result.image = imageUrl;
+        if (audioUrl)
+            result.audio = audioUrl;
+        if (videoUrl)
+            result.video = videoUrl;
+        if (imageUrls.length > 0)
+            result.images = imageUrls;
+        if (audioUrls.length > 0)
+            result.audios = audioUrls;
+        if (this.getConfigurationsIfNotEmpty(question.configurations)) {
+            result.configurations = question.configurations;
+        }
+        return result;
     }
 };
 exports.QuestionFormatterService = QuestionFormatterService;
 exports.QuestionFormatterService = QuestionFormatterService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [file_service_1.FileService])
 ], QuestionFormatterService);
 //# sourceMappingURL=question-formatter.service.js.map

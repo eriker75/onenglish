@@ -234,6 +234,24 @@ let FileService = FileService_1 = class FileService {
     getFileUrl(type, filename) {
         return this.storageService.getFileUrl(type, filename);
     }
+    getFullUrl(pathOrUrl) {
+        if (!pathOrUrl)
+            return null;
+        if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+            return pathOrUrl;
+        }
+        const appUrl = this.configService.get('APP_URL');
+        if (appUrl) {
+            const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+            const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+            return `${baseUrl}${path}`;
+        }
+        const port = this.configService.get('PORT') || '3000';
+        const host = this.configService.get('HOST') || 'localhost';
+        const protocol = this.configService.get('NODE_ENV') === 'production' ? 'https' : 'http';
+        const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+        return `${protocol}://${host}:${port}${path}`;
+    }
 };
 exports.FileService = FileService;
 exports.FileService = FileService = FileService_1 = __decorate([

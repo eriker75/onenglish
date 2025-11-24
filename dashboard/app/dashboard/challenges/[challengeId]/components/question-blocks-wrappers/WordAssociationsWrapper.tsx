@@ -52,7 +52,7 @@ export default function WordAssociationsWrapper({
     wordAssociationsQuestion?.maxAssociations || 3
   );
   const [imageUrl] = useState<string | null>(
-    wordAssociationsQuestion?.mediaUrl || null
+    wordAssociationsQuestion?.image || wordAssociationsQuestion?.mediaUrl || null
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(wordAssociationsQuestion?.points || 0);
