@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, ValidateNested, ArrayMinSize, IsString, IsBoolean, IsOptional, IsInt, Min } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { IsString, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import {
   FileSystemStoredFile,
@@ -9,92 +9,19 @@ import {
   MaxFileSize,
 } from 'nestjs-form-data';
 
-export class PassageDto {
+export class CreateReadItDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
-    required: false,
-    example: 'image-url-or-id',
-    description: 'Optional image ID or URL'
-  })
-  @IsOptional()
-  @IsString()
-  image?: string;
-
-  @ApiProperty({
-    required: false,
-    example:
-      'Emma travels to school by bus every weekday. On weekends, she enjoys hiking with her friends in the hills.',
-    description: 'Passage text content'
-  })
-  @IsOptional()
-  @IsString()
-  text?: string;
-}
-
-export class SubQuestionDto {
-  @ApiProperty({
-    example: 'Emma travels to school by bus every day.',
-    description: 'Sub-question statement',
+    type: String,
+    description: 'Reading passage text content',
+    example: 'Emma travels to school by bus every weekday. On weekends, she enjoys hiking with her friends in the hills.',
   })
   @IsString()
   content: string;
 
   @ApiProperty({
-    type: [Boolean],
-    example: [true, false],
-    description: 'True/False options',
-  })
-  @IsArray()
-  @IsBoolean({ each: true })
-  options: [boolean, boolean];
-
-  @ApiProperty({
-    example: true,
-    description: 'Correct answer (true or false)',
-  })
-  @IsBoolean()
-  answer: boolean;
-
-  @ApiProperty({
-    example: 5,
-    description: 'Points awarded for this sub-question',
-    minimum: 0,
-  })
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  points: number;
-}
-
-export class CreateReadItDto extends BaseCreateQuestionWithoutStageDto {
-  @ApiProperty({
-    type: [PassageDto],
-    description: 'Reading passages (can include images and/or text)',
-    example: [
-      {
-        text: 'Emma travels to school by bus every weekday. On weekends, she enjoys hiking with her friends in the hills.',
-      },
-    ],
-  })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return value;
-      }
-    }
-    return value;
-  })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => PassageDto)
-  content: PassageDto[];
-
-  @ApiProperty({
-    type: [SubQuestionDto],
-    description: 'True/False sub-questions about the passage (parent points will be auto-calculated as sum of sub-question points)',
-    example: [
+    type: String,
+    description: 'JSON string array of sub-questions. Each sub-question must have: content (string), options ([true, false]), answer (boolean), points (number)',
+    example: JSON.stringify([
       {
         content: 'Emma travels to school by bus every day.',
         options: [true, false],
@@ -107,23 +34,10 @@ export class CreateReadItDto extends BaseCreateQuestionWithoutStageDto {
         answer: false,
         points: 5,
       },
-    ],
+    ]),
   })
-  @Transform(({ value }) => {
-    if (typeof value === 'string') {
-      try {
-        return JSON.parse(value);
-      } catch {
-        return value;
-      }
-    }
-    return value;
-  })
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => SubQuestionDto)
-  subQuestions: SubQuestionDto[];
+  @IsString()
+  subQuestions: string;
 
   @ApiPropertyOptional({
     description: 'Parent question ID for sub-questions',
@@ -158,6 +72,6 @@ export class CreateReadItDto extends BaseCreateQuestionWithoutStageDto {
     'image/gif',
     'image/avif',
   ])
-  media?: FileSystemStoredFile;
+  image?: FileSystemStoredFile;
 }
 

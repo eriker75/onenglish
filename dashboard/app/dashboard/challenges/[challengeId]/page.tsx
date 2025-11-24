@@ -1,188 +1,90 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import DashboardContent from "@/components/DashboardContent";
 import OlympicStepper from "@/components/OlympicStepper";
-import ChallengeForm, {
-  Question,
-  QuestionFieldValue,
-} from "@/app/dashboard/challenges/[challengeId]/components/ChallengeForm";
+import ChallengeForm from "@/app/dashboard/challenges/[challengeId]/components/ChallengeForm";
 import QuestionTypeNavigation from "./components/QuestionTypeNavigation";
-import { getDemoChallenges } from "@/src/data/demo-data";
 import { useChallengeFormUIStore } from "@/src/stores/challenge-form-ui.store";
 import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
-import api from "@/src/config/axiosInstance"; // Import axios instance
+import { useChallenge, groupQuestionsByStage, useDeleteQuestion } from "@/src/hooks/useChallenge";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 
 export default function ChallengeEditPage() {
   const router = useRouter();
   const params = useParams();
   const challengeId = params.challengeId as string;
-  const [isLoading, setIsLoading] = useState(true);
+
+  // UI Stores (navigation state only)
   const { setCurrentChallengeId, addStage, stages } = useChallengeFormUIStore();
+  const { setCurrentChallengeId: setUIChallengeId } = useChallengeUIStore();
   const { updateChallengeField } = useChallengeFormStore();
-  const [grade, setGrade] = useState("");
-  const [challengeType, setChallengeType] = useState<"regular" | "bilingual">(
-    "regular"
-  );
-  const [isDemo, setIsDemo] = useState(false);
-  const [challengeName, setChallengeName] = useState("");
-  const [questionsByArea, setQuestionsByArea] = useState<{
-    [key: string]: Question[];
-  }>({
-    Vocabulary: [],
-    Grammar: [],
-    Listening: [],
-    Writing: [],
-    Speaking: [],
-  });
 
-  const loadChallenge = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      // Set challenge ID in UI store
-      setCurrentChallengeId(challengeId);
-      // Set challenge ID in data store (needed for wrappers)
-      updateChallengeField("id", challengeId);
+  // React Query - Source of truth for data
+  const {
+    data: challenge,
+    isLoading,
+    error,
+    refetch,
+  } = useChallenge(challengeId);
 
-      // Fetch challenge details from API
-      try {
-        const response = await api.get(`/challenges/${challengeId}`);
-        const challenge = response.data;
+  // Delete mutation
+  const deleteQuestionMutation = useDeleteQuestion();
 
-        if (challenge) {
-           setGrade(challenge.grade);
-           setChallengeType(challenge.type);
-           setIsDemo(challenge.isDemo || false);
-           setChallengeName(challenge.title); // Assuming 'title' is the property name from API
-
-           // Map questions from API response to questionsByArea structure
-           // We need to implement mapping logic based on API response structure
-           // For now, let's assume the API returns questions in a format we can map
-           // Or we fetch questions separately if needed. 
-           // If the challenge object contains questions, map them:
-           
-           if (challenge.questions && Array.isArray(challenge.questions)) {
-             const mappedQuestionsByArea: { [key: string]: Question[] } = {
-                Vocabulary: [],
-                Grammar: [],
-                Listening: [],
-                Writing: [],
-                Speaking: [],
-             };
-
-             challenge.questions.forEach((q: any) => {
-               // Determine area based on q.stage or q.type
-               // Ensure q.stage matches our keys "Vocabulary", "Grammar", etc.
-               // If stage is uppercase "VOCABULARY", convert to Title Case if needed, 
-               // but our keys are Title Case.
-               
-               // Helper to format stage name
-               const formatStage = (stage: string) => {
-                 if (!stage) return "Vocabulary"; // Default fallback
-                 return stage.charAt(0).toUpperCase() + stage.slice(1).toLowerCase();
-               };
-
-               const area = formatStage(q.stage);
-               if (mappedQuestionsByArea[area]) {
-                 mappedQuestionsByArea[area].push({
-                   id: q.id,
-                   question: q.text || q.question || "", // Handle various potential field names
-                   type: q.type,
-                   questionTypeName: q.type, // Or map to readable name
-                   options: q.options,
-                   correctAnswer: q.answer,
-                   stage: q.stage
-                   // Add other fields as needed
-                 });
-               }
-             });
-             setQuestionsByArea(mappedQuestionsByArea);
-           }
-        }
-      } catch (apiError) {
-         console.error("Error fetching challenge from API, falling back to demo/local", apiError);
-         // Fallback logic (keep existing demo/local storage logic as fallback)
-          const savedChallenge = localStorage.getItem(`challenge-${challengeId}`);
-          if (savedChallenge) {
-            const challenge = JSON.parse(savedChallenge);
-            setGrade(challenge.grade);
-            setChallengeType(challenge.type);
-            setIsDemo(challenge.isDemo || false);
-            setChallengeName(challenge.name);
-            // Load questions if stored locally?
-          } else {
-             const challenges = await getDemoChallenges();
-             const challenge = challenges.find((c) => c.id === challengeId);
-             if (challenge) {
-                setGrade(challenge.grade);
-                setChallengeType(challenge.type);
-                setIsDemo(challenge.isDemo || false);
-                setChallengeName(challenge.name);
-             }
-          }
-      }
-
-    } catch (error) {
-      console.error("Error loading challenge:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [challengeId, setCurrentChallengeId, updateChallengeField]);
-
+  // Set challenge ID in stores when component mounts
   useEffect(() => {
     if (challengeId) {
-      loadChallenge();
+      setCurrentChallengeId(challengeId);
+      setUIChallengeId(challengeId);
+      updateChallengeField("id", challengeId);
     }
-  }, [challengeId, loadChallenge]);
+  }, [challengeId, setCurrentChallengeId, setUIChallengeId, updateChallengeField]);
 
   // Initialize with first stage if no stage is set
   useEffect(() => {
     if (!isLoading && stages.length === 0) {
-      // Add the first stage (Vocabulary) by default
       addStage("vocabulary");
     }
   }, [isLoading, stages.length, addStage]);
 
+  // Derive questionsByArea from React Query data
+  const questionsByArea = challenge?.questions
+    ? groupQuestionsByStage(challenge.questions)
+    : {
+        Vocabulary: [],
+        Grammar: [],
+        Listening: [],
+        Writing: [],
+        Speaking: [],
+      };
+
+  // Handlers
   const handleRemoveQuestion = async (area: string, questionId: string) => {
-     // Call API to remove question
-     try {
-        // Assuming endpoint like DELETE /questions/:id
-        // We need to know which endpoint to hit. Since we have questionId, maybe generic?
-        // Or we rely on wrapper or specific logic.
-        // But here we just update local state or refetch?
-        // If we want to delete from DB, we should call API.
-        
-        // Assuming we have a delete endpoint, let's try generic
-        // await api.delete(`/questions/${questionId}`); // Uncomment when ready
-        
-        // Then update local state
-        setQuestionsByArea((prev) => ({
-          ...prev,
-          [area]: prev[area].filter((q) => q.id !== questionId),
-        }));
-        
-        // Optionally refetch to be sure
-        // loadChallenge(); 
-     } catch (error) {
-       console.error("Failed to delete question", error);
-       // Show toast error?
-     }
+    try {
+      // Find question type from questions
+      const question = challenge?.questions.find((q) => q.id === questionId);
+      if (!question) return;
+
+      await deleteQuestionMutation.mutateAsync({
+        questionId,
+        questionType: question.type,
+      });
+    } catch (error) {
+      console.error("Failed to delete question", error);
+    }
   };
 
   const handleQuestionChange = (
     area: string,
     questionId: string,
     field: string,
-    value: QuestionFieldValue
+    value: any
   ) => {
-    setQuestionsByArea((prev) => ({
-      ...prev,
-      [area]: prev[area].map((q) =>
-        q.id === questionId ? { ...q, [field]: value } : q
-      ),
-    }));
+    // With React Query, we don't need optimistic updates here
+    // The mutations in the wrappers handle this
+    console.log("Question changed:", { area, questionId, field, value });
   };
 
   const handleOptionChange = (
@@ -191,54 +93,22 @@ export default function ChallengeEditPage() {
     optionIndex: number,
     value: string
   ) => {
-    setQuestionsByArea((prev) => {
-      const updatedQuestions = prev[area].map((q) => {
-        if (q.id === questionId) {
-          const newOptions = [...(q.options || [])];
-          newOptions[optionIndex] = value;
-          return { ...q, options: newOptions };
-        }
-        return q;
-      });
-      return { ...prev, [area]: updatedQuestions };
-    });
+    // With React Query, we don't need optimistic updates here
+    console.log("Option changed:", { area, questionId, optionIndex, value });
   };
 
   const handleSubmit = () => {
-    // Calculate totals
-    const totalQuestions = Object.values(questionsByArea).reduce(
-      (sum, questions) => sum + questions.length,
-      0
-    );
-
-    const challenge = {
-      name: challengeName,
-      grade,
-      type: challengeType,
-      isDemo,
-      areas: {
-        Vocabulary: questionsByArea.Vocabulary.length,
-        Grammar: questionsByArea.Grammar.length,
-        Listening: questionsByArea.Listening.length,
-        Writing: questionsByArea.Writing.length,
-        Speaking: questionsByArea.Speaking.length,
-      },
-      totalQuestions,
-      totalTime: Math.ceil(totalQuestions * 4), // Approximate 4 minutes per question
-      questionsByArea,
-      status: "pending" as const,
-    };
-
-    console.log("Creating challenge:", challenge);
-    // TODO: Save to backend
+    console.log("Submitting challenge:", challenge);
     router.push("/dashboard/challenges");
   };
-  
-  // Callback to refresh data when a question is created/updated via wrapper
+
   const handleDataRefresh = () => {
-      loadChallenge();
+    // Refetch is handled automatically by React Query mutations
+    // But we can manually refetch if needed
+    refetch();
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -253,6 +123,61 @@ export default function ChallengeEditPage() {
     );
   }
 
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar />
+        <DashboardContent>
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="text-red-500 mb-4">
+              <svg
+                className="w-12 h-12"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-600 mb-4">Error loading challenge</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-[#FF0098] text-white rounded-lg hover:bg-[#e0008a]"
+            >
+              Try Again
+            </button>
+          </div>
+        </DashboardContent>
+      </div>
+    );
+  }
+
+  // No challenge found
+  if (!challenge) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Sidebar />
+        <DashboardContent>
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-gray-600 mb-4">Challenge not found</p>
+            <button
+              onClick={() => router.push("/dashboard/challenges")}
+              className="px-4 py-2 bg-[#FF0098] text-white rounded-lg hover:bg-[#e0008a]"
+            >
+              Back to Challenges
+            </button>
+          </div>
+        </DashboardContent>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
@@ -260,8 +185,8 @@ export default function ChallengeEditPage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">
-            {challengeName
-              ? `${challengeName} (${isDemo ? "Demo" : "Live"})`
+            {challenge.title
+              ? `${challenge.title} (${challenge.isDemo ? "Demo" : "Live"})`
               : "Edit Challenge"}
           </h1>
         </div>

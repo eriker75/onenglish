@@ -1,5 +1,5 @@
 import { QuestionUpdateService } from '../services/question-update.service';
-import { UpdateImageToMultipleChoicesDto, UpdateWordboxDto, UpdateSpellingDto, UpdateWordAssociationsDto, UpdateUnscrambleDto, UpdateTensesDto, UpdateTagItDto, UpdateReportItDto, UpdateReadItDto, UpdateWordMatchDto, UpdateGossipDto, UpdateTopicBasedAudioDto, UpdateTopicBasedAudioSubquestionDto, UpdateLyricsTrainingDto, UpdateSentenceMakerDto, UpdateFastTestDto, UpdateTalesDto, UpdateSuperbrainDto, UpdateTellMeAboutItDto, UpdateDebateDto, BulkUpdateQuestionsDto } from '../dto/update';
+import { UpdateImageToMultipleChoicesDto, UpdateWordboxDto, UpdateSpellingDto, UpdateWordAssociationsDto, UpdateUnscrambleDto, UpdateTensesDto, UpdateTagItDto, UpdateReportItDto, UpdateReadItDto, UpdateWordMatchDto, UpdateGossipDto, UpdateTopicBasedAudioDto, UpdateLyricsTrainingDto, UpdateSentenceMakerDto, UpdateFastTestDto, UpdateTalesDto, UpdateSuperbrainDto, UpdateTellMeAboutItDto, UpdateDebateDto, BulkUpdateQuestionsDto } from '../dto/update';
 export declare class QuestionsUpdateController {
     private readonly updateService;
     constructor(updateService: QuestionUpdateService);
@@ -15,7 +15,6 @@ export declare class QuestionsUpdateController {
     updateWordMatch(id: string, dto: UpdateWordMatchDto): Promise<any>;
     updateGossip(id: string, dto: UpdateGossipDto): Promise<any>;
     updateTopicBasedAudio(id: string, dto: UpdateTopicBasedAudioDto): Promise<any>;
-    updateTopicBasedAudioSubquestion(id: string, dto: UpdateTopicBasedAudioSubquestionDto): Promise<any>;
     updateLyricsTraining(id: string, dto: UpdateLyricsTrainingDto): Promise<any>;
     updateSentenceMaker(id: string, dto: UpdateSentenceMakerDto): Promise<any>;
     updateFastTest(id: string, dto: UpdateFastTestDto): Promise<any>;

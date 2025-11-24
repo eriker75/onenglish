@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
+
 import SentenceMaker from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/SentenceMaker";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -24,7 +24,11 @@ export default function SentenceMakerWrapper({
   onSuccess,
 }: SentenceMakerWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to SentenceMakerQuestion for type safety
   const sentenceMakerQuestion = existingQuestion as
@@ -49,27 +53,9 @@ export default function SentenceMakerWrapper({
     sentenceMakerQuestion?.maxAttempts || 1
   );
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await api.post(
-        "/questions/create/sentence_maker",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Sentence maker question created successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
@@ -77,36 +63,12 @@ export default function SentenceMakerWrapper({
           error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({
-      id,
-      formData,
-    }: {
-      id: string;
-      formData: FormData;
-    }) => {
-      const response = await api.patch(
-        `/questions/sentence_maker/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Sentence maker question updated successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
@@ -114,11 +76,13 @@ export default function SentenceMakerWrapper({
           error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -165,7 +129,31 @@ export default function SentenceMakerWrapper({
     if (sentenceMakerQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
-      createQuestionMutation.mutate(formData);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/sentence_maker",
+          data: formData,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "SentenceMaker question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

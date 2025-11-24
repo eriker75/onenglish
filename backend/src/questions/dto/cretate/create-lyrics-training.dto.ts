@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsArray, ArrayMinSize } from 'class-validator';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import {
   FileSystemStoredFile,
   HasMimeType,
@@ -8,16 +8,16 @@ import {
   MaxFileSize,
 } from 'nestjs-form-data';
 
-export class CreateLyricsTrainingDto extends BaseCreateQuestionDto {
+export class CreateLyricsTrainingDto extends BaseCreateQuestionWithoutStageDto {
   @IsFile()
-  @MaxFileSize(10e6) // 10MB for video/audio
-  @HasMimeType(['audio/mpeg', 'audio/wav', 'video/mp4', 'video/webm'])
+  @MaxFileSize(50e6) // 50MB for video
+  @HasMimeType(['video/mp4', 'video/webm'])
   @ApiProperty({
     type: 'string',
     format: 'binary',
-    description: 'Video/audio file of the song',
+    description: 'Video file of the song',
   })
-  media: FileSystemStoredFile;
+  video: FileSystemStoredFile;
 
   @ApiProperty({
     example: 'dark',

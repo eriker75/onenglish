@@ -16,7 +16,7 @@ const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateReportItDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
-    media;
+    image;
 }
 exports.CreateReportItDto = CreateReportItDto;
 __decorate([
@@ -47,5 +47,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateReportItDto.prototype, "media", void 0);
+], CreateReportItDto.prototype, "image", void 0);
 //# sourceMappingURL=create-report-it.dto.js.map

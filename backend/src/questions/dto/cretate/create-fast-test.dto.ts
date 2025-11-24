@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsString, ArrayMinSize } from 'class-validator';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 
-export class CreateFastTestDto extends BaseCreateQuestionDto {
+export class CreateFastTestDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     type: [String],
     example: ['I enjoy', 'to the beach'],

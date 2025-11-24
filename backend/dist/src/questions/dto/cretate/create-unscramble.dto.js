@@ -17,7 +17,7 @@ const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateUnscrambleDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     answer;
-    media;
+    image;
 }
 exports.CreateUnscrambleDto = CreateUnscrambleDto;
 __decorate([
@@ -62,5 +62,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateUnscrambleDto.prototype, "media", void 0);
+], CreateUnscrambleDto.prototype, "image", void 0);
 //# sourceMappingURL=create-unscramble.dto.js.map

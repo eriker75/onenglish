@@ -14,23 +14,23 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-class CreateLyricsTrainingDto extends base_question_dto_1.BaseCreateQuestionDto {
-    media;
+class CreateLyricsTrainingDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
+    video;
     answer;
     options;
 }
 exports.CreateLyricsTrainingDto = CreateLyricsTrainingDto;
 __decorate([
     (0, nestjs_form_data_1.IsFile)(),
-    (0, nestjs_form_data_1.MaxFileSize)(10e6),
-    (0, nestjs_form_data_1.HasMimeType)(['audio/mpeg', 'audio/wav', 'video/mp4', 'video/webm']),
+    (0, nestjs_form_data_1.MaxFileSize)(50e6),
+    (0, nestjs_form_data_1.HasMimeType)(['video/mp4', 'video/webm']),
     (0, swagger_1.ApiProperty)({
         type: 'string',
         format: 'binary',
-        description: 'Video/audio file of the song',
+        description: 'Video file of the song',
     }),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateLyricsTrainingDto.prototype, "media", void 0);
+], CreateLyricsTrainingDto.prototype, "video", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'dark',

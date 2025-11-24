@@ -79,7 +79,7 @@ let QuestionUpdateService = class QuestionUpdateService {
             'tell_me_about_it',
             'debate',
         ];
-        const { media, challengeId, stage, ...questionData } = restData;
+        const { media, image, audio, video, images, audios, subQuestions, challengeId, stage, ...questionData } = restData;
         if (grammarQuestionTypes.includes(question.type)) {
             questionData.stage = client_1.QuestionStage.GRAMMAR;
         }
@@ -119,8 +119,9 @@ let QuestionUpdateService = class QuestionUpdateService {
             where: { id: questionId },
             data: questionData,
         });
-        if (media) {
-            const uploadedFile = await this.questionMediaService.uploadSingleFile(media);
+        const singleFile = media || image || audio || video;
+        if (singleFile && !Array.isArray(singleFile)) {
+            const uploadedFile = await this.questionMediaService.uploadSingleFile(singleFile);
             await this.prisma.questionMedia.deleteMany({
                 where: { questionId },
             });
@@ -131,6 +132,18 @@ let QuestionUpdateService = class QuestionUpdateService {
                     position: 0,
                 },
             ]);
+        }
+        const multipleFiles = images || audios || (Array.isArray(media) ? media : null);
+        if (multipleFiles && Array.isArray(multipleFiles)) {
+            const uploadedFiles = await Promise.all(multipleFiles.map((file) => this.questionMediaService.uploadSingleFile(file)));
+            await this.prisma.questionMedia.deleteMany({
+                where: { questionId },
+            });
+            await this.questionMediaService.attachMediaFiles(questionId, uploadedFiles.map((file, index) => ({
+                id: file.id,
+                context: 'main',
+                position: index,
+            })));
         }
         if (question.type === 'wordbox' &&
             (gridWidth !== undefined ||
@@ -191,6 +204,114 @@ let QuestionUpdateService = class QuestionUpdateService {
             };
             await upsertConfig('maxAssociations', maxAssociations);
         }
+        if (subQuestions !== undefined && (question.type === 'read_it' || question.type === 'topic_based_audio')) {
+            let parsedSubQuestions;
+            try {
+                parsedSubQuestions = typeof subQuestions === 'string'
+                    ? JSON.parse(subQuestions)
+                    : subQuestions;
+            }
+            catch (error) {
+                throw new common_1.BadRequestException('subQuestions must be a valid JSON string array');
+            }
+            if (!Array.isArray(parsedSubQuestions) || parsedSubQuestions.length === 0) {
+                throw new common_1.BadRequestException('Must provide at least one sub-question');
+            }
+            parsedSubQuestions.forEach((sub, index) => {
+                if (question.type === 'read_it') {
+                    if (!sub.content || typeof sub.content !== 'string') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: content is required and must be a string`);
+                    }
+                    if (!Array.isArray(sub.options) || sub.options.length !== 2) {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: options must be an array with exactly 2 boolean values [true, false]`);
+                    }
+                    if (typeof sub.options[0] !== 'boolean' ||
+                        typeof sub.options[1] !== 'boolean') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: options must contain only boolean values`);
+                    }
+                    if (typeof sub.answer !== 'boolean') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: answer is required and must be a boolean`);
+                    }
+                    if (!sub.options.includes(sub.answer)) {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: answer must match one of the provided options`);
+                    }
+                    if (!sub.points || typeof sub.points !== 'number') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: points is required and must be a number`);
+                    }
+                    if (sub.points < 0) {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: points cannot be negative`);
+                    }
+                }
+                else if (question.type === 'topic_based_audio') {
+                    if (!sub.text || typeof sub.text !== 'string') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: text is required and must be a string`);
+                    }
+                    if (!sub.points || typeof sub.points !== 'number') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: points is required and must be a number`);
+                    }
+                    if (!Array.isArray(sub.options) || sub.options.length < 2) {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: must provide at least 2 options`);
+                    }
+                    if (!sub.answer || typeof sub.answer !== 'string') {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: answer is required and must be a string`);
+                    }
+                    if (!sub.options.includes(sub.answer)) {
+                        throw new common_1.BadRequestException(`Sub-question ${index + 1}: answer must match one of the provided options`);
+                    }
+                }
+            });
+            await this.prisma.question.deleteMany({
+                where: { parentQuestionId: questionId },
+            });
+            const subQuestionType = question.type === 'read_it'
+                ? 'read_it_subquestion'
+                : 'topic_based_audio_subquestion';
+            await this.prisma.question.createMany({
+                data: parsedSubQuestions.map((sub, index) => {
+                    if (question.type === 'read_it') {
+                        return {
+                            challengeId: question.challengeId,
+                            stage: question.stage,
+                            position: index + 1,
+                            type: subQuestionType,
+                            points: sub.points,
+                            timeLimit: 0,
+                            maxAttempts: 0,
+                            text: sub.content,
+                            instructions: 'Select true or false',
+                            validationMethod: 'AUTO',
+                            content: sub.content,
+                            options: JSON.parse(JSON.stringify(sub.options)),
+                            answer: sub.answer,
+                            parentQuestionId: questionId,
+                        };
+                    }
+                    else {
+                        return {
+                            challengeId: question.challengeId,
+                            stage: question.stage,
+                            position: index + 1,
+                            type: subQuestionType,
+                            points: sub.points,
+                            timeLimit: 0,
+                            maxAttempts: 0,
+                            text: 'Sub-question',
+                            content: sub.text,
+                            instructions: 'Select the correct option',
+                            validationMethod: 'AUTO',
+                            options: JSON.parse(JSON.stringify(sub.options)),
+                            answer: sub.answer,
+                            parentQuestionId: questionId,
+                        };
+                    }
+                }),
+            });
+            const totalPoints = parsedSubQuestions.reduce((sum, sub) => sum + sub.points, 0);
+            await this.prisma.question.update({
+                where: { id: questionId },
+                data: { points: totalPoints },
+            });
+        }
         if (question.parentQuestionId && updateData.points !== undefined) {
             await this.recalculateParentPoints(question.parentQuestionId);
         }
@@ -243,67 +364,6 @@ let QuestionUpdateService = class QuestionUpdateService {
     }
     calculatePointsFromSubQuestions(subQuestions) {
         return subQuestions.reduce((sum, sq) => sum + (sq.points || 0), 0);
-    }
-    async updateTopicBasedAudioSubquestion(id, updateData) {
-        const question = await this.prisma.question.findUnique({
-            where: { id },
-        });
-        if (!question) {
-            throw new common_1.NotFoundException('Subquestion not found');
-        }
-        if (question.deletedAt !== null) {
-            throw new common_1.BadRequestException('Cannot update a deleted question. This question was deleted and is archived for data integrity.');
-        }
-        if (question.type !== 'topic_based_audio_subquestion') {
-            throw new common_1.BadRequestException('Question must be of type topic_based_audio_subquestion');
-        }
-        const finalOptions = updateData.options || question.options;
-        const finalAnswer = updateData.answer || question.answer;
-        if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
-            throw new common_1.BadRequestException('Answer must be one of the options');
-        }
-        await this.prisma.question.update({
-            where: { id },
-            data: updateData,
-        });
-        if (question.parentQuestionId && updateData.points !== undefined) {
-            await this.recalculateParentPoints(question.parentQuestionId);
-        }
-        const questionWithRelations = await this.prisma.question.findUnique({
-            where: { id },
-            include: {
-                questionMedia: {
-                    include: {
-                        mediaFile: true,
-                    },
-                    orderBy: {
-                        position: 'asc',
-                    },
-                },
-                configurations: true,
-                subQuestions: {
-                    include: {
-                        questionMedia: {
-                            include: {
-                                mediaFile: true,
-                            },
-                        },
-                        configurations: true,
-                    },
-                },
-                challenge: true,
-                parentQuestion: true,
-            },
-        });
-        if (!questionWithRelations) {
-            throw new common_1.NotFoundException('Subquestion not found after update');
-        }
-        const enrichedQuestion = this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
-        const formattedQuestion = this.questionFormatterService.formatQuestion(enrichedQuestion);
-        if (!formattedQuestion) {
-            throw new common_1.BadRequestException('Failed to format subquestion. Invalid question type or data.');
-        }
-        return formattedQuestion;
     }
     async updateQuestionText(questionId, text) {
         return this.updateQuestion(questionId, { text });

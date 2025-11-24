@@ -19,6 +19,7 @@ export declare class QuestionFormatterService {
     private formatTales;
     private formatTagIt;
     private formatReadIt;
+    private formatReadItSubquestion;
     private formatTellMeAboutIt;
     private formatReportIt;
     private formatDebate;

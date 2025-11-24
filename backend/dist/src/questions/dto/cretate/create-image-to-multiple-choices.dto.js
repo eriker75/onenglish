@@ -16,7 +16,7 @@ const class_transformer_1 = require("class-transformer");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateImageToMultipleChoicesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
-    media;
+    image;
     options;
     answer;
 }
@@ -31,7 +31,7 @@ __decorate([
         description: 'Image file to upload (PNG, JPEG, or WebP, max 5MB)',
     }),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateImageToMultipleChoicesDto.prototype, "media", void 0);
+], CreateImageToMultipleChoicesDto.prototype, "image", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         type: [String],

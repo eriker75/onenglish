@@ -13,7 +13,7 @@ exports.CreateFastTestDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
-class CreateFastTestDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateFastTestDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     options;
     answer;

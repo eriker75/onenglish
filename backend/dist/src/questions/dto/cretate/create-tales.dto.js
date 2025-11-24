@@ -14,8 +14,8 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-class CreateTalesDto extends base_question_dto_1.BaseCreateQuestionDto {
-    media;
+class CreateTalesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
+    images;
 }
 exports.CreateTalesDto = CreateTalesDto;
 __decorate([
@@ -30,5 +30,5 @@ __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(1),
     __metadata("design:type", Array)
-], CreateTalesDto.prototype, "media", void 0);
+], CreateTalesDto.prototype, "images", void 0);
 //# sourceMappingURL=create-tales.dto.js.map

@@ -266,30 +266,6 @@ export class QuestionsCreationController {
     return this.questionsService.createTopicBasedAudio(dto);
   }
 
-  @Post('topic_based_audio_subquestion')
-  @ApiOperation({
-    summary: 'Create a topic-based audio subquestion',
-    description:
-      'Creates a single subquestion for a topic_based_audio question. The subquestion is a multiple-choice question about the audio content.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Subquestion created successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - validation failed',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Parent question not found',
-  })
-  createTopicBasedAudioSubquestion(
-    @Body() dto: QuestionDtos.CreateTopicBasedAudioSubquestionDto,
-  ) {
-    return this.questionsService.createTopicBasedAudioSubquestion(dto);
-  }
-
   @Post('lyrics_training')
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')

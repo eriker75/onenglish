@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
+
 import TellMeAboutIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TellMeAboutIt";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -20,10 +20,14 @@ interface TellMeAboutItWrapperProps {
 
 export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuccess }: TellMeAboutItWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to TellMeAboutItQuestion for type safety
-  const tellMeAboutItQuestion = existingQuestion as TellMeAboutItQuestion | undefined;
+  const tellMeAboutItQuestion = (freshQuestionData || existingQuestion) as TellMeAboutItQuestion | undefined;
 
   const [questionText, setQuestionText] = useState(existingQuestion?.question || "");
   const [instructions, setInstructions] = useState(tellMeAboutItQuestion?.instructions || "");
@@ -37,15 +41,9 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
   const [maxAttempts, setMaxAttempts] = useState(tellMeAboutItQuestion?.maxAttempts || 1);
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/tell_me_about_it", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -53,25 +51,19 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
-      const response = await api.patch(`/questions/tell_me_about_it/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -79,7 +71,7 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error updating question:", error);
       toast({
@@ -87,10 +79,13 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
         description: error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -133,7 +128,31 @@ export default function TellMeAboutItWrapper({ existingQuestion, onCancel, onSuc
     if (tellMeAboutItQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
-      createQuestionMutation.mutate(formData);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/tell_me_about_it",
+          data: formData,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "TellMeAboutIt question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

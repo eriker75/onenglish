@@ -18,7 +18,7 @@ const base_question_dto_1 = require("./base-question.dto");
 class CreateWordAssociationsDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     maxAssociations;
-    media;
+    image;
 }
 exports.CreateWordAssociationsDto = CreateWordAssociationsDto;
 __decorate([
@@ -64,5 +64,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateWordAssociationsDto.prototype, "media", void 0);
+], CreateWordAssociationsDto.prototype, "image", void 0);
 //# sourceMappingURL=create-word-associations.dto.js.map

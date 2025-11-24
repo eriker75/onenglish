@@ -94,9 +94,6 @@ let QuestionsCreationController = class QuestionsCreationController {
     createTopicBasedAudio(dto) {
         return this.questionsService.createTopicBasedAudio(dto);
     }
-    createTopicBasedAudioSubquestion(dto) {
-        return this.questionsService.createTopicBasedAudioSubquestion(dto);
-    }
     createLyricsTraining(dto) {
         return this.questionsService.createLyricsTraining(dto);
     }
@@ -371,29 +368,6 @@ __decorate([
     __metadata("design:paramtypes", [QuestionDtos.CreateTopicBasedAudioDto]),
     __metadata("design:returntype", void 0)
 ], QuestionsCreationController.prototype, "createTopicBasedAudio", null);
-__decorate([
-    (0, common_1.Post)('topic_based_audio_subquestion'),
-    (0, swagger_1.ApiOperation)({
-        summary: 'Create a topic-based audio subquestion',
-        description: 'Creates a single subquestion for a topic_based_audio question. The subquestion is a multiple-choice question about the audio content.',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 201,
-        description: 'Subquestion created successfully',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 400,
-        description: 'Bad request - validation failed',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 404,
-        description: 'Parent question not found',
-    }),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [QuestionDtos.CreateTopicBasedAudioSubquestionDto]),
-    __metadata("design:returntype", void 0)
-], QuestionsCreationController.prototype, "createTopicBasedAudioSubquestion", null);
 __decorate([
     (0, common_1.Post)('lyrics_training'),
     (0, nestjs_form_data_1.FormDataRequest)(),

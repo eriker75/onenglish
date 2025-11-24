@@ -18,6 +18,7 @@ import {
   FormattedTalesQuestion,
   FormattedTagItQuestion,
   FormattedReadItQuestion,
+  FormattedReadItSubquestion,
   FormattedTellMeAboutItQuestion,
   FormattedReportItQuestion,
   FormattedDebateQuestion,
@@ -78,6 +79,7 @@ export class QuestionFormatterService {
 
       // SPEAKING
       read_it: this.formatReadIt.bind(this),
+      read_it_subquestion: this.formatReadItSubquestion.bind(this),
       tell_me_about_it: this.formatTellMeAboutIt.bind(this),
       report_it: this.formatReportIt.bind(this),
       debate: this.formatDebate.bind(this),
@@ -254,6 +256,8 @@ export class QuestionFormatterService {
       scrambledWords: question.content || [],
       // Correct sentence
       correctSentence: question.answer,
+      // Optional reference image
+      image: question.media?.find((m) => m.type === 'image') || null,
       // Metadata
       ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
         configurations: question.configurations,
@@ -514,13 +518,45 @@ export class QuestionFormatterService {
       instructions: question.instructions,
       validationMethod: question.validationMethod,
       // Text to read
-      textToRead: question.content,
-      // Reference audio (if available)
-      referenceAudio: question.media?.find((m) => m.type === 'audio') || null,
+      content: question.content,
+      // Optional reference image
+      image: question.media?.find((m) => m.type === 'image') || null,
+      // Sub-questions
+      subQuestions: question.subQuestions
+        ?.map((sq) => this.formatQuestion(sq))
+        .filter((q): q is FormattedQuestion => q !== null) || [],
       // Metadata
       ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
         configurations: question.configurations,
       }),
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    };
+  }
+
+  private formatReadItSubquestion(
+    question: EnrichedQuestion,
+  ): FormattedReadItSubquestion {
+    return {
+      id: question.id,
+      type: question.type,
+      stage: question.stage,
+      position: question.position,
+      points: question.points,
+      timeLimit: question.timeLimit,
+      maxAttempts: question.maxAttempts,
+      text: question.text,
+      instructions: question.instructions,
+      validationMethod: question.validationMethod,
+      // Content is the question text
+      content: question.content || '',
+      // Answer options (true/false)
+      options: question.options || [],
+      // Correct answer (boolean)
+      answer: question.answer,
+      // Parent question ID
+      parentQuestionId: question.parentQuestion?.id,
+      // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
     };
@@ -668,13 +704,15 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Sub-questions for tenses practice
-      subQuestions:
-        question.subQuestions
-          ?.map((sq) => this.formatQuestion(sq))
-          .filter((q): q is FormattedQuestion => q !== null) || [],
-      // Configuration
-      totalQuestions: question.subQuestions?.length || 0,
+      // Sentence to identify tense from
+      content: question.content || '',
+      // Tense options
+      options: question.options || [],
+      // Correct tense
+      answer: question.answer,
+      // Optional reference image
+      image: question.media?.find((m) => m.type === 'image') || null,
+      // Metadata
       ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
         configurations: question.configurations,
       }),

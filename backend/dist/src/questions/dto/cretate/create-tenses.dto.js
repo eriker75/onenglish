@@ -19,7 +19,7 @@ class CreateTensesDto extends base_question_dto_1.BaseCreateQuestionWithoutStage
     content;
     options;
     answer;
-    media;
+    image;
 }
 exports.CreateTensesDto = CreateTensesDto;
 __decorate([
@@ -76,5 +76,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateTensesDto.prototype, "media", void 0);
+], CreateTensesDto.prototype, "image", void 0);
 //# sourceMappingURL=create-tenses.dto.js.map

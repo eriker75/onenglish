@@ -74,6 +74,7 @@ export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
 export interface FormattedUnscrambleQuestion extends BaseQuestionFields {
     scrambledWords: string[];
     correctSentence: string;
+    image: MediaFile | null;
 }
 export interface FormattedFillInTheBlankQuestion extends BaseQuestionFields {
     sentence: string;
@@ -118,8 +119,15 @@ export interface FormattedTagItQuestion extends BaseQuestionFields {
     image: MediaFile | null;
 }
 export interface FormattedReadItQuestion extends BaseQuestionFields {
-    textToRead: string;
-    referenceAudio: MediaFile | null;
+    content: string;
+    image: MediaFile | null;
+    subQuestions: FormattedQuestion[];
+}
+export interface FormattedReadItSubquestion extends BaseQuestionFields {
+    content: string;
+    options: boolean[];
+    answer: boolean;
+    parentQuestionId?: string;
 }
 export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
     image: MediaFile | null;
@@ -146,8 +154,10 @@ export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
     image: MediaFile | null;
 }
 export interface FormattedTensesQuestion extends BaseQuestionFields {
-    subQuestions: FormattedQuestion[];
-    totalQuestions: number;
+    content: string;
+    options: string[];
+    answer: string;
+    image: MediaFile | null;
 }
 export interface FormattedDefaultQuestion extends BaseQuestionFields {
     content?: any;

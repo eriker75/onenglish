@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
+
 import Tenses from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Tenses";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -20,10 +20,14 @@ interface TensesWrapperProps {
 
 export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }: TensesWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to TensesQuestion for type safety
-  const tensesQuestion = existingQuestion as TensesQuestion | undefined;
+  const tensesQuestion = (freshQuestionData || existingQuestion) as TensesQuestion | undefined;
 
   const [questionText, setQuestionText] = useState(tensesQuestion?.question || "");
   const [instructions, setInstructions] = useState(tensesQuestion?.instructions || "");
@@ -37,51 +41,34 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
   const [timeSeconds, setTimeSeconds] = useState(initialTime % 60);
   const [maxAttempts, setMaxAttempts] = useState(tensesQuestion?.maxAttempts || 1);
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (data: TensesPayload) => {
-      const response = await api.post("/questions/create/tenses", data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Tenses question created successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TensesPayload }) => {
-      const response = await api.patch(`/questions/tenses/${id}`, data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Tenses question updated successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending = createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -134,9 +121,58 @@ export default function TensesWrapper({ existingQuestion, onCancel, onSuccess }:
     };
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, data: payload });
+      updateMutation.mutate(
+        {
+          endpoint: "/questions/tenses",
+          questionId: existingQuestion.id,
+          data: payload,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Tenses question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to update question",
+              variant: "destructive",
+            });
+
+        }
+      );
     } else {
-      createQuestionMutation.mutate(payload);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/tenses",
+          data: payload,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Tenses question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

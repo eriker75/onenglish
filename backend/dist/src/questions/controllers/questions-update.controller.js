@@ -59,9 +59,6 @@ let QuestionsUpdateController = class QuestionsUpdateController {
     updateTopicBasedAudio(id, dto) {
         return this.updateService.updateQuestion(id, dto);
     }
-    updateTopicBasedAudioSubquestion(id, dto) {
-        return this.updateService.updateTopicBasedAudioSubquestion(id, dto);
-    }
     updateLyricsTraining(id, dto) {
         return this.updateService.updateQuestion(id, dto);
     }
@@ -158,6 +155,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateWordAssociations", null);
 __decorate([
     (0, common_1.Patch)('unscramble/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update unscramble question',
         description: 'Update an unscramble question.',
@@ -173,6 +172,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateUnscramble", null);
 __decorate([
     (0, common_1.Patch)('tenses/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update tenses question',
         description: 'Update a tenses question.',
@@ -188,6 +189,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateTenses", null);
 __decorate([
     (0, common_1.Patch)('tag_it/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update tag_it question',
         description: 'Update a tag it question.',
@@ -203,6 +206,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateTagIt", null);
 __decorate([
     (0, common_1.Patch)('report_it/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update report_it question',
         description: 'Update a report it question.',
@@ -285,25 +290,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], QuestionsUpdateController.prototype, "updateTopicBasedAudio", null);
 __decorate([
-    (0, common_1.Patch)('topic_based_audio_subquestion/:id'),
-    (0, swagger_1.ApiOperation)({
-        summary: 'Update topic_based_audio_subquestion',
-        description: 'Update a topic-based audio subquestion. This endpoint updates a single subquestion of a topic_based_audio question.',
-    }),
-    (0, swagger_1.ApiParam)({ name: 'id', description: 'Subquestion ID' }),
-    (0, swagger_1.ApiResponse)({ status: 200, description: 'Subquestion updated successfully' }),
-    (0, swagger_1.ApiResponse)({ status: 404, description: 'Subquestion not found' }),
-    (0, swagger_1.ApiResponse)({
-        status: 400,
-        description: 'Invalid question type or validation failed',
-    }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_1.UpdateTopicBasedAudioSubquestionDto]),
-    __metadata("design:returntype", void 0)
-], QuestionsUpdateController.prototype, "updateTopicBasedAudioSubquestion", null);
-__decorate([
     (0, common_1.Patch)('lyrics_training/:id'),
     (0, nestjs_form_data_1.FormDataRequest)(),
     (0, swagger_1.ApiConsumes)('multipart/form-data'),
@@ -371,6 +357,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateTales", null);
 __decorate([
     (0, common_1.Patch)('superbrain/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update superbrain question',
         description: 'Update a superbrain question.',
@@ -386,6 +374,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateSuperbrain", null);
 __decorate([
     (0, common_1.Patch)('tell_me_about_it/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update tell_me_about_it question',
         description: 'Update a tell me about it question.',

@@ -35,6 +35,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             tales: this.formatTales.bind(this),
             tag_it: this.formatTagIt.bind(this),
             read_it: this.formatReadIt.bind(this),
+            read_it_subquestion: this.formatReadItSubquestion.bind(this),
             tell_me_about_it: this.formatTellMeAboutIt.bind(this),
             report_it: this.formatReportIt.bind(this),
             debate: this.formatDebate.bind(this),
@@ -164,6 +165,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             validationMethod: question.validationMethod,
             scrambledWords: question.content || [],
             correctSentence: question.answer,
+            image: question.media?.find((m) => m.type === 'image') || null,
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,
             }),
@@ -363,11 +365,34 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            textToRead: question.content,
-            referenceAudio: question.media?.find((m) => m.type === 'audio') || null,
+            content: question.content,
+            image: question.media?.find((m) => m.type === 'image') || null,
+            subQuestions: question.subQuestions
+                ?.map((sq) => this.formatQuestion(sq))
+                .filter((q) => q !== null) || [],
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,
             }),
+            createdAt: question.createdAt,
+            updatedAt: question.updatedAt,
+        };
+    }
+    formatReadItSubquestion(question) {
+        return {
+            id: question.id,
+            type: question.type,
+            stage: question.stage,
+            position: question.position,
+            points: question.points,
+            timeLimit: question.timeLimit,
+            maxAttempts: question.maxAttempts,
+            text: question.text,
+            instructions: question.instructions,
+            validationMethod: question.validationMethod,
+            content: question.content || '',
+            options: question.options || [],
+            answer: question.answer,
+            parentQuestionId: question.parentQuestion?.id,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };
@@ -481,10 +506,10 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            subQuestions: question.subQuestions
-                ?.map((sq) => this.formatQuestion(sq))
-                .filter((q) => q !== null) || [],
-            totalQuestions: question.subQuestions?.length || 0,
+            content: question.content || '',
+            options: question.options || [],
+            answer: question.answer,
+            image: question.media?.find((m) => m.type === 'image') || null,
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
                 configurations: question.configurations,
             }),

@@ -18,7 +18,7 @@ export class CreateImageToMultipleChoicesDto extends BaseCreateQuestionWithoutSt
     format: 'binary',
     description: 'Image file to upload (PNG, JPEG, or WebP, max 5MB)',
   })
-  media: FileSystemStoredFile;
+  image: FileSystemStoredFile;
 
   @ApiProperty({
     type: [String],

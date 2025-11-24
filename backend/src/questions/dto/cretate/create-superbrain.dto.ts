@@ -6,9 +6,9 @@ import {
   FileSystemStoredFile,
   MaxFileSize,
 } from 'nestjs-form-data';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 
-export class CreateSuperbrainDto extends BaseCreateQuestionDto {
+export class CreateSuperbrainDto extends BaseCreateQuestionWithoutStageDto {
   @ApiProperty({
     example: 'What do bees make?',
     description: 'Question prompt for audio response',
@@ -34,5 +34,5 @@ export class CreateSuperbrainDto extends BaseCreateQuestionDto {
     'image/gif',
     'image/avif',
   ])
-  media?: FileSystemStoredFile;
+  image?: FileSystemStoredFile;
 }

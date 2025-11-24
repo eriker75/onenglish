@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -33,10 +33,14 @@ export default function GossipWrapper({
       console.log(`[Toast]: ${opts.title} - ${opts.description ?? ""}`);
     }
   };
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to GossipQuestion for type safety
-  const gossipQuestion = existingQuestion as GossipQuestion | undefined;
+  const gossipQuestion = (freshQuestionData || existingQuestion) as GossipQuestion | undefined;
 
   const [questionText, setQuestionText] = useState(
     gossipQuestion?.question || ""
@@ -63,15 +67,9 @@ export default function GossipWrapper({
   );
 
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/gossip", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -79,7 +77,7 @@ export default function GossipWrapper({
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error creating question:", error);
       toast({
@@ -88,24 +86,12 @@ export default function GossipWrapper({
           error?.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({
-      id,
-      formData,
-    }: {
-      id: string;
-      formData: FormData;
-    }) => {
-      const response = await api.patch(`/questions/gossip/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -113,7 +99,7 @@ export default function GossipWrapper({
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error updating question:", error);
       toast({
@@ -122,11 +108,13 @@ export default function GossipWrapper({
           error?.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -182,7 +170,31 @@ export default function GossipWrapper({
     if (existingQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
-      createQuestionMutation.mutate(formData);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/gossip",
+          data: formData,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Gossip question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

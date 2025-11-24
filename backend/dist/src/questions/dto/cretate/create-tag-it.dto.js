@@ -12,12 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateTagItDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateTagItDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     answer;
-    media;
+    image;
 }
 exports.CreateTagItDto = CreateTagItDto;
 __decorate([
@@ -26,8 +27,20 @@ __decorate([
         example: ['He is responsible for the project,', '?'],
         description: 'Sentence parts with missing tag',
     }),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value);
+            }
+            catch {
+                return value.split(',').map((item) => item.trim());
+            }
+        }
+        return value;
+    }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(2),
+    (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateTagItDto.prototype, "content", void 0);
 __decorate([
@@ -36,8 +49,20 @@ __decorate([
         example: ["isn't he?", 'is not he?'],
         description: 'Acceptable answers for the tag',
     }),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value);
+            }
+            catch {
+                return value.split(',').map((item) => item.trim());
+            }
+        }
+        return value;
+    }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(1),
+    (0, class_validator_1.IsString)({ each: true }),
     __metadata("design:type", Array)
 ], CreateTagItDto.prototype, "answer", void 0);
 __decorate([
@@ -60,5 +85,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateTagItDto.prototype, "media", void 0);
+], CreateTagItDto.prototype, "image", void 0);
 //# sourceMappingURL=create-tag-it.dto.js.map

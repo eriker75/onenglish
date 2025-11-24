@@ -75,11 +75,11 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], AudioSubQuestionDto.prototype, "answer", void 0);
-class CreateTopicBasedAudioDto extends (0, swagger_1.OmitType)(base_question_dto_1.BaseCreateQuestionDto, [
+class CreateTopicBasedAudioDto extends (0, swagger_1.OmitType)(base_question_dto_1.BaseCreateQuestionWithoutStageDto, [
     'points',
 ]) {
     points;
-    media;
+    audio;
     subQuestions;
     parentQuestionId;
 }
@@ -106,7 +106,7 @@ __decorate([
         description: 'Audio file for the topic',
     }),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateTopicBasedAudioDto.prototype, "media", void 0);
+], CreateTopicBasedAudioDto.prototype, "audio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         type: String,

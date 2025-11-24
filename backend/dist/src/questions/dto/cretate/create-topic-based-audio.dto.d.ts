@@ -1,4 +1,4 @@
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 export declare class AudioSubQuestionDto {
     text: string;
@@ -6,10 +6,10 @@ export declare class AudioSubQuestionDto {
     options: string[];
     answer: string;
 }
-declare const CreateTopicBasedAudioDto_base: import("@nestjs/common").Type<Omit<BaseCreateQuestionDto, "points">>;
+declare const CreateTopicBasedAudioDto_base: import("@nestjs/common").Type<Omit<BaseCreateQuestionWithoutStageDto, "points">>;
 export declare class CreateTopicBasedAudioDto extends CreateTopicBasedAudioDto_base {
     points?: number;
-    media: FileSystemStoredFile;
+    audio: FileSystemStoredFile;
     subQuestions: string;
     parentQuestionId?: string;
 }

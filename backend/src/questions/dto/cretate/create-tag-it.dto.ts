@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, ArrayMinSize, IsOptional } from 'class-validator';
+import { IsArray, ArrayMinSize, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import {
   FileSystemStoredFile,
@@ -14,8 +15,21 @@ export class CreateTagItDto extends BaseCreateQuestionWithoutStageDto {
     example: ['He is responsible for the project,', '?'],
     description: 'Sentence parts with missing tag',
   })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        // Try parsing as JSON array first
+        return JSON.parse(value);
+      } catch {
+        // Fall back to comma-separated string
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return value;
+  })
   @IsArray()
   @ArrayMinSize(2)
+  @IsString({ each: true })
   content: string[];
 
   @ApiProperty({
@@ -23,8 +37,21 @@ export class CreateTagItDto extends BaseCreateQuestionWithoutStageDto {
     example: ["isn't he?", 'is not he?'],
     description: 'Acceptable answers for the tag',
   })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        // Try parsing as JSON array first
+        return JSON.parse(value);
+      } catch {
+        // Fall back to comma-separated string
+        return value.split(',').map((item) => item.trim());
+      }
+    }
+    return value;
+  })
   @IsArray()
   @ArrayMinSize(1)
+  @IsString({ each: true })
   answer: string[];
 
   @ApiPropertyOptional({
@@ -46,6 +73,6 @@ export class CreateTagItDto extends BaseCreateQuestionWithoutStageDto {
     'image/gif',
     'image/avif',
   ])
-  media?: FileSystemStoredFile;
+  image?: FileSystemStoredFile;
 }
 

@@ -5,5 +5,5 @@ export declare class CreateTensesDto extends BaseCreateQuestionWithoutStageDto {
     content: string;
     options: VERB_TENSES[];
     answer: VERB_TENSES;
-    media?: FileSystemStoredFile;
+    image?: FileSystemStoredFile;
 }

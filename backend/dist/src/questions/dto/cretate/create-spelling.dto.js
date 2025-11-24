@@ -15,7 +15,7 @@ const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateSpellingDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
-    media;
+    image;
     answer;
 }
 exports.CreateSpellingDto = CreateSpellingDto;
@@ -29,7 +29,7 @@ __decorate([
         description: 'Image file to spell the word',
     }),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateSpellingDto.prototype, "media", void 0);
+], CreateSpellingDto.prototype, "image", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'Butterfly',

@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
 import WordBox from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordBox";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection"; // Import Question interface
+import { Question } from "../QuestionsSection";
 import { WordBoxQuestion, WordBoxPayload } from "./types";
 
 interface WordBoxWrapperProps {
-  existingQuestion?: Question; // Add existingQuestion prop
+  existingQuestion?: Question;
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -24,12 +23,19 @@ export default function WordBoxWrapper({
   onSuccess,
 }: WordBoxWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
 
-  // Cast existingQuestion to WordBoxQuestion for type safety
-  const wordBoxQuestion = existingQuestion as WordBoxQuestion | undefined;
+  // Get challengeId from UI store (source of truth for UI state)
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
-  // Initialize State with existingQuestion data or defaults
+  // 🆕 Fetch fresh data when editing (optional - use if you want latest data)
+  const { data: freshQuestionData } = useQuestion(
+    existingQuestion?.id // Only fetch if editing
+  );
+
+  // Use fresh data if available, otherwise use prop data
+  const wordBoxQuestion = (freshQuestionData || existingQuestion) as WordBoxQuestion | undefined;
+
+  // Initialize State with question data or defaults
   const [questionText, setQuestionText] = useState(
     wordBoxQuestion?.question || ""
   );
@@ -57,58 +63,11 @@ export default function WordBoxWrapper({
     wordBoxQuestion?.maxAttempts || 1
   );
 
-  // Create Mutation
-  const createQuestionMutation = useMutation({
-    mutationFn: async (data: WordBoxPayload) => {
-      const response = await api.post("/questions/create/wordbox", data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "WordBox question created successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error creating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to create question",
-        variant: "destructive",
-      });
-    },
-  });
+  // 🆕 Use generic mutations with auto cache invalidation
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
 
-  // Update Mutation
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: WordBoxPayload }) => {
-      const response = await api.patch(`/questions/wordbox/${id}`, data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "WordBox question updated successfully",
-        variant: "default",
-      });
-      if (onSuccess) onSuccess();
-    },
-    onError: (error: AxiosError<{ message: string }>) => {
-      console.error("Error updating question:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message || "Failed to update question",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -120,7 +79,7 @@ export default function WordBoxWrapper({
       return;
     }
 
-    // Validate grid content (at least one letter?)
+    // Validate grid content
     const hasContent = grid.some((row) =>
       row.some((cell) => cell.trim() !== "")
     );
@@ -135,7 +94,7 @@ export default function WordBoxWrapper({
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
 
-    const payload = {
+    const payload: WordBoxPayload = {
       challengeId,
       gridWidth,
       gridHeight,
@@ -149,9 +108,60 @@ export default function WordBoxWrapper({
     };
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, data: payload });
+      // 🆕 Update with generic mutation
+      updateMutation.mutate(
+        {
+          endpoint: "/questions/wordbox",
+          questionId: existingQuestion.id,
+          data: payload,
+          challengeId,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "WordBox question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to update question",
+              variant: "destructive",
+            });
+          },
+        }
+      );
     } else {
-      createQuestionMutation.mutate(payload);
+      // 🆕 Create with generic mutation
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/wordbox",
+          data: payload,
+          challengeId,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "WordBox question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+          },
+        }
+      );
     }
   };
 

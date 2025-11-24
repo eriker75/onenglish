@@ -1,6 +1,6 @@
 import { FileSystemStoredFile } from 'nestjs-form-data';
-import { BaseCreateQuestionDto } from './base-question.dto';
-export declare class CreateTellMeAboutItDto extends BaseCreateQuestionDto {
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
+export declare class CreateTellMeAboutItDto extends BaseCreateQuestionWithoutStageDto {
     content: string;
-    media?: FileSystemStoredFile;
+    image?: FileSystemStoredFile;
 }

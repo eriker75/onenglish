@@ -12,7 +12,7 @@ export class CreateSpellingDto extends BaseCreateQuestionWithoutStageDto {
     format: 'binary',
     description: 'Image file to spell the word',
   })
-  media: FileSystemStoredFile;
+  image: FileSystemStoredFile;
 
   @ApiProperty({
     example: 'Butterfly',

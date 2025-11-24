@@ -14,8 +14,8 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-class CreateSentenceMakerDto extends base_question_dto_1.BaseCreateQuestionDto {
-    media;
+class CreateSentenceMakerDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
+    images;
 }
 exports.CreateSentenceMakerDto = CreateSentenceMakerDto;
 __decorate([
@@ -30,5 +30,5 @@ __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ArrayMinSize)(1),
     __metadata("design:type", Array)
-], CreateSentenceMakerDto.prototype, "media", void 0);
+], CreateSentenceMakerDto.prototype, "images", void 0);
 //# sourceMappingURL=create-sentence-maker.dto.js.map

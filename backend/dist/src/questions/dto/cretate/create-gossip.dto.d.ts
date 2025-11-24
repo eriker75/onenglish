@@ -1,6 +1,6 @@
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import { FileSystemStoredFile } from 'nestjs-form-data';
-export declare class CreateGossipDto extends BaseCreateQuestionDto {
-    media: FileSystemStoredFile;
+export declare class CreateGossipDto extends BaseCreateQuestionWithoutStageDto {
+    audio: FileSystemStoredFile;
     answer: string;
 }

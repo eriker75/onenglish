@@ -106,6 +106,7 @@ export interface FormattedWordAssociationsQuestion extends BaseQuestionFields {
 export interface FormattedUnscrambleQuestion extends BaseQuestionFields {
   scrambledWords: string[];
   correctSentence: string;
+  image: MediaFile | null;
 }
 
 export interface FormattedFillInTheBlankQuestion extends BaseQuestionFields {
@@ -168,8 +169,16 @@ export interface FormattedTagItQuestion extends BaseQuestionFields {
 // ==================== SPEAKING FORMATTED QUESTIONS ====================
 
 export interface FormattedReadItQuestion extends BaseQuestionFields {
-  textToRead: string;
-  referenceAudio: MediaFile | null;
+  content: string; // Reading passage text
+  image: MediaFile | null; // Optional reference image
+  subQuestions: FormattedQuestion[];
+}
+
+export interface FormattedReadItSubquestion extends BaseQuestionFields {
+  content: string; // Question statement
+  options: boolean[]; // True/False options [true, false]
+  answer: boolean; // Correct answer
+  parentQuestionId?: string;
 }
 
 export interface FormattedTellMeAboutItQuestion extends BaseQuestionFields {
@@ -204,8 +213,10 @@ export interface FormattedSuperbrainQuestion extends BaseQuestionFields {
 }
 
 export interface FormattedTensesQuestion extends BaseQuestionFields {
-  subQuestions: FormattedQuestion[];
-  totalQuestions: number;
+  content: string; // Sentence to identify tense from
+  options: string[]; // Tense options
+  answer: string; // Correct tense
+  image: MediaFile | null; // Optional reference image
 }
 
 // ==================== DEFAULT FORMATTED QUESTION ====================

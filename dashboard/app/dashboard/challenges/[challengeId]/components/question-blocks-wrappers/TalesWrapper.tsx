@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
+
 import Tales from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Tales";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -24,10 +24,14 @@ export default function TalesWrapper({
   onSuccess,
 }: TalesWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to TalesQuestion for type safety
-  const talesQuestion = existingQuestion as TalesQuestion | undefined;
+  const talesQuestion = (freshQuestionData || existingQuestion) as TalesQuestion | undefined;
 
   // Extract example story from instructions if possible
   // This assumes a specific format: "instructions\n\nExample Story:\nexampleStory"
@@ -54,15 +58,9 @@ export default function TalesWrapper({
     talesQuestion?.maxAttempts || 1
   );
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await api.post("/questions/create/tales", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -70,7 +68,7 @@ export default function TalesWrapper({
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
@@ -78,24 +76,12 @@ export default function TalesWrapper({
           error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({
-      id,
-      formData,
-    }: {
-      id: string;
-      formData: FormData;
-    }) => {
-      const response = await api.patch(`/questions/tales/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  
       return response.data;
-    },
+
     onSuccess: () => {
       toast({
         title: "Success",
@@ -103,7 +89,7 @@ export default function TalesWrapper({
         variant: "default",
       });
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error updating question:", error);
       toast({
@@ -112,11 +98,13 @@ export default function TalesWrapper({
           error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -166,7 +154,31 @@ export default function TalesWrapper({
     if (talesQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
-      createQuestionMutation.mutate(formData);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/tales",
+          data: formData,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Tales question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

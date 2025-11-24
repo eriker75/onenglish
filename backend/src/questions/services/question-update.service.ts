@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { QuestionStage } from '@prisma/client';
+import { QuestionStage, ValidationMethod } from '@prisma/client';
 import { QuestionMediaService } from './question-media.service';
 import { QuestionFormatterService } from './question-formatter.service';
 
@@ -107,6 +107,12 @@ export class QuestionUpdateService {
     // Remove invalid fields for Prisma update (fields that cannot be updated directly)
     const {
       media, // Media files must be handled separately
+      image,
+      audio,
+      video,
+      images,
+      audios,
+      subQuestions, // Sub-questions must be handled separately
       challengeId, // Cannot change challenge relationship
       stage, // Stage is handled separately for grammar/listening/writing/speaking question types
       ...questionData
@@ -173,11 +179,12 @@ export class QuestionUpdateService {
       data: questionData,
     });
 
-    // Handle media file update if provided
-    if (media) {
+    // Handle single media file update if provided (media, image, audio, or video)
+    const singleFile = media || image || audio || video;
+    if (singleFile && !Array.isArray(singleFile)) {
       // Upload new media file
       const uploadedFile =
-        await this.questionMediaService.uploadSingleFile(media);
+        await this.questionMediaService.uploadSingleFile(singleFile);
 
       // Delete old media file records
       await this.prisma.questionMedia.deleteMany({
@@ -192,6 +199,32 @@ export class QuestionUpdateService {
           position: 0,
         },
       ]);
+    }
+
+    // Handle multiple media files update if provided (images, audios, or media array)
+    const multipleFiles = images || audios || (Array.isArray(media) ? media : null);
+    if (multipleFiles && Array.isArray(multipleFiles)) {
+      // Upload all files
+      const uploadedFiles = await Promise.all(
+        multipleFiles.map((file) =>
+          this.questionMediaService.uploadSingleFile(file),
+        ),
+      );
+
+      // Delete old media file records
+      await this.prisma.questionMedia.deleteMany({
+        where: { questionId },
+      });
+
+      // Attach new media files
+      await this.questionMediaService.attachMediaFiles(
+        questionId,
+        uploadedFiles.map((file, index) => ({
+          id: file.id,
+          context: 'main',
+          position: index,
+        })),
+      );
     }
 
     // Actualizar configuraciones de wordbox si se proporcionaron
@@ -264,6 +297,159 @@ export class QuestionUpdateService {
       };
 
       await upsertConfig('maxAssociations', maxAssociations);
+    }
+
+    // Handle sub-questions update for read_it and topic_based_audio
+    if (subQuestions !== undefined && (question.type === 'read_it' || question.type === 'topic_based_audio')) {
+      // Parse subQuestions from JSON string
+      let parsedSubQuestions: any[];
+      try {
+        parsedSubQuestions = typeof subQuestions === 'string' 
+          ? JSON.parse(subQuestions) 
+          : subQuestions;
+      } catch (error) {
+        throw new BadRequestException(
+          'subQuestions must be a valid JSON string array',
+        );
+      }
+
+      // Validate that it's an array
+      if (!Array.isArray(parsedSubQuestions) || parsedSubQuestions.length === 0) {
+        throw new BadRequestException('Must provide at least one sub-question');
+      }
+
+      // Validate each sub-question structure based on question type
+      parsedSubQuestions.forEach((sub, index) => {
+        if (question.type === 'read_it') {
+          // Validate read_it sub-question structure
+          if (!sub.content || typeof sub.content !== 'string') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: content is required and must be a string`,
+            );
+          }
+          if (!Array.isArray(sub.options) || sub.options.length !== 2) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: options must be an array with exactly 2 boolean values [true, false]`,
+            );
+          }
+          if (
+            typeof sub.options[0] !== 'boolean' ||
+            typeof sub.options[1] !== 'boolean'
+          ) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: options must contain only boolean values`,
+            );
+          }
+          if (typeof sub.answer !== 'boolean') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: answer is required and must be a boolean`,
+            );
+          }
+          if (!sub.options.includes(sub.answer)) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: answer must match one of the provided options`,
+            );
+          }
+          if (!sub.points || typeof sub.points !== 'number') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: points is required and must be a number`,
+            );
+          }
+          if (sub.points < 0) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: points cannot be negative`,
+            );
+          }
+        } else if (question.type === 'topic_based_audio') {
+          // Validate topic_based_audio sub-question structure
+          if (!sub.text || typeof sub.text !== 'string') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: text is required and must be a string`,
+            );
+          }
+          if (!sub.points || typeof sub.points !== 'number') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: points is required and must be a number`,
+            );
+          }
+          if (!Array.isArray(sub.options) || sub.options.length < 2) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: must provide at least 2 options`,
+            );
+          }
+          if (!sub.answer || typeof sub.answer !== 'string') {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: answer is required and must be a string`,
+            );
+          }
+          if (!sub.options.includes(sub.answer)) {
+            throw new BadRequestException(
+              `Sub-question ${index + 1}: answer must match one of the provided options`,
+            );
+          }
+        }
+      });
+
+      // Delete all existing sub-questions
+      await this.prisma.question.deleteMany({
+        where: { parentQuestionId: questionId },
+      });
+
+      // Create new sub-questions
+      const subQuestionType = question.type === 'read_it' 
+        ? 'read_it_subquestion' 
+        : 'topic_based_audio_subquestion';
+
+      await this.prisma.question.createMany({
+        data: parsedSubQuestions.map((sub, index) => {
+          if (question.type === 'read_it') {
+            return {
+              challengeId: question.challengeId,
+              stage: question.stage,
+              position: index + 1,
+              type: subQuestionType,
+              points: sub.points,
+              timeLimit: 0,
+              maxAttempts: 0,
+              text: sub.content,
+              instructions: 'Select true or false',
+              validationMethod: 'AUTO' as ValidationMethod,
+              content: sub.content,
+              options: JSON.parse(JSON.stringify(sub.options)),
+              answer: sub.answer,
+              parentQuestionId: questionId,
+            };
+          } else {
+            return {
+              challengeId: question.challengeId,
+              stage: question.stage,
+              position: index + 1,
+              type: subQuestionType,
+              points: sub.points,
+              timeLimit: 0,
+              maxAttempts: 0,
+              text: 'Sub-question',
+              content: sub.text,
+              instructions: 'Select the correct option',
+              validationMethod: 'AUTO' as ValidationMethod,
+              options: JSON.parse(JSON.stringify(sub.options)),
+              answer: sub.answer,
+              parentQuestionId: questionId,
+            };
+          }
+        }),
+      });
+
+      // Recalculate parent points
+      const totalPoints = parsedSubQuestions.reduce(
+        (sum, sub) => sum + sub.points,
+        0,
+      );
+
+      await this.prisma.question.update({
+        where: { id: questionId },
+        data: { points: totalPoints },
+      });
     }
 
     // If this is a sub-question and points were updated, recalculate parent points
@@ -342,102 +528,6 @@ export class QuestionUpdateService {
    */
   calculatePointsFromSubQuestions(subQuestions: any[]): number {
     return subQuestions.reduce((sum, sq) => sum + (sq.points || 0), 0);
-  }
-
-  /**
-   * Update a topic_based_audio_subquestion
-   */
-  async updateTopicBasedAudioSubquestion(
-    id: string,
-    updateData: any,
-  ): Promise<any> {
-    const question = await this.prisma.question.findUnique({
-      where: { id },
-    });
-
-    if (!question) {
-      throw new NotFoundException('Subquestion not found');
-    }
-
-    // Check if question is deleted
-    if (question.deletedAt !== null) {
-      throw new BadRequestException(
-        'Cannot update a deleted question. This question was deleted and is archived for data integrity.',
-      );
-    }
-
-    if (question.type !== 'topic_based_audio_subquestion') {
-      throw new BadRequestException(
-        'Question must be of type topic_based_audio_subquestion',
-      );
-    }
-
-    // Validate answer is in options if both are being updated
-    const finalOptions = updateData.options || question.options;
-    const finalAnswer = updateData.answer || question.answer;
-
-    if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
-      throw new BadRequestException('Answer must be one of the options');
-    }
-
-    // Update the subquestion
-    await this.prisma.question.update({
-      where: { id },
-      data: updateData,
-    });
-
-    // If points were updated, recalculate parent points
-    if (question.parentQuestionId && updateData.points !== undefined) {
-      await this.recalculateParentPoints(question.parentQuestionId);
-    }
-
-    // Fetch the updated question with all relations (same as findOne)
-    const questionWithRelations = await this.prisma.question.findUnique({
-      where: { id },
-      include: {
-        questionMedia: {
-          include: {
-            mediaFile: true,
-          },
-          orderBy: {
-            position: 'asc',
-          },
-        },
-        configurations: true,
-        subQuestions: {
-          include: {
-            questionMedia: {
-              include: {
-                mediaFile: true,
-              },
-            },
-            configurations: true,
-          },
-        },
-        challenge: true,
-        parentQuestion: true,
-      },
-    });
-
-    if (!questionWithRelations) {
-      throw new NotFoundException('Subquestion not found after update');
-    }
-
-    // Enrich with media and configurations (including subQuestions recursively)
-    const enrichedQuestion =
-      this.questionMediaService.enrichQuestionWithMedia(questionWithRelations);
-
-    // Format based on question type for optimal frontend structure
-    const formattedQuestion =
-      this.questionFormatterService.formatQuestion(enrichedQuestion);
-
-    if (!formattedQuestion) {
-      throw new BadRequestException(
-        'Failed to format subquestion. Invalid question type or data.',
-      );
-    }
-
-    return formattedQuestion;
   }
 
   /**

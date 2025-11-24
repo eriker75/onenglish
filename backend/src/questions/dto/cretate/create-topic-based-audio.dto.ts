@@ -8,7 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { BaseCreateQuestionDto } from './base-question.dto';
+import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import {
   FileSystemStoredFile,
   HasMimeType,
@@ -68,7 +68,7 @@ export class AudioSubQuestionDto {
   answer: string;
 }
 
-export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionDto, [
+export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionWithoutStageDto, [
   'points',
 ] as const) {
   @ApiPropertyOptional({
@@ -91,7 +91,7 @@ export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionDto, [
     format: 'binary',
     description: 'Audio file for the topic',
   })
-  media: FileSystemStoredFile;
+  audio: FileSystemStoredFile;
 
   @ApiProperty({
     type: String,

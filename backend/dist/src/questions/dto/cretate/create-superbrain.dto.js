@@ -14,9 +14,9 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const nestjs_form_data_1 = require("nestjs-form-data");
 const base_question_dto_1 = require("./base-question.dto");
-class CreateSuperbrainDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateSuperbrainDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
-    media;
+    image;
 }
 exports.CreateSuperbrainDto = CreateSuperbrainDto;
 __decorate([
@@ -46,5 +46,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateSuperbrainDto.prototype, "media", void 0);
+], CreateSuperbrainDto.prototype, "image", void 0);
 //# sourceMappingURL=create-superbrain.dto.js.map

@@ -14,9 +14,9 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const nestjs_form_data_1 = require("nestjs-form-data");
 const base_question_dto_1 = require("./base-question.dto");
-class CreateTellMeAboutItDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateTellMeAboutItDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
-    media;
+    image;
 }
 exports.CreateTellMeAboutItDto = CreateTellMeAboutItDto;
 __decorate([
@@ -46,5 +46,5 @@ __decorate([
         'image/avif',
     ]),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateTellMeAboutItDto.prototype, "media", void 0);
+], CreateTellMeAboutItDto.prototype, "image", void 0);
 //# sourceMappingURL=create-tell-me-about-it.dto.js.map

@@ -125,7 +125,7 @@ export class QuestionsService {
 
     // Upload single image file
     const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+      dto.image,
     );
 
     // Create the question
@@ -235,7 +235,7 @@ export class QuestionsService {
 
     // Upload the file
     const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+      dto.image,
     );
 
     // Create the question
@@ -282,9 +282,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -344,9 +344,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -399,9 +399,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -455,9 +455,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -510,9 +510,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -547,15 +547,66 @@ export class QuestionsService {
   async createReadIt(dto: QuestionDtos.CreateReadItDto) {
     await this.validateChallenge(dto.challengeId);
 
-    if (!Array.isArray(dto.content) || dto.content.length === 0) {
+    if (!dto.content || dto.content.trim().length === 0) {
+      throw new BadRequestException('Content must be a non-empty string');
+    }
+
+    // Parse subQuestions from JSON string
+    let parsedSubQuestions: any[];
+    try {
+      parsedSubQuestions = JSON.parse(dto.subQuestions);
+    } catch (error) {
       throw new BadRequestException(
-        'Content must be a non-empty array of passages',
+        'subQuestions must be a valid JSON string array',
       );
     }
 
-    if (!Array.isArray(dto.subQuestions) || dto.subQuestions.length === 0) {
+    // Validate that it's an array
+    if (!Array.isArray(parsedSubQuestions) || parsedSubQuestions.length === 0) {
       throw new BadRequestException('Must provide at least one sub-question');
     }
+
+    // Validate each sub-question structure
+    parsedSubQuestions.forEach((sub, index) => {
+      if (!sub.content || typeof sub.content !== 'string') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: content is required and must be a string`,
+        );
+      }
+      if (!Array.isArray(sub.options) || sub.options.length !== 2) {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: options must be an array with exactly 2 boolean values [true, false]`,
+        );
+      }
+      if (
+        typeof sub.options[0] !== 'boolean' ||
+        typeof sub.options[1] !== 'boolean'
+      ) {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: options must contain only boolean values`,
+        );
+      }
+      if (typeof sub.answer !== 'boolean') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: answer is required and must be a boolean`,
+        );
+      }
+      if (!sub.options.includes(sub.answer)) {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: answer must match one of the provided options`,
+        );
+      }
+      if (!sub.points || typeof sub.points !== 'number') {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: points is required and must be a number`,
+        );
+      }
+      if (sub.points < 0) {
+        throw new BadRequestException(
+          `Sub-question ${index + 1}: points cannot be negative`,
+        );
+      }
+    });
 
     // Validate parent question exists if provided
     if (dto.parentQuestionId) {
@@ -583,15 +634,15 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
     return this.prisma.$transaction(async (tx) => {
       // Calculate total points from sub-questions
-      const totalPoints = dto.subQuestions.reduce(
+      const totalPoints = parsedSubQuestions.reduce(
         (sum, sub) => sum + sub.points,
         0,
       );
@@ -609,7 +660,7 @@ export class QuestionsService {
           instructions:
             dto.instructions || getDefaultInstructions(questionType),
           validationMethod: getDefaultValidationMethod(questionType),
-          content: JSON.parse(JSON.stringify(dto.content)),
+          content: dto.content,
           parentQuestionId: dto.parentQuestionId,
         },
       });
@@ -627,11 +678,11 @@ export class QuestionsService {
       }
 
       await tx.question.createMany({
-        data: dto.subQuestions.map((sub, index) => ({
+        data: parsedSubQuestions.map((sub, index) => ({
           challengeId: dto.challengeId,
           stage,
           position: index + 1,
-          type: 'true_false',
+          type: 'read_it_subquestion',
           points: sub.points, // Use points from DTO
           timeLimit: 0,
           maxAttempts: 0,
@@ -672,7 +723,7 @@ export class QuestionsService {
 
     // Upload all files
     const uploadedFiles = await Promise.all(
-      dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)),
+      dto.audios.map((file) => this.questionMediaService.uploadSingleFile(file)),
     );
 
     // Create the question
@@ -725,7 +776,7 @@ export class QuestionsService {
 
     // Upload the file
     const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+      dto.audio,
     );
 
     // Create the question
@@ -826,7 +877,7 @@ export class QuestionsService {
 
     // Upload the file
     const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+      dto.audio,
     );
 
     return this.prisma.$transaction(async (tx) => {
@@ -889,72 +940,6 @@ export class QuestionsService {
     });
   }
 
-  async createTopicBasedAudioSubquestion(
-    dto: QuestionDtos.CreateTopicBasedAudioSubquestionDto,
-  ) {
-    await this.validateChallenge(dto.challengeId);
-
-    // Validate parent question exists and is of type topic_based_audio
-    const parentQuestion = await this.prisma.question.findUnique({
-      where: { id: dto.parentQuestionId },
-    });
-
-    if (!parentQuestion) {
-      throw new NotFoundException(
-        `Parent question with ID ${dto.parentQuestionId} not found`,
-      );
-    }
-
-    if (parentQuestion.type !== 'topic_based_audio') {
-      throw new BadRequestException(
-        'Parent question must be of type topic_based_audio',
-      );
-    }
-
-    // Validate answer is in options
-    if (!dto.options.includes(dto.answer)) {
-      throw new BadRequestException('Answer must be one of the options');
-    }
-
-    const questionType = 'topic_based_audio_subquestion';
-
-    // Get next position for this parent's subquestions
-    const lastSubQuestion = await this.prisma.question.findFirst({
-      where: {
-        parentQuestionId: dto.parentQuestionId,
-      },
-      orderBy: { position: 'desc' },
-    });
-
-    const position = lastSubQuestion ? lastSubQuestion.position + 1 : 1;
-
-    // Create the subquestion
-    const question = await this.prisma.question.create({
-      data: {
-        challengeId: dto.challengeId,
-        stage: dto.stage,
-        position,
-        type: questionType,
-        points: dto.points,
-        timeLimit: dto.timeLimit || 0,
-        maxAttempts: dto.maxAttempts || 0,
-        text: dto.text || 'Sub-question',
-        content: dto.content,
-        instructions: dto.instructions || 'Select the correct option',
-        validationMethod: getDefaultValidationMethod(questionType),
-        options: dto.options,
-        answer: dto.answer,
-        parentQuestionId: dto.parentQuestionId,
-      },
-    });
-
-    // Recalculate parent points after adding new subquestion
-    await this.recalculateParentPoints(dto.parentQuestionId);
-
-    // Return enriched question
-    return this.findOne(question.id);
-  }
-
   /**
    * Recalculate parent question points based on sum of sub-questions
    */
@@ -972,55 +957,6 @@ export class QuestionsService {
       where: { id: parentQuestionId },
       data: { points: totalPoints },
     });
-  }
-
-  async updateTopicBasedAudioSubquestion(
-    id: string,
-    dto: QuestionDtos.UpdateTopicBasedAudioSubquestionDto,
-  ) {
-    const existingQuestion = await this.prisma.question.findUnique({
-      where: { id },
-    });
-
-    if (!existingQuestion) {
-      throw new NotFoundException(`Question with ID ${id} not found`);
-    }
-
-    if (existingQuestion.type !== 'topic_based_audio_subquestion') {
-      throw new BadRequestException(
-        'Question must be of type topic_based_audio_subquestion',
-      );
-    }
-
-    // If updating options and answer, validate answer is in options
-    const finalOptions = dto.options || existingQuestion.options;
-    const finalAnswer = dto.answer || existingQuestion.answer;
-
-    if (Array.isArray(finalOptions) && !finalOptions.includes(finalAnswer)) {
-      throw new BadRequestException('Answer must be one of the options');
-    }
-
-    const updateData: any = {};
-
-    if (dto.content !== undefined) updateData.content = dto.content;
-    if (dto.points !== undefined) updateData.points = dto.points;
-    if (dto.options !== undefined) updateData.options = dto.options;
-    if (dto.answer !== undefined) updateData.answer = dto.answer;
-    if (dto.text !== undefined) updateData.text = dto.text;
-    if (dto.instructions !== undefined)
-      updateData.instructions = dto.instructions;
-
-    await this.prisma.question.update({
-      where: { id },
-      data: updateData,
-    });
-
-    // Recalculate parent points if points were updated
-    if (existingQuestion.parentQuestionId && dto.points !== undefined) {
-      await this.recalculateParentPoints(existingQuestion.parentQuestionId);
-    }
-
-    return this.findOne(id);
   }
 
   async createLyricsTraining(dto: QuestionDtos.CreateLyricsTrainingDto) {
@@ -1041,7 +977,7 @@ export class QuestionsService {
 
     // Upload the file
     const uploadedFile = await this.questionMediaService.uploadSingleFile(
-      dto.media,
+      dto.video,
     );
 
     // Create the question
@@ -1086,7 +1022,7 @@ export class QuestionsService {
 
     // Upload all files
     const uploadedFiles = await Promise.all(
-      dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)),
+      dto.images.map((file) => this.questionMediaService.uploadSingleFile(file)),
     );
 
     // Create the question
@@ -1166,7 +1102,7 @@ export class QuestionsService {
 
     // Upload all files
     const uploadedFiles = await Promise.all(
-      dto.media.map((file) => this.questionMediaService.uploadSingleFile(file)),
+      dto.images.map((file) => this.questionMediaService.uploadSingleFile(file)),
     );
 
     // Create the question
@@ -1220,9 +1156,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -1273,9 +1209,9 @@ export class QuestionsService {
     let uploadedFile: Awaited<
       ReturnType<typeof this.questionMediaService.uploadSingleFile>
     > | null = null;
-    if (dto.media) {
+    if (dto.image) {
       uploadedFile = await this.questionMediaService.uploadSingleFile(
-        dto.media,
+        dto.image,
       );
     }
 
@@ -1322,6 +1258,16 @@ export class QuestionsService {
       stage,
     );
 
+    // Upload optional media file if provided
+    let uploadedFile: Awaited<
+      ReturnType<typeof this.questionMediaService.uploadSingleFile>
+    > | null = null;
+    if (dto.image) {
+      uploadedFile = await this.questionMediaService.uploadSingleFile(
+        dto.image,
+      );
+    }
+
     const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
@@ -1353,6 +1299,13 @@ export class QuestionsService {
         metaValue: '90',
       },
     ]);
+
+    // Attach media file if uploaded
+    if (uploadedFile) {
+      await this.questionMediaService.attachMediaFiles(updatedQuestion.id, [
+        { id: uploadedFile.id, context: 'main', position: 0 },
+      ]);
+    }
 
     return this.findOne(updatedQuestion.id);
   }

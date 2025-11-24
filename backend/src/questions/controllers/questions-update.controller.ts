@@ -24,7 +24,6 @@ import {
   UpdateWordMatchDto,
   UpdateGossipDto,
   UpdateTopicBasedAudioDto,
-  UpdateTopicBasedAudioSubquestionDto,
   UpdateLyricsTrainingDto,
   UpdateSentenceMakerDto,
   UpdateFastTestDto,
@@ -109,6 +108,8 @@ export class QuestionsUpdateController {
   // ==================== GRAMMAR ====================
 
   @Patch('unscramble/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update unscramble question',
     description: 'Update an unscramble question.',
@@ -121,6 +122,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('tenses/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update tenses question',
     description: 'Update a tenses question.',
@@ -133,6 +136,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('tag_it/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update tag_it question',
     description: 'Update a tag it question.',
@@ -145,6 +150,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('report_it/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update report_it question',
     description: 'Update a report it question.',
@@ -219,26 +226,6 @@ export class QuestionsUpdateController {
     return this.updateService.updateQuestion(id, dto);
   }
 
-  @Patch('topic_based_audio_subquestion/:id')
-  @ApiOperation({
-    summary: 'Update topic_based_audio_subquestion',
-    description:
-      'Update a topic-based audio subquestion. This endpoint updates a single subquestion of a topic_based_audio question.',
-  })
-  @ApiParam({ name: 'id', description: 'Subquestion ID' })
-  @ApiResponse({ status: 200, description: 'Subquestion updated successfully' })
-  @ApiResponse({ status: 404, description: 'Subquestion not found' })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid question type or validation failed',
-  })
-  updateTopicBasedAudioSubquestion(
-    @Param('id') id: string,
-    @Body() dto: UpdateTopicBasedAudioSubquestionDto,
-  ) {
-    return this.updateService.updateTopicBasedAudioSubquestion(id, dto);
-  }
-
   @Patch('lyrics_training/:id')
   @FormDataRequest()
   @ApiConsumes('multipart/form-data')
@@ -304,6 +291,8 @@ export class QuestionsUpdateController {
   // ==================== SPEAKING ====================
 
   @Patch('superbrain/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update superbrain question',
     description: 'Update a superbrain question.',
@@ -316,6 +305,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('tell_me_about_it/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update tell_me_about_it question',
     description: 'Update a tell me about it question.',

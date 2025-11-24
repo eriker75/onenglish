@@ -13,15 +13,17 @@ exports.CreateDebateDto = exports.DebateStance = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
+const nestjs_form_data_1 = require("nestjs-form-data");
 var DebateStance;
 (function (DebateStance) {
     DebateStance["SUPPORT"] = "support";
     DebateStance["OPPOSE"] = "oppose";
     DebateStance["RANDOM"] = "random";
 })(DebateStance || (exports.DebateStance = DebateStance = {}));
-class CreateDebateDto extends base_question_dto_1.BaseCreateQuestionDto {
+class CreateDebateDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
     content;
     stance;
+    image;
 }
 exports.CreateDebateDto = CreateDebateDto;
 __decorate([
@@ -41,4 +43,24 @@ __decorate([
     (0, class_validator_1.IsEnum)(DebateStance),
     __metadata("design:type", String)
 ], CreateDebateDto.prototype, "stance", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        type: 'string',
+        format: 'binary',
+        description: 'Optional reference image for the debate topic (image/jpeg, image/png, image/webp)',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)([
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/gif',
+        'image/avif',
+    ]),
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateDebateDto.prototype, "image", void 0);
 //# sourceMappingURL=create-debate.dto.js.map

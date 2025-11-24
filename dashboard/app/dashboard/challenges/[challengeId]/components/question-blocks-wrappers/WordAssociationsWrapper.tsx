@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
+
 import WordAssociationsWithText from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordAssociationsWithText";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -28,7 +28,11 @@ export default function WordAssociationsWrapper({
   const wordAssociationsQuestion = existingQuestion as
     | WordAssociationsQuestion
     | undefined;
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // State
   const [questionText, setQuestionText] = useState(
@@ -57,27 +61,9 @@ export default function WordAssociationsWrapper({
   );
 
   // Mutation
-  const createQuestionMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await api.post(
-        "/questions/create/word_associations",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Word Associations question created successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error creating question:", error);
       toast({
@@ -86,36 +72,12 @@ export default function WordAssociationsWrapper({
           error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({
-      id,
-      formData,
-    }: {
-      id: string;
-      formData: FormData;
-    }) => {
-      const response = await api.patch(
-        `/questions/word_associations/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Word Associations question updated successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       console.error("Error updating question:", error);
       toast({
@@ -124,11 +86,13 @@ export default function WordAssociationsWrapper({
           error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId) {
@@ -172,7 +136,31 @@ export default function WordAssociationsWrapper({
     if (wordAssociationsQuestion) {
       updateQuestionMutation.mutate({ id: existingQuestion.id, formData });
     } else {
-      createQuestionMutation.mutate(formData);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/word_associations",
+          data: formData,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "WordAssociations question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 

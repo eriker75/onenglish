@@ -60,6 +60,6 @@ export class CreateTensesDto extends BaseCreateQuestionWithoutStageDto {
     'image/gif',
     'image/avif',
   ])
-  media?: FileSystemStoredFile;
+  image?: FileSystemStoredFile;
 }
 

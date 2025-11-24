@@ -14,8 +14,8 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
-class CreateGossipDto extends base_question_dto_1.BaseCreateQuestionDto {
-    media;
+class CreateGossipDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
+    audio;
     answer;
 }
 exports.CreateGossipDto = CreateGossipDto;
@@ -29,7 +29,7 @@ __decorate([
         description: 'Audio file to transcribe',
     }),
     __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
-], CreateGossipDto.prototype, "media", void 0);
+], CreateGossipDto.prototype, "audio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'The meeting has been moved to Monday morning.',

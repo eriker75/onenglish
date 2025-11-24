@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
-import api from "@/src/config/axiosInstance";
-import { useChallengeFormStore } from "@/src/stores/challenge-form.store";
+
+import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
+import { useQuestion } from "@/src/hooks/useChallenge";
+import { useCreateQuestion, useUpdateQuestion } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Question } from "../QuestionsSection";
@@ -24,10 +24,14 @@ export default function DebateWrapper({
   onSuccess,
 }: DebateWrapperProps) {
   const { toast } = useToast();
-  const challengeId = useChallengeFormStore((state) => state.challenge.id);
+  const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
+
+  // Fetch fresh data when editing
+  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  
 
   // Cast existingQuestion to DebateQuestion for type safety
-  const debateQuestion = existingQuestion as DebateQuestion | undefined;
+  const debateQuestion = (freshQuestionData || existingQuestion) as DebateQuestion | undefined;
   const [questionText, setQuestionText] = useState(
     existingQuestion?.question || ""
   );
@@ -49,19 +53,9 @@ export default function DebateWrapper({
     debateQuestion?.maxAttempts || 1
   );
 
-  const createQuestionMutation = useMutation({
-    mutationFn: async (data: DebatePayload) => {
-      const response = await api.post("/questions/create/debate", data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Debate question created successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
@@ -69,22 +63,12 @@ export default function DebateWrapper({
           error.response?.data?.message || "Failed to create question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: DebatePayload }) => {
-      const response = await api.patch(`/questions/debate/${id}`, data);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Debate question updated successfully",
-        variant: "default",
-      });
+  
       if (onSuccess) onSuccess();
-    },
+
     onError: (error: AxiosError<{ message: string }>) => {
       toast({
         title: "Error",
@@ -92,11 +76,13 @@ export default function DebateWrapper({
           error.response?.data?.message || "Failed to update question",
         variant: "destructive",
       });
-    },
+
   });
 
-  const isPending =
-    createQuestionMutation.isPending || updateQuestionMutation.isPending;
+  const createMutation = useCreateQuestion();
+  const updateMutation = useUpdateQuestion();
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
     if (!challengeId || !content) {
@@ -128,9 +114,58 @@ export default function DebateWrapper({
     };
 
     if (existingQuestion) {
-      updateQuestionMutation.mutate({ id: existingQuestion.id, data: payload });
+      updateMutation.mutate(
+        {
+          endpoint: "/questions/debate",
+          questionId: existingQuestion.id,
+          data: payload,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Debate question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to update question",
+              variant: "destructive",
+            });
+
+        }
+      );
     } else {
-      createQuestionMutation.mutate(payload);
+      createMutation.mutate(
+        {
+          endpoint: "/questions/create/debate",
+          data: payload,
+          challengeId,
+
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Debate question created successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.message || "Failed to create question",
+              variant: "destructive",
+            });
+
+        }
+      );
     }
   };
 
