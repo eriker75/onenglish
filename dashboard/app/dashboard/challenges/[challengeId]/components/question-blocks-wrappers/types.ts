@@ -279,6 +279,7 @@ export interface LyricsTrainingPayload {
 export interface SentenceMakerQuestion extends Question, BaseQuestionData {
   words?: string[];
   correctSentence?: string;
+  images?: string[] | Array<{ url: string; [key: string]: unknown }>; // Array of image URLs or objects with url property
 }
 
 export interface SentenceMakerPayload {

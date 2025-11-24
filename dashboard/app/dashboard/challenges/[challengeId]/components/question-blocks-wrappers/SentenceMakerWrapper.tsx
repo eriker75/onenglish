@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import SentenceMaker from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/SentenceMaker";
@@ -45,7 +45,32 @@ export default function SentenceMakerWrapper({
     sentenceMakerQuestion?.instructions || ""
   );
 
-  const [images, setImages] = useState<string[]>(["", ""]);
+  // Helper function to extract image URLs from question data
+  const extractImageUrls = (question: SentenceMakerQuestion | undefined): string[] => {
+    if (!question) return ["", ""];
+    
+    // Check if images is an array of strings (direct URLs)
+    if (Array.isArray(question.images)) {
+      const urls = question.images.map((img: any) => {
+        // If it's a string, use it directly
+        if (typeof img === 'string') return img;
+        // If it's an object with url property, use that
+        if (img && typeof img === 'object' && 'url' in img) return img.url;
+        return "";
+      }).filter((url: string) => url !== "");
+      
+      // Ensure we always have 2 slots
+      if (urls.length >= 2) return urls.slice(0, 2);
+      if (urls.length === 1) return [urls[0], ""];
+      return ["", ""];
+    }
+    
+    return ["", ""];
+  };
+
+  const [images, setImages] = useState<string[]>(() => 
+    extractImageUrls(sentenceMakerQuestion)
+  );
   const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null]);
   const [points, setPoints] = useState(sentenceMakerQuestion?.points || 0);
 
@@ -56,12 +81,41 @@ export default function SentenceMakerWrapper({
     sentenceMakerQuestion?.maxAttempts || 1
   );
 
+  // Update images when question data changes
+  useEffect(() => {
+    if (sentenceMakerQuestion) {
+      const extractedImages = extractImageUrls(sentenceMakerQuestion);
+      setImages(extractedImages);
+      
+      // Also update other fields when data changes
+      setQuestionText(sentenceMakerQuestion.text || "");
+      setInstructions(sentenceMakerQuestion.instructions || "");
+      setPoints(sentenceMakerQuestion.points || 0);
+      const time = sentenceMakerQuestion.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(sentenceMakerQuestion.maxAttempts || 1);
+    }
+  }, [sentenceMakerQuestion]);
+
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  // Helper function to convert image URL to File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    // Ensure URL is absolute
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const response = await fetch(absoluteUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type || 'image/png' });
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -71,18 +125,17 @@ export default function SentenceMakerWrapper({
       return;
     }
 
-    // Check if at least one image is uploaded (DTO says ArrayMinSize(1))
-    // If editing, we might not upload new images, so check if we have files OR existing images (if we handled them).
-    // For simplicity, if creating, require files. If updating, only send if files exist.
-    const validFiles = imageFiles.filter((f) => f !== null);
-
-    if (!existingQuestion && validFiles.length === 0) {
-      toast({
-        title: "Error",
-        description: "Please upload at least one image",
-        variant: "destructive",
-      });
-      return;
+    // For creating, require at least one file
+    if (!existingQuestion) {
+      const validFiles = imageFiles.filter((f) => f !== null);
+      if (validFiles.length === 0) {
+        toast({
+          title: "Error",
+          description: "Please upload at least one image",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     const formData = new FormData();
@@ -90,9 +143,52 @@ export default function SentenceMakerWrapper({
     formData.append("text", questionText);
     formData.append("instructions", instructions);
 
-    validFiles.forEach((file) => {
-      if (file) formData.append("media[]", file); // Use media[] for array
-    });
+    // When updating, we need to send ALL images we want to keep
+    // For each slot (0 and 1):
+    // - If there's a new file, use that
+    // - If no new file but there's an existing image URL, convert URL to File
+    // - If neither, skip (empty slot)
+    if (existingQuestion) {
+      const imagesToSend: File[] = [];
+      
+      for (let i = 0; i < 2; i++) {
+        // Priority: new file > existing image URL
+        if (imageFiles[i]) {
+          // New file uploaded
+          imagesToSend.push(imageFiles[i]!);
+        } else if (images[i] && images[i].trim() !== "") {
+          // Existing image that wasn't changed - convert URL to File
+          try {
+            // Extract filename from URL or use a default
+            const urlParts = images[i].split('/');
+            const filename = urlParts[urlParts.length - 1] || `image-${i}.png`;
+            const file = await urlToFile(images[i], filename);
+            imagesToSend.push(file);
+          } catch (error) {
+            console.error(`Failed to convert image URL to file for slot ${i}:`, error);
+            toast({
+              title: "Warning",
+              description: `Failed to preserve image ${i + 1}. Please re-upload it.`,
+              variant: "destructive",
+            });
+          }
+        }
+        // If neither file nor URL, skip (empty slot)
+      }
+
+      // Only send images if we have at least one
+      if (imagesToSend.length > 0) {
+        imagesToSend.forEach((file) => {
+          formData.append("images", file);
+        });
+      }
+    } else {
+      // For creating, just send the new files
+      const validFiles = imageFiles.filter((f) => f !== null);
+      validFiles.forEach((file) => {
+        if (file) formData.append("images", file);
+      });
+    }
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
     if (totalSeconds > 0) {
