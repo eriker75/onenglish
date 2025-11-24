@@ -80,7 +80,7 @@ export default function DebateWrapper({
       random: "random",
     };
 
-    const payload = {
+    const payload: DebatePayload = {
       challengeId,
       content,
       stance: stanceMap[stance] || stance,

@@ -47,9 +47,52 @@ export class QuestionFormatterService {
   }
 
   /**
+   * Helper to remove null and undefined fields from an object recursively
+   * Preserves other falsy values like false, 0, empty strings, etc.
+   */
+  private removeNullFields(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return undefined;
+    }
+
+    if (Array.isArray(obj)) {
+      const cleaned = obj.map((item) => this.removeNullFields(item)).filter((item) => item !== undefined);
+      return cleaned.length > 0 ? cleaned : undefined;
+    }
+
+    if (typeof obj === 'object' && obj.constructor === Object) {
+      const cleaned: any = {};
+      let hasAnyValue = false;
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const value = this.removeNullFields(obj[key]);
+          if (value !== null && value !== undefined) {
+            cleaned[key] = value;
+            hasAnyValue = true;
+          }
+        }
+      }
+      return hasAnyValue ? cleaned : undefined;
+    }
+
+    return obj;
+  }
+
+  /**
    * Main formatter - routes to specific formatter based on question type
    */
   formatQuestion(question: EnrichedQuestion): FormattedQuestion | null {
+    if (!question) return null;
+    
+    // Remove null fields from the formatted result
+    const formatted = this.formatQuestionInternal(question);
+    return formatted ? this.removeNullFields(formatted) : null;
+  }
+
+  /**
+   * Internal formatter - routes to specific formatter based on question type
+   */
+  private formatQuestionInternal(question: EnrichedQuestion): FormattedQuestion | null {
     if (!question) return null;
 
     const formatterMap = {

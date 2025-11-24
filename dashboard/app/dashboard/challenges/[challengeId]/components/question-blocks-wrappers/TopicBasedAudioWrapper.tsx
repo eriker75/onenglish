@@ -41,8 +41,8 @@ export default function TopicBasedAudioWrapper({
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
 
-  // Cast existingQuestion to TopicBasedAudioQuestion for type safety
-  const topicBasedAudioQuestion = existingQuestion as
+  // Use fresh data if available, otherwise use existing
+  const topicBasedAudioQuestion = (freshQuestionData || existingQuestion) as
     | TopicBasedAudioQuestion
     | undefined;
 
@@ -53,7 +53,7 @@ export default function TopicBasedAudioWrapper({
   const [instructions, setInstructions] = useState(
     topicBasedAudioQuestion?.instructions || ""
   );
-  const [audioUrl, setAudioUrl] = useState<string | null>(
+  const [audioUrl] = useState<string | null>(
     topicBasedAudioQuestion?.mediaUrl || null
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);

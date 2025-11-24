@@ -640,7 +640,7 @@ export class QuestionsService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const parentId = await this.prisma.$transaction(async (tx) => {
       // Calculate total points from sub-questions
       const totalPoints = parsedSubQuestions.reduce(
         (sum, sub) => sum + sub.points,
@@ -696,11 +696,11 @@ export class QuestionsService {
         })),
       });
 
-      return tx.question.findUnique({
-        where: { id: parent.id },
-        include: { subQuestions: true },
-      });
+      return parent.id;
     });
+
+    // Return enriched question
+    return this.findOne(parentId);
   }
 
   // ==================== LISTENING QUESTIONS ====================
@@ -875,7 +875,7 @@ export class QuestionsService {
       dto.audio,
     );
 
-    return this.prisma.$transaction(async (tx) => {
+    const parentId = await this.prisma.$transaction(async (tx) => {
       // Calculate total points from sub-questions
       const totalPoints = parsedSubQuestions.reduce(
         (sum, sub) => sum + sub.points,
@@ -928,11 +928,11 @@ export class QuestionsService {
         })),
       });
 
-      return tx.question.findUnique({
-        where: { id: parent.id },
-        include: { subQuestions: true },
-      });
+      return parent.id;
     });
+
+    // Return enriched question
+    return this.findOne(parentId);
   }
 
   /**
@@ -1065,7 +1065,7 @@ export class QuestionsService {
       stage,
     );
 
-    return this.prisma.question.create({
+    const question = await this.prisma.question.create({
       data: {
         challengeId: dto.challengeId,
         stage,
@@ -1082,6 +1082,9 @@ export class QuestionsService {
         answer: dto.answer,
       },
     });
+
+    // Return enriched question
+    return this.findOne(question.id);
   }
 
   async createTales(dto: QuestionDtos.CreateTalesDto) {

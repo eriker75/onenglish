@@ -95,7 +95,7 @@ export default function FastTestWrapper({
       return;
     }
 
-    const payload = {
+    const payload: FastTestPayload = {
       challengeId,
       text: questionText,
       instructions,

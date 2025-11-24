@@ -407,7 +407,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         if (dto.image) {
             uploadedFile = await this.questionMediaService.uploadSingleFile(dto.image);
         }
-        return this.prisma.$transaction(async (tx) => {
+        const parentId = await this.prisma.$transaction(async (tx) => {
             const totalPoints = parsedSubQuestions.reduce((sum, sub) => sum + sub.points, 0);
             const parent = await tx.question.create({
                 data: {
@@ -453,11 +453,9 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                     parentQuestionId: parent.id,
                 })),
             });
-            return tx.question.findUnique({
-                where: { id: parent.id },
-                include: { subQuestions: true },
-            });
+            return parent.id;
         });
+        return this.findOne(parentId);
     }
     async createWordMatch(dto) {
         await this.validateChallenge(dto.challengeId);
@@ -560,7 +558,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const stage = client_1.QuestionStage.LISTENING;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
         const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.audio);
-        return this.prisma.$transaction(async (tx) => {
+        const parentId = await this.prisma.$transaction(async (tx) => {
             const totalPoints = parsedSubQuestions.reduce((sum, sub) => sum + sub.points, 0);
             const parent = await tx.question.create({
                 data: {
@@ -603,11 +601,9 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                     parentQuestionId: parent.id,
                 })),
             });
-            return tx.question.findUnique({
-                where: { id: parent.id },
-                include: { subQuestions: true },
-            });
+            return parent.id;
         });
+        return this.findOne(parentId);
     }
     async recalculateParentPoints(parentQuestionId) {
         const subQuestions = await this.prisma.question.findMany({
@@ -685,7 +681,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'fast_test';
         const stage = client_1.QuestionStage.WRITING;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
-        return this.prisma.question.create({
+        const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
                 stage,
@@ -702,6 +698,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 answer: dto.answer,
             },
         });
+        return this.findOne(question.id);
     }
     async createTales(dto) {
         await this.validateChallenge(dto.challengeId);

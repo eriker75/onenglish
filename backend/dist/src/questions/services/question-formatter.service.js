@@ -15,7 +15,37 @@ let QuestionFormatterService = class QuestionFormatterService {
         }
         return configurations;
     }
+    removeNullFields(obj) {
+        if (obj === null || obj === undefined) {
+            return undefined;
+        }
+        if (Array.isArray(obj)) {
+            const cleaned = obj.map((item) => this.removeNullFields(item)).filter((item) => item !== undefined);
+            return cleaned.length > 0 ? cleaned : undefined;
+        }
+        if (typeof obj === 'object' && obj.constructor === Object) {
+            const cleaned = {};
+            let hasAnyValue = false;
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    const value = this.removeNullFields(obj[key]);
+                    if (value !== null && value !== undefined) {
+                        cleaned[key] = value;
+                        hasAnyValue = true;
+                    }
+                }
+            }
+            return hasAnyValue ? cleaned : undefined;
+        }
+        return obj;
+    }
     formatQuestion(question) {
+        if (!question)
+            return null;
+        const formatted = this.formatQuestionInternal(question);
+        return formatted ? this.removeNullFields(formatted) : null;
+    }
+    formatQuestionInternal(question) {
         if (!question)
             return null;
         const formatterMap = {

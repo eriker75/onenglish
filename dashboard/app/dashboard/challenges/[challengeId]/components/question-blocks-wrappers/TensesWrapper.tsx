@@ -102,7 +102,7 @@ export default function TensesWrapper({
       return;
     }
 
-    const payload = {
+    const payload: TensesPayload = {
       challengeId,
       text: questionText,
       instructions,

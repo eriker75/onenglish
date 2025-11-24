@@ -28,14 +28,15 @@ export default function WordAssociationsWrapper({
   onSuccess,
 }: WordAssociationsWrapperProps) {
   const { toast } = useToast();
-  // Cast existingQuestion to WordAssociationsQuestion for type safety
-  const wordAssociationsQuestion = existingQuestion as
-    | WordAssociationsQuestion
-    | undefined;
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
   const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+
+  // Use fresh data if available, otherwise use existing
+  const wordAssociationsQuestion = (freshQuestionData || existingQuestion) as
+    | WordAssociationsQuestion
+    | undefined;
 
   // State
   const [questionText, setQuestionText] = useState(
@@ -50,7 +51,7 @@ export default function WordAssociationsWrapper({
   const [maxAssociations, setMaxAssociations] = useState(
     wordAssociationsQuestion?.maxAssociations || 3
   );
-  const [imageUrl, setImageUrl] = useState<string | null>(
+  const [imageUrl] = useState<string | null>(
     wordAssociationsQuestion?.mediaUrl || null
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
