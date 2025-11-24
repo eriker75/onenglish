@@ -111,7 +111,7 @@ export interface FormattedSentenceMakerQuestion extends BaseQuestionFields {
     images: MediaFile[];
 }
 export interface FormattedTalesQuestion extends BaseQuestionFields {
-    images: MediaFile[];
+    image: MediaFile | null;
 }
 export interface FormattedTagItQuestion extends BaseQuestionFields {
     content: string[];

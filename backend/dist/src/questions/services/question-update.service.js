@@ -79,7 +79,7 @@ let QuestionUpdateService = class QuestionUpdateService {
             'tell_me_about_it',
             'debate',
         ];
-        const { media, image, audio, video, images, audios, subQuestions, challengeId, stage, ...questionData } = restData;
+        const { media, image, audio, video, images, audios, subQuestions, challengeId, stage, stance, ...questionData } = restData;
         if (grammarQuestionTypes.includes(question.type)) {
             questionData.stage = client_1.QuestionStage.GRAMMAR;
         }
@@ -114,6 +114,9 @@ let QuestionUpdateService = class QuestionUpdateService {
         }
         if (question.type === 'wordbox' && questionData.content) {
             this.validateWordboxGrid(questionData.content);
+        }
+        if (question.type === 'debate' && stance !== undefined) {
+            questionData.answer = stance;
         }
         await this.prisma.question.update({
             where: { id: questionId },

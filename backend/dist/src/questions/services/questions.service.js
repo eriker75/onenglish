@@ -705,7 +705,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'tales';
         const stage = client_1.QuestionStage.WRITING;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
-        const uploadedFiles = await Promise.all(dto.images.map((file) => this.questionMediaService.uploadSingleFile(file)));
+        const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.image);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
@@ -720,11 +720,9 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 validationMethod: (0, helpers_1.getDefaultValidationMethod)(questionType),
             },
         });
-        await this.questionMediaService.attachMediaFiles(question.id, uploadedFiles.map((file, index) => ({
-            id: file.id,
-            position: index,
-            context: 'main',
-        })));
+        await this.questionMediaService.attachMediaFiles(question.id, [
+            { id: uploadedFile.id, context: 'main', position: 0 },
+        ]);
         return this.findOne(question.id);
     }
     async createSuperbrain(dto) {

@@ -11,24 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateTalesDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateTalesDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
-    images;
+    image;
 }
 exports.CreateTalesDto = CreateTalesDto;
 __decorate([
-    (0, nestjs_form_data_1.IsFile)({ each: true }),
-    (0, nestjs_form_data_1.MaxFileSize)(5e6, { each: true }),
-    (0, nestjs_form_data_1.HasMimeType)(['image/jpeg', 'image/png', 'image/webp'], { each: true }),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(5e6),
+    (0, nestjs_form_data_1.HasMimeType)(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif', 'image/avif']),
     (0, swagger_1.ApiProperty)({
-        type: 'array',
-        items: { type: 'string', format: 'binary' },
-        description: 'Image files to inspire story writing (1 or more)',
+        type: 'string',
+        format: 'binary',
+        description: 'Image file to inspire story writing',
     }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ArrayMinSize)(1),
-    __metadata("design:type", Array)
-], CreateTalesDto.prototype, "images", void 0);
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateTalesDto.prototype, "image", void 0);
 //# sourceMappingURL=create-tales.dto.js.map

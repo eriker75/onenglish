@@ -360,7 +360,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            images: question.media?.filter((m) => m.type === 'image') || [],
+            image: question.media?.find((m) => m.type === 'image') ||
+                null,
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

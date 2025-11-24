@@ -516,8 +516,10 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling
-      images: question.media?.filter((m) => m.type === 'image') || [],
+      // Image handling
+      image:
+        question.media?.find((m) => m.type === 'image') ||
+        null,
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,

@@ -115,6 +115,7 @@ export class QuestionUpdateService {
       subQuestions, // Sub-questions must be handled separately
       challengeId, // Cannot change challenge relationship
       stage, // Stage is handled separately for grammar/listening/writing/speaking question types
+      stance, // For debate questions, stance is stored in answer field
       ...questionData
     } = restData;
 
@@ -171,6 +172,11 @@ export class QuestionUpdateService {
     // Validate wordbox grid has no repeated letters
     if (question.type === 'wordbox' && questionData.content) {
       this.validateWordboxGrid(questionData.content);
+    }
+
+    // For debate questions, map stance to answer field
+    if (question.type === 'debate' && stance !== undefined) {
+      questionData.answer = stance;
     }
 
     // Update the question
