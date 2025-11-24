@@ -721,9 +721,9 @@ export class QuestionsService {
       stage,
     );
 
-    // Upload all files
-    const uploadedFiles = await Promise.all(
-      dto.audios.map((file) => this.questionMediaService.uploadSingleFile(file)),
+    // Upload the file
+    const uploadedFile = await this.questionMediaService.uploadSingleFile(
+      dto.audio,
     );
 
     // Create the question
@@ -744,15 +744,10 @@ export class QuestionsService {
       },
     });
 
-    // Attach all media files
-    await this.questionMediaService.attachMediaFiles(
-      question.id,
-      uploadedFiles.map((file, index) => ({
-        id: file.id,
-        position: index,
-        context: 'main',
-      })),
-    );
+    // Attach media file
+    await this.questionMediaService.attachMediaFiles(question.id, [
+      { id: uploadedFile.id, context: 'main', position: 0 },
+    ]);
 
     // Return enriched question
     return this.findOne(question.id);
@@ -826,9 +821,9 @@ export class QuestionsService {
 
     // Validate each sub-question structure
     parsedSubQuestions.forEach((sub, index) => {
-      if (!sub.text || typeof sub.text !== 'string') {
+      if (!sub.content || typeof sub.content !== 'string') {
         throw new BadRequestException(
-          `Sub-question ${index + 1}: text is required and must be a string`,
+          `Sub-question ${index + 1}: content is required and must be a string`,
         );
       }
       if (!sub.points || typeof sub.points !== 'number') {
@@ -924,7 +919,7 @@ export class QuestionsService {
           timeLimit: 0,
           maxAttempts: 0,
           text: 'Sub-question',
-          content: sub.text,
+          content: sub.content,
           instructions: 'Select the correct option',
           validationMethod: 'AUTO' as ValidationMethod,
           options: JSON.parse(JSON.stringify(sub.options)),

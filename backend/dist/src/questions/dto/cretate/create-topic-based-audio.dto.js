@@ -16,7 +16,7 @@ const class_transformer_1 = require("class-transformer");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class AudioSubQuestionDto {
-    text;
+    content;
     points;
     options;
     answer;
@@ -25,11 +25,11 @@ exports.AudioSubQuestionDto = AudioSubQuestionDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 'What is the main topic discussed in the audio?',
-        description: 'Sub-question text',
+        description: 'Sub-question content',
     }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], AudioSubQuestionDto.prototype, "text", void 0);
+], AudioSubQuestionDto.prototype, "content", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         example: 8,
@@ -113,7 +113,7 @@ __decorate([
         description: 'JSON string array of sub-questions',
         example: JSON.stringify([
             {
-                text: 'What is the main topic discussed in the audio?',
+                content: 'What is the main topic discussed in the audio?',
                 points: 8,
                 options: [
                     'Travel plans',
@@ -124,7 +124,7 @@ __decorate([
                 answer: 'Business meeting',
             },
             {
-                text: 'When will the meeting take place?',
+                content: 'When will the meeting take place?',
                 points: 8,
                 options: [
                     'Monday morning',

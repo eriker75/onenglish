@@ -19,10 +19,10 @@ import {
 export class AudioSubQuestionDto {
   @ApiProperty({
     example: 'What is the main topic discussed in the audio?',
-    description: 'Sub-question text',
+    description: 'Sub-question content',
   })
   @IsString()
-  text: string;
+  content: string;
 
   @ApiProperty({
     example: 8,
@@ -98,7 +98,7 @@ export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionWithout
     description: 'JSON string array of sub-questions',
     example: JSON.stringify([
       {
-        text: 'What is the main topic discussed in the audio?',
+        content: 'What is the main topic discussed in the audio?',
         points: 8,
         options: [
           'Travel plans',
@@ -109,7 +109,7 @@ export class CreateTopicBasedAudioDto extends OmitType(BaseCreateQuestionWithout
         answer: 'Business meeting',
       },
       {
-        text: 'When will the meeting take place?',
+        content: 'When will the meeting take place?',
         points: 8,
         options: [
           'Monday morning',

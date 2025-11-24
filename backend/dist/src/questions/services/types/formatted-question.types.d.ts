@@ -55,7 +55,7 @@ export interface FormattedSpellingQuestion extends Omit<BaseQuestionFields, 'con
     answer: string;
 }
 export interface FormattedWordMatchQuestion extends BaseQuestionFields {
-    images: MediaFile[];
+    audio: MediaFile | null;
     options: string[];
     answer: string;
 }
@@ -103,7 +103,7 @@ export interface FormattedTopicBasedAudioSubquestion extends BaseQuestionFields 
     parentQuestionId?: string;
 }
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
-    media: MediaFile | null;
+    video: MediaFile | null;
     options: string[];
     answer: string;
 }

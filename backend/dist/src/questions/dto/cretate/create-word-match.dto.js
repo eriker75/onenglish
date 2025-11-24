@@ -15,24 +15,22 @@ const class_validator_1 = require("class-validator");
 const base_question_dto_1 = require("./base-question.dto");
 const nestjs_form_data_1 = require("nestjs-form-data");
 class CreateWordMatchDto extends base_question_dto_1.BaseCreateQuestionWithoutStageDto {
-    audios;
+    audio;
     options;
     answer;
 }
 exports.CreateWordMatchDto = CreateWordMatchDto;
 __decorate([
-    (0, nestjs_form_data_1.IsFile)({ each: true }),
-    (0, nestjs_form_data_1.MaxFileSize)(10e6, { each: true }),
-    (0, nestjs_form_data_1.HasMimeType)(['audio/mpeg', 'audio/wav', 'audio/ogg'], { each: true }),
+    (0, nestjs_form_data_1.IsFile)(),
+    (0, nestjs_form_data_1.MaxFileSize)(10e6),
+    (0, nestjs_form_data_1.HasMimeType)(['audio/mpeg', 'audio/wav', 'audio/ogg', 'video/mp4', 'video/webm']),
     (0, swagger_1.ApiProperty)({
-        type: 'array',
-        items: { type: 'string', format: 'binary' },
-        description: 'Audio files to match with words',
+        type: 'string',
+        format: 'binary',
+        description: 'Audio/video file to match with words',
     }),
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ArrayMinSize)(1),
-    __metadata("design:type", Array)
-], CreateWordMatchDto.prototype, "audios", void 0);
+    __metadata("design:type", nestjs_form_data_1.FileSystemStoredFile)
+], CreateWordMatchDto.prototype, "audio", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         type: [String],

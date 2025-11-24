@@ -362,9 +362,9 @@ export class QuestionUpdateService {
           }
         } else if (question.type === 'topic_based_audio') {
           // Validate topic_based_audio sub-question structure
-          if (!sub.text || typeof sub.text !== 'string') {
+          if (!sub.content || typeof sub.content !== 'string') {
             throw new BadRequestException(
-              `Sub-question ${index + 1}: text is required and must be a string`,
+              `Sub-question ${index + 1}: content is required and must be a string`,
             );
           }
           if (!sub.points || typeof sub.points !== 'number') {
@@ -429,7 +429,7 @@ export class QuestionUpdateService {
               timeLimit: 0,
               maxAttempts: 0,
               text: 'Sub-question',
-              content: sub.text,
+              content: sub.content,
               instructions: 'Select the correct option',
               validationMethod: 'AUTO' as ValidationMethod,
               options: JSON.parse(JSON.stringify(sub.options)),

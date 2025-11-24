@@ -80,7 +80,7 @@ export interface FormattedSpellingQuestion
 }
 
 export interface FormattedWordMatchQuestion extends BaseQuestionFields {
-  images: MediaFile[];
+  audio: MediaFile | null;
   options: string[];
   answer: string;
 }
@@ -145,7 +145,7 @@ export interface FormattedTopicBasedAudioSubquestion
 }
 
 export interface FormattedLyricsTrainingQuestion extends BaseQuestionFields {
-  media: MediaFile | null;
+  video: MediaFile | null;
   options: string[];
   answer: string;
 }

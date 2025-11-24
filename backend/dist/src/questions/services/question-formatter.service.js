@@ -103,7 +103,8 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            images: question.media?.filter((m) => m.type === 'image') || [],
+            audio: question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+                null,
             options: question.options || [],
             answer: question.answer,
             ...(this.getConfigurationsIfNotEmpty(question.configurations) && {
@@ -292,7 +293,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             text: question.text,
             instructions: question.instructions,
             validationMethod: question.validationMethod,
-            media: question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+            video: question.media?.find((m) => m.type === 'video') ||
                 null,
             options: question.options || [],
             answer: question.answer,

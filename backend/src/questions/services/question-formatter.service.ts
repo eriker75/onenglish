@@ -173,8 +173,10 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling - multiple images
-      images: question.media?.filter((m) => m.type === 'image') || [],
+      // Audio handling
+      audio:
+        question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+        null,
       // Options and answer
       options: question.options || [],
       answer: question.answer,
@@ -422,9 +424,9 @@ export class QuestionFormatterService {
       text: question.text,
       instructions: question.instructions,
       validationMethod: question.validationMethod,
-      // Media handling (audio or video, return whichever exists)
-      media:
-        question.media?.find((m) => m.type === 'audio' || m.type === 'video') ||
+      // Video handling
+      video:
+        question.media?.find((m) => m.type === 'video') ||
         null,
       // Word options and answer
       options: question.options || [],

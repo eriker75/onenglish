@@ -467,7 +467,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
         const questionType = 'word_match';
         const stage = client_1.QuestionStage.LISTENING;
         const position = await this.calculateNextPosition(dto.challengeId, stage);
-        const uploadedFiles = await Promise.all(dto.audios.map((file) => this.questionMediaService.uploadSingleFile(file)));
+        const uploadedFile = await this.questionMediaService.uploadSingleFile(dto.audio);
         const question = await this.prisma.question.create({
             data: {
                 challengeId: dto.challengeId,
@@ -484,11 +484,9 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                 answer: dto.answer,
             },
         });
-        await this.questionMediaService.attachMediaFiles(question.id, uploadedFiles.map((file, index) => ({
-            id: file.id,
-            position: index,
-            context: 'main',
-        })));
+        await this.questionMediaService.attachMediaFiles(question.id, [
+            { id: uploadedFile.id, context: 'main', position: 0 },
+        ]);
         return this.findOne(question.id);
     }
     async createGossip(dto) {
@@ -534,8 +532,8 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
             throw new common_1.BadRequestException('Must provide at least one sub-question');
         }
         parsedSubQuestions.forEach((sub, index) => {
-            if (!sub.text || typeof sub.text !== 'string') {
-                throw new common_1.BadRequestException(`Sub-question ${index + 1}: text is required and must be a string`);
+            if (!sub.content || typeof sub.content !== 'string') {
+                throw new common_1.BadRequestException(`Sub-question ${index + 1}: content is required and must be a string`);
             }
             if (!sub.points || typeof sub.points !== 'number') {
                 throw new common_1.BadRequestException(`Sub-question ${index + 1}: points is required and must be a number`);
@@ -597,7 +595,7 @@ let QuestionsService = QuestionsService_1 = class QuestionsService {
                     timeLimit: 0,
                     maxAttempts: 0,
                     text: 'Sub-question',
-                    content: sub.text,
+                    content: sub.content,
                     instructions: 'Select the correct option',
                     validationMethod: 'AUTO',
                     options: JSON.parse(JSON.stringify(sub.options)),

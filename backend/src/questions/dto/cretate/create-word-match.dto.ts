@@ -4,17 +4,15 @@ import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import { FileSystemStoredFile, HasMimeType, IsFile, MaxFileSize } from 'nestjs-form-data';
 
 export class CreateWordMatchDto extends BaseCreateQuestionWithoutStageDto {
-  @IsFile({ each: true })
-  @MaxFileSize(10e6, { each: true })
-  @HasMimeType(['audio/mpeg', 'audio/wav', 'audio/ogg'], { each: true })
+  @IsFile()
+  @MaxFileSize(10e6) // 10MB
+  @HasMimeType(['audio/mpeg', 'audio/wav', 'audio/ogg', 'video/mp4', 'video/webm'])
   @ApiProperty({
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-    description: 'Audio files to match with words',
+    type: 'string',
+    format: 'binary',
+    description: 'Audio/video file to match with words',
   })
-  @IsArray()
-  @ArrayMinSize(1)
-  audios: FileSystemStoredFile[];
+  audio: FileSystemStoredFile;
 
   @ApiProperty({
     type: [String],

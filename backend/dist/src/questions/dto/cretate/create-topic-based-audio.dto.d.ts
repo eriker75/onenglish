@@ -1,7 +1,7 @@
 import { BaseCreateQuestionWithoutStageDto } from './base-question.dto';
 import { FileSystemStoredFile } from 'nestjs-form-data';
 export declare class AudioSubQuestionDto {
-    text: string;
+    content: string;
     points: number;
     options: string[];
     answer: string;
