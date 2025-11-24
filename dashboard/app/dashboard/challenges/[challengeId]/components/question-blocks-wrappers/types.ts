@@ -372,6 +372,7 @@ export interface TellMeAboutItQuestion extends Question, BaseQuestionData {
   topic?: string;
   prompts?: string[];
   content?: string;   // Add for compatibility
+  prompt?: string;    // Backend returns 'prompt' instead of 'content'
   mediaUrl?: string;  // Add for compatibility
 }
 

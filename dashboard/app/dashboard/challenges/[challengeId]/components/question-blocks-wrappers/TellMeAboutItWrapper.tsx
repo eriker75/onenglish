@@ -44,7 +44,9 @@ export default function TellMeAboutItWrapper({
   const [instructions, setInstructions] = useState(
     tellMeAboutItQuestion?.instructions || ""
   );
-  const [content, setContent] = useState(tellMeAboutItQuestion?.content || "");
+  const [content, setContent] = useState(
+    tellMeAboutItQuestion?.prompt || tellMeAboutItQuestion?.content || ""
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(
     tellMeAboutItQuestion?.image || tellMeAboutItQuestion?.mediaUrl || null
   );
@@ -64,7 +66,7 @@ export default function TellMeAboutItWrapper({
       const question = freshQuestionData as TellMeAboutItQuestion;
       setQuestionText(question.text || "");
       setInstructions(question.instructions || "");
-      setContent(question.content || "");
+      setContent(question.prompt || question.content || "");
       setImageUrl(question.image || question.mediaUrl || null);
       setPoints(question.points || 0);
       const time = question.timeLimit || 0;
@@ -168,7 +170,7 @@ export default function TellMeAboutItWrapper({
               const question = data as TellMeAboutItQuestion;
               setQuestionText(question.text || "");
               setInstructions(question.instructions || "");
-              setContent(question.content || "");
+              setContent(question.prompt || question.content || "");
               setImageUrl(question.image || question.mediaUrl || null);
               setPoints(question.points || 0);
               const time = question.timeLimit || 0;
