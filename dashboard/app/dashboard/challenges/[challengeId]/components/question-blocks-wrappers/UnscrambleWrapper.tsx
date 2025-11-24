@@ -44,17 +44,24 @@ export default function UnscrambleWrapper({
   const [instructions, setInstructions] = useState(
     unscrambleQuestion?.instructions || ""
   );
-  const [scrambledWords, setScrambledWords] = useState<string[]>(
-    unscrambleQuestion?.content || []
-  );
+  const [scrambledWords, setScrambledWords] = useState<string[]>(() => {
+    // Backend returns 'scrambledWords' (array) or 'content' (array)
+    const content = unscrambleQuestion?.scrambledWords || unscrambleQuestion?.content;
+    if (Array.isArray(content)) {
+      return content;
+    }
+    return [];
+  });
 
-  // Answer is stored as array of strings in `answer` field in DTO, but Unscramble component might expect a sentence.
-  // Actually Unscramble component has `correctSentence` prop.
-  // The backend might store it as `answer[]`.
-  // If `existingQuestion` has `answer` as array, join it.
-  const initialCorrectSentence = Array.isArray(unscrambleQuestion?.answer)
-    ? unscrambleQuestion?.answer.join(" ") || ""
-    : unscrambleQuestion?.answer || "";
+  // Backend returns 'correctSentence' (string) or 'answer' (array or string)
+  // Prefer correctSentence as that's what the backend formatter returns
+  const initialCorrectSentence = unscrambleQuestion?.correctSentence 
+    ? String(unscrambleQuestion.correctSentence)
+    : Array.isArray(unscrambleQuestion?.answer)
+    ? (unscrambleQuestion?.answer.join(" ") || "")
+    : unscrambleQuestion?.answer 
+    ? String(unscrambleQuestion.answer)
+    : "";
 
   const [correctSentence, setCorrectSentence] = useState(
     initialCorrectSentence
@@ -76,17 +83,44 @@ export default function UnscrambleWrapper({
   useEffect(() => {
     if (freshQuestionData) {
       const question = freshQuestionData as UnscrambleQuestion;
+      console.log('[UnscrambleWrapper] Updating from freshQuestionData:', {
+        content: question.content,
+        scrambledWords: question.scrambledWords,
+        answer: question.answer,
+        correctSentence: question.correctSentence,
+        contentType: Array.isArray(question.content) ? 'array' : typeof question.content,
+        scrambledWordsType: Array.isArray(question.scrambledWords) ? 'array' : typeof question.scrambledWords,
+        answerType: Array.isArray(question.answer) ? 'array' : typeof question.answer,
+        correctSentenceType: typeof question.correctSentence,
+      });
+      
       setQuestionText(question.text || "");
       setInstructions(question.instructions || "");
-      setScrambledWords(question.content || []);
       
-      // Handle answer as array or string
-      const answerArray = Array.isArray(question.answer)
-        ? question.answer
-        : question.answer
-        ? [question.answer]
+      // Backend returns 'scrambledWords' (array) or 'content' (array)
+      // Prefer scrambledWords as that's what the backend formatter returns
+      const contentArray = Array.isArray(question.scrambledWords)
+        ? question.scrambledWords
+        : Array.isArray(question.content)
+        ? question.content
+        : question.content
+        ? [question.content]
         : [];
-      setCorrectSentence(answerArray.join(" "));
+      setScrambledWords(contentArray);
+      console.log('[UnscrambleWrapper] Set scrambledWords:', contentArray);
+      
+      // Backend returns 'correctSentence' (string) or 'answer' (array or string)
+      // Prefer correctSentence as that's what the backend formatter returns
+      let correctSentenceStr = "";
+      if (question.correctSentence && typeof question.correctSentence === 'string') {
+        correctSentenceStr = question.correctSentence;
+      } else if (Array.isArray(question.answer)) {
+        correctSentenceStr = question.answer.join(" ");
+      } else if (question.answer) {
+        correctSentenceStr = String(question.answer);
+      }
+      setCorrectSentence(correctSentenceStr);
+      console.log('[UnscrambleWrapper] Set correctSentence:', correctSentenceStr);
       
       setImageUrl(question.image || question.mediaUrl || null);
       setPoints(question.points || 0);
@@ -102,7 +136,23 @@ export default function UnscrambleWrapper({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  // Helper function to convert image URL to File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'image/png' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -147,8 +197,33 @@ export default function UnscrambleWrapper({
       formData.append("answer[]", word)
     );
 
-    if (imageFile) {
-      formData.append("image", imageFile);
+    // Handle image: preserve existing image if no new file is uploaded
+    if (existingQuestion) {
+      // When updating, send new file if available, otherwise preserve existing image
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (imageUrl && imageUrl.trim() !== "") {
+        // Existing image that wasn't changed - convert URL to File to preserve it
+        try {
+          const urlParts = imageUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'image.png';
+          const file = await urlToFile(imageUrl, filename);
+          formData.append("image", file);
+        } catch (error) {
+          console.error('Failed to convert image URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing image. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+      // If neither file nor URL, don't send image (image will be removed)
+    } else {
+      // For creating, only send if there's a file
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
     }
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
@@ -174,15 +249,25 @@ export default function UnscrambleWrapper({
               const question = data as UnscrambleQuestion;
               setQuestionText(question.text || "");
               setInstructions(question.instructions || "");
-              setScrambledWords(question.content || []);
               
-              // Handle answer as array or string
-              const answerArray = Array.isArray(question.answer)
-                ? question.answer
-                : question.answer
-                ? [question.answer]
+              // Backend returns 'scrambledWords' (array) or 'content' (array)
+              const contentArray = Array.isArray(question.scrambledWords)
+                ? question.scrambledWords
+                : Array.isArray(question.content)
+                ? question.content
                 : [];
-              setCorrectSentence(answerArray.join(" "));
+              setScrambledWords(contentArray);
+              
+              // Backend returns 'correctSentence' (string) or 'answer' (array or string)
+              let correctSentenceStr = "";
+              if (question.correctSentence && typeof question.correctSentence === 'string') {
+                correctSentenceStr = question.correctSentence;
+              } else if (Array.isArray(question.answer)) {
+                correctSentenceStr = question.answer.join(" ");
+              } else if (question.answer) {
+                correctSentenceStr = String(question.answer);
+              }
+              setCorrectSentence(correctSentenceStr);
               
               setImageUrl(question.image || question.mediaUrl || null);
               setPoints(question.points || 0);

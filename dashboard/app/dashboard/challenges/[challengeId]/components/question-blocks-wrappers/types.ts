@@ -78,9 +78,10 @@ export interface WordAssociationsPayload {
 // Unscramble specific types
 export interface UnscrambleQuestion extends Question, BaseQuestionData {
   scrambledSentence?: string;
-  correctSentence?: string;
-  content?: string[]; // scrambled words
-  answer?: string | string[]; // correct sentence
+  correctSentence?: string; // Backend returns this as a string
+  scrambledWords?: string[]; // Backend returns this as an array (from formatter)
+  content?: string[]; // scrambled words (fallback)
+  answer?: string | string[]; // correct sentence (fallback)
 }
 
 export interface UnscramblePayload {

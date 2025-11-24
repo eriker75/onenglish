@@ -90,6 +90,60 @@ export default function Unscramble({
   };
 
 
+  // Sync scrambledWords with words prop when it changes
+  useEffect(() => {
+    console.log('[Unscramble] words prop changed:', { words, isArray: Array.isArray(words), length: words?.length, currentScrambled: scrambledWords.length });
+    if (words && Array.isArray(words)) {
+      // Always sync if words is a valid array
+      // Compare lengths and content to avoid unnecessary updates
+      const wordsLength = words.length;
+      const currentLength = scrambledWords.length;
+      
+      // If lengths are different, definitely update
+      if (wordsLength !== currentLength) {
+        console.log('[Unscramble] Lengths differ, updating scrambledWords from:', scrambledWords, 'to:', words);
+        setScrambledWords([...words]);
+        return;
+      }
+      
+      // If lengths are same, compare content
+      if (wordsLength > 0) {
+        const wordsStr = JSON.stringify(words);
+        const currentStr = JSON.stringify(scrambledWords);
+        if (wordsStr !== currentStr) {
+          console.log('[Unscramble] Content differs, updating scrambledWords from:', scrambledWords, 'to:', words);
+          setScrambledWords([...words]);
+        }
+      } else if (wordsLength === 0 && currentLength > 0) {
+        // Clear if words is empty but current has data
+        console.log('[Unscramble] Clearing scrambledWords');
+        setScrambledWords([]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words]);
+
+  // Sync correctWords with correctSentence prop when it changes
+  useEffect(() => {
+    console.log('[Unscramble] correctSentence prop changed:', { correctSentence, length: correctSentence?.length });
+    if (correctSentence && correctSentence.trim() !== "") {
+      const wordsArray = correctSentence.split(/\s+/).filter((w) => w.trim() !== "");
+      const currentStr = JSON.stringify(correctWords);
+      const newStr = JSON.stringify(wordsArray);
+      if (newStr !== currentStr) {
+        console.log('[Unscramble] Updating correctWords from:', correctWords, 'to:', wordsArray);
+        setCorrectWords(wordsArray);
+      }
+    } else if (!correctSentence || correctSentence.trim() === "") {
+      // Clear if correctSentence is empty
+      if (correctWords.length > 0) {
+        console.log('[Unscramble] Clearing correctWords');
+        setCorrectWords([]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [correctSentence]);
+
   // Initialize from correct sentence if provided and scrambled words are empty (only on mount)
   useEffect(() => {
     if (correctSentence && correctSentence.trim() !== "" && scrambledWords.length === 0 && words.length === 0) {
