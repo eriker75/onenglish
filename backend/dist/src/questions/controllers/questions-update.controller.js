@@ -140,6 +140,8 @@ __decorate([
 ], QuestionsUpdateController.prototype, "updateSpelling", null);
 __decorate([
     (0, common_1.Patch)('word_associations/:id'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Update word_associations question',
         description: 'Update a word associations question.',

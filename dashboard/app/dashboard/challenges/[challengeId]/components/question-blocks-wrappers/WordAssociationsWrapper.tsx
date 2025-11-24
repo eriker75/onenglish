@@ -88,7 +88,19 @@ export default function WordAssociationsWrapper({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  // Helper function to convert image URL to File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    // Ensure URL is absolute
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const response = await fetch(absoluteUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type || 'image/png' });
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -113,8 +125,50 @@ export default function WordAssociationsWrapper({
     formData.append("maxAssociations", maxAssociations.toString());
     formData.append("points", points.toString());
 
-    if (imageFile) {
-      formData.append("image", imageFile);
+    // Handle image: if updating, preserve existing image if no new file is uploaded
+    if (existingQuestion) {
+      // When updating, send new file if available, otherwise preserve existing image
+      if (imageFile) {
+        // New file uploaded
+        console.log('[WordAssociations] Sending new image file:', imageFile.name, imageFile.size, imageFile.type);
+        formData.append("image", imageFile);
+      } else if (imageUrl && imageUrl.trim() !== "") {
+        // Existing image that wasn't changed - convert URL to File to preserve it
+        console.log('[WordAssociations] Converting existing image URL to File:', imageUrl);
+        try {
+          const urlParts = imageUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'image.png';
+          const file = await urlToFile(imageUrl, filename);
+          console.log('[WordAssociations] Converted URL to File:', file.name, file.size, file.type);
+          formData.append("image", file);
+        } catch (error) {
+          console.error('[WordAssociations] Failed to convert image URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing image. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.log('[WordAssociations] No image file or URL - image will be removed');
+      }
+      // If neither file nor URL, don't send image (image will be removed)
+    } else {
+      // For creating, only send if there's a file
+      if (imageFile) {
+        console.log('[WordAssociations] Creating with image file:', imageFile.name, imageFile.size, imageFile.type);
+        formData.append("image", imageFile);
+      }
+    }
+
+    // Debug: Log all FormData entries
+    console.log('[WordAssociations] FormData entries:');
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`  ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
     }
 
     if (questionText) formData.append("text", questionText);

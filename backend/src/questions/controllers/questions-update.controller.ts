@@ -91,6 +91,8 @@ export class QuestionsUpdateController {
   }
 
   @Patch('word_associations/:id')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Update word_associations question',
     description: 'Update a word associations question.',
