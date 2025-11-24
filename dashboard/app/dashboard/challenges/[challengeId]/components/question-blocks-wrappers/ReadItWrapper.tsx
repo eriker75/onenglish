@@ -22,6 +22,10 @@ interface Statement {
   correct: boolean;
 }
 
+interface PassageDto {
+  text: string;
+}
+
 interface ReadItWrapperProps {
   existingQuestion?: Question;
   onCancel?: () => void;
@@ -45,7 +49,7 @@ export default function ReadItWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    readItQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     readItQuestion?.instructions || ""

@@ -39,7 +39,7 @@ export default function ReportItWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    existingQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     reportItQuestion?.instructions || ""

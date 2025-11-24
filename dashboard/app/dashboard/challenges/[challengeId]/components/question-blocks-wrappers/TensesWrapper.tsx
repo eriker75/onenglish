@@ -39,7 +39,7 @@ export default function TensesWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    tensesQuestion?.text || Question?.question || ""
+    tensesQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     tensesQuestion?.instructions || ""

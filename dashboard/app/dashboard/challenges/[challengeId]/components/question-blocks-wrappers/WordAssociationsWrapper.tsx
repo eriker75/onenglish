@@ -40,7 +40,7 @@ export default function WordAssociationsWrapper({
 
   // State
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    wordAssociationsQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     wordAssociationsQuestion?.instructions || ""

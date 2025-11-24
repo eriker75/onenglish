@@ -39,7 +39,7 @@ export default function SentenceMakerWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    sentenceMakerQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     sentenceMakerQuestion?.instructions || ""

@@ -39,7 +39,7 @@ export default function SuperBrainWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    superBrainQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     superBrainQuestion?.instructions || ""

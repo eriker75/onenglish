@@ -39,7 +39,7 @@ export default function TagItWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    existingQuestion?.text || tagItQuestion?.question || ""
   );
   const [instructions, setInstructions] = useState(
     tagItQuestion?.instructions || ""

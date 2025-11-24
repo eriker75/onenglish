@@ -46,7 +46,7 @@ export default function TalesWrapper({
   const initialExampleStory = parts.length > 1 ? parts[1] : "";
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    existingQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(initialInstructions);
   const [exampleStory, setExampleStory] = useState(initialExampleStory);

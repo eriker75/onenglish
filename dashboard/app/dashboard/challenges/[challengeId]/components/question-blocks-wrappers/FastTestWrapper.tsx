@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
@@ -27,7 +26,17 @@ export default function FastTestWrapper({
   onCancel,
   onSuccess,
 }: FastTestWrapperProps) {
-  const { toast } = useToast();
+  const toast = (opts: {
+    title: string;
+    description?: string;
+    variant?: "default" | "destructive";
+  }) => {
+    if (opts.variant === "destructive") {
+      console.error(`[Toast error]: ${opts.title} - ${opts.description ?? ""}`);
+    } else {
+      console.log(`[Toast]: ${opts.title} - ${opts.description ?? ""}`);
+    }
+  };
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
@@ -39,7 +48,7 @@ export default function FastTestWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.text || Question?.question || ""
+    fastTestQuestion?.text || fastTestQuestion?.question || ""
   );
   const [instructions, setInstructions] = useState(
     fastTestQuestion?.instructions || ""

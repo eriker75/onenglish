@@ -48,7 +48,7 @@ export default function GossipWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    gossipQuestion?.text || Question?.question || ""
+    gossipQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     gossipQuestion?.instructions || ""
