@@ -12,8 +12,9 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+
 import { WordMatchQuestion } from "./types";
+import type { Question } from "../types";
 import { isAxiosError } from "axios";
 
 interface WordMatchWrapperProps {
@@ -38,7 +39,7 @@ export default function WordMatchWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.question || ""
+    wordMatchQuestion?.text || wordMatchQuestion?.question || ""
   );
   const [instructions, setInstructions] = useState(
     wordMatchQuestion?.instructions || ""
@@ -129,12 +130,34 @@ export default function WordMatchWrapper({
     formData.append("stage", "LISTENING");
 
     if (existingQuestion) {
-      updateMutation.mutate({
-        endpoint: "/questions/word_match",
-        questionId: existingQuestion.id,
-        data: formData,
-        challengeId,
-      });
+      updateMutation.mutate(
+        {
+          endpoint: "/questions/word_match",
+          questionId: existingQuestion.id,
+          data: formData,
+          challengeId,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
+        }
+      );
     } else {
       createMutation.mutate(
         {

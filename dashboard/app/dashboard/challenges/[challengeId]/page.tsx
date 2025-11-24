@@ -67,6 +67,17 @@ export default function ChallengeEditPage() {
     }
   }, [challengeId, setCurrentChallengeId, setUIChallengeId, updateChallengeField]);
 
+  // Log when challenge data changes
+  useEffect(() => {
+    if (challenge) {
+      console.log("📊 [PAGE] Challenge data updated:", {
+        id: challenge.id,
+        questionsCount: challenge.questions?.length || 0,
+        questions: challenge.questions,
+      });
+    }
+  }, [challenge]);
+
   // Initialize with first stage if no stage is set
   useEffect(() => {
     if (!isLoading && stages.length === 0) {
@@ -129,9 +140,12 @@ export default function ChallengeEditPage() {
   };
 
   const handleDataRefresh = () => {
+    console.log("🔄 [PAGE] handleDataRefresh called - manually refetching challenge data");
     // Refetch is handled automatically by React Query mutations
     // But we can manually refetch if needed
-    refetch();
+    refetch().then(() => {
+      console.log("✅ [PAGE] Refetch completed, new data:", challenge);
+    });
   };
 
   // Loading state

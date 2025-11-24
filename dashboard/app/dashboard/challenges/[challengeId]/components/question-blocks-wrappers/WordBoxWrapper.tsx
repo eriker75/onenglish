@@ -11,7 +11,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { WordBoxQuestion, WordBoxPayload } from "./types";
 import { isAxiosError } from "axios";
 
@@ -43,7 +43,7 @@ export default function WordBoxWrapper({
 
   // Initialize State with question data or defaults
   const [questionText, setQuestionText] = useState(
-    wordBoxQuestion?.question || ""
+    wordBoxQuestion?.text || Question?.question || ""
   );
   const [instructions, setInstructions] = useState(
     wordBoxQuestion?.instructions || ""

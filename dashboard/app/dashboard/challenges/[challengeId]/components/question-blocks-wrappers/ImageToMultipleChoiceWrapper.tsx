@@ -11,7 +11,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { ImageToMultipleChoiceQuestion } from "./types";
 import ImageToMultipleChoiceText from "../question-blocks/ImageToMultipleChoiceText";
 import { isAxiosError } from "axios";
@@ -40,7 +40,7 @@ export default function ImageToMultipleChoiceWrapper({
 
   // State
   const [questionText, setQuestionText] = useState(
-    imageQuestion?.question || ""
+    imageQuestion?.text || imageQuestion?.question || ""
   );
   const [options, setOptions] = useState<string[]>(
     imageQuestion?.options || ["", "", "", ""]
@@ -66,7 +66,14 @@ export default function ImageToMultipleChoiceWrapper({
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
+    console.log("🚀 [ImageToMultipleChoice] handleSave called", {
+      isUpdate: !!existingQuestion,
+      questionId: existingQuestion?.id,
+      challengeId,
+    });
+
     if (!challengeId) {
+      console.error("❌ [ImageToMultipleChoice] Missing challengeId");
       toast({
         title: "Error",
         description: "Challenge ID is missing",
@@ -76,6 +83,7 @@ export default function ImageToMultipleChoiceWrapper({
     }
 
     if (!existingQuestion && !imageFile) {
+      console.error("❌ [ImageToMultipleChoice] Missing image for new question");
       toast({
         title: "Error",
         description: "Please upload an image",
@@ -86,6 +94,7 @@ export default function ImageToMultipleChoiceWrapper({
 
     const validOptions = options.filter((opt) => opt.trim() !== "");
     if (validOptions.length < 2) {
+      console.error("❌ [ImageToMultipleChoice] Not enough valid options:", validOptions);
       toast({
         title: "Error",
         description: "Please provide at least 2 valid options",
@@ -95,6 +104,7 @@ export default function ImageToMultipleChoiceWrapper({
     }
 
     if (!correctAnswer) {
+      console.error("❌ [ImageToMultipleChoice] Missing correct answer");
       toast({
         title: "Error",
         description: "Please select a correct answer",
@@ -102,6 +112,17 @@ export default function ImageToMultipleChoiceWrapper({
       });
       return;
     }
+
+    console.log("✅ [ImageToMultipleChoice] Validation passed, preparing FormData", {
+      questionText,
+      validOptions,
+      correctAnswer,
+      points,
+      timeMinutes,
+      timeSeconds,
+      maxAttempts,
+      hasImageFile: !!imageFile,
+    });
 
     const formData = new FormData();
     formData.append("challengeId", challengeId);
@@ -121,12 +142,34 @@ export default function ImageToMultipleChoiceWrapper({
     formData.append("maxAttempts", maxAttempts.toString());
 
     if (existingQuestion) {
-      updateMutation.mutate({
-        endpoint: "/questions/image_to_multiple_choices",
-        questionId: existingQuestion.id,
-        data: formData,
-        challengeId,
-      });
+      updateMutation.mutate(
+        {
+          endpoint: "/questions/image_to_multiple_choices",
+          questionId: existingQuestion.id,
+          data: formData,
+          challengeId,
+        },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
+        }
+      );
     } else {
       createMutation.mutate(
         {

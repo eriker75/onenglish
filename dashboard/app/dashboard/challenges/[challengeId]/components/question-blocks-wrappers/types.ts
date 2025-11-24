@@ -1,4 +1,4 @@
-import { Question } from "../QuestionsSection";
+import { Question } from "../types";
 
 // Base properties that extend Question
 export interface BaseQuestionData {

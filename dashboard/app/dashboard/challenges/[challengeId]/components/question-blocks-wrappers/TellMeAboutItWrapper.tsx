@@ -12,7 +12,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { TellMeAboutItQuestion } from "./types";
 import { isAxiosError } from "axios";
 
@@ -39,7 +39,7 @@ export default function TellMeAboutItWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.question || ""
+    existingQuestion?.text || Question?.question || ""
   );
   const [instructions, setInstructions] = useState(
     tellMeAboutItQuestion?.instructions || ""
@@ -107,7 +107,28 @@ export default function TellMeAboutItWrapper({
         questionId: existingQuestion.id,
         data: formData,
         challengeId,
-      });
+      },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
+        }
+      );
     } else {
       createMutation.mutate(
         {

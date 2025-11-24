@@ -11,7 +11,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { DebateQuestion, DebatePayload } from "./types";
 import Debate from "../question-blocks/Debate";
 import { isAxiosError } from "axios";
@@ -38,7 +38,7 @@ export default function DebateWrapper({
     | DebateQuestion
     | undefined;
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.question || ""
+    existingQuestion?.text || Question?.question || ""
   );
   const [instructions, setInstructions] = useState(
     debateQuestion?.instructions || ""

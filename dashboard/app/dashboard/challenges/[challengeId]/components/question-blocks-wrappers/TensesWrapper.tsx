@@ -12,7 +12,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { TensesQuestion, TensesPayload } from "./types";
 import { isAxiosError } from "axios";
 
@@ -39,7 +39,7 @@ export default function TensesWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    tensesQuestion?.question || ""
+    tensesQuestion?.text || Question?.question || ""
   );
   const [instructions, setInstructions] = useState(
     tensesQuestion?.instructions || ""

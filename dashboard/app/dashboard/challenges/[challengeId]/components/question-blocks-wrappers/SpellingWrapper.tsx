@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import Spelling from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/Spelling";
@@ -12,7 +12,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { SpellingQuestion } from "./types";
 import { isAxiosError } from "axios";
 
@@ -31,22 +31,36 @@ export default function SpellingWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, isLoading: isLoadingQuestion, dataUpdatedAt } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to SpellingQuestion for type safety
   const spellingQuestion = (freshQuestionData || existingQuestion) as
     | SpellingQuestion
     | undefined;
 
+  console.log("📊 [SpellingWrapper] Current question data:", {
+    hasExisting: !!existingQuestion,
+    hasFresh: !!freshQuestionData,
+    isLoading: isLoadingQuestion,
+    usingData: freshQuestionData ? "fresh" : "existing",
+    questionId: spellingQuestion?.id,
+    dataUpdatedAt: new Date(dataUpdatedAt).toLocaleTimeString(),
+    text: spellingQuestion?.text,
+    question: spellingQuestion?.question,
+    correctAnswer: spellingQuestion?.correctAnswer,
+    answer: spellingQuestion?.answer,
+    points: spellingQuestion?.points,
+  });
+
   // State
   const [questionText, setQuestionText] = useState(
-    spellingQuestion?.question || ""
+    spellingQuestion?.text || spellingQuestion?.question || ""
   );
   const [instructions, setInstructions] = useState(
     spellingQuestion?.instructions || ""
   );
   const [correctWord, setCorrectWord] = useState(
-    spellingQuestion?.correctAnswer || ""
+    spellingQuestion?.correctAnswer || spellingQuestion?.answer || ""
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(spellingQuestion?.points || 0);
@@ -58,13 +72,59 @@ export default function SpellingWrapper({
     spellingQuestion?.maxAttempts || 1
   );
 
+  // Track when existingQuestion prop changes
+  useEffect(() => {
+    console.log("🔄 [SpellingWrapper] existingQuestion prop changed:", {
+      id: existingQuestion?.id,
+      correctAnswer: existingQuestion?.correctAnswer,
+      points: existingQuestion?.points,
+    });
+  }, [existingQuestion]);
+
+  // Update state when fresh data arrives
+  useEffect(() => {
+    if (spellingQuestion) {
+      console.log("🔄 [SpellingWrapper] spellingQuestion data changed, updating form state:", {
+        questionId: spellingQuestion.id,
+        text: spellingQuestion.text,
+        question: spellingQuestion.question,
+        correctAnswer: spellingQuestion.correctAnswer,
+        answer: spellingQuestion.answer,
+        points: spellingQuestion.points,
+        source: freshQuestionData ? "freshQuestionData" : "existingQuestion",
+      });
+      setQuestionText(spellingQuestion.text || spellingQuestion.question || "");
+      setInstructions(spellingQuestion.instructions || "");
+      setCorrectWord(spellingQuestion.correctAnswer || spellingQuestion.answer || "");
+      setPoints(spellingQuestion.points || 0);
+
+      const time = spellingQuestion.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(spellingQuestion.maxAttempts || 1);
+      console.log("✅ [SpellingWrapper] Form state updated successfully with:", {
+        questionText: spellingQuestion.text || spellingQuestion.question,
+        correctWord: spellingQuestion.correctAnswer || spellingQuestion.answer,
+        points: spellingQuestion.points,
+      });
+    }
+  }, [spellingQuestion, freshQuestionData]);
+
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = () => {
+    console.log("🚀 [Spelling] handleSave called", {
+      isUpdate: !!existingQuestion,
+      questionId: existingQuestion?.id,
+      challengeId,
+      correctWord,
+    });
+
     if (!challengeId) {
+      console.error("❌ [Spelling] Missing challengeId");
       toast({
         title: "Error",
         description: "Challenge ID is missing",
@@ -74,6 +134,7 @@ export default function SpellingWrapper({
     }
 
     if (!existingQuestion && !imageFile) {
+      console.error("❌ [Spelling] Missing image for new question");
       toast({
         title: "Error",
         description: "Please upload an image",
@@ -83,6 +144,10 @@ export default function SpellingWrapper({
     }
 
     if (!correctWord) {
+      console.error("❌ [Spelling] Missing correct word", {
+        correctWord,
+        spellingQuestionData: spellingQuestion,
+      });
       toast({
         title: "Error",
         description: "Please enter the correct word",
@@ -90,6 +155,17 @@ export default function SpellingWrapper({
       });
       return;
     }
+
+    console.log("✅ [Spelling] Validation passed, preparing FormData", {
+      questionText,
+      instructions,
+      correctWord,
+      points,
+      timeMinutes,
+      timeSeconds,
+      maxAttempts,
+      hasImageFile: !!imageFile,
+    });
 
     const formData = new FormData();
     formData.append("challengeId", challengeId);
@@ -115,7 +191,28 @@ export default function SpellingWrapper({
         questionId: existingQuestion.id,
         data: formData,
         challengeId,
-      });
+      },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Success",
+              description: "Question updated successfully",
+              variant: "default",
+            });
+            if (onSuccess) onSuccess();
+          },
+          onError: (error) => {
+            if (isAxiosError(error)) {
+              toast({
+                title: "Error",
+                description:
+                  error.response?.data?.message || "Failed to update question",
+                variant: "destructive",
+              });
+            }
+          },
+        }
+      );
     } else {
       createMutation.mutate(
         {

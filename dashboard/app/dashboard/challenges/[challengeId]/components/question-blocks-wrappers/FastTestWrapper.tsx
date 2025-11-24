@@ -11,7 +11,7 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Question } from "../QuestionsSection";
+import type { Question } from "../types";
 import { FastTestQuestion, FastTestPayload } from "./types";
 import FastTest from "../question-blocks/FastTest";
 import { isAxiosError } from "axios";
@@ -39,7 +39,7 @@ export default function FastTestWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    existingQuestion?.question || ""
+    existingQuestion?.text || Question?.question || ""
   );
   const [instructions, setInstructions] = useState(
     fastTestQuestion?.instructions || ""

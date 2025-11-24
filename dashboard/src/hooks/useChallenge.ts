@@ -98,11 +98,20 @@ export function useChallenge(challengeId: string | undefined) {
             // Add to flat array
             allQuestions.push(question);
 
-            // Cache individual question
-            queryClient.setQueryData(
-              questionKeys.detail(question.id),
-              question
+            // Only cache individual question if it doesn't already exist in cache
+            // This prevents overwriting fresh data from individual question queries
+            const existingQuestionCache = queryClient.getQueryData(
+              questionKeys.detail(question.id)
             );
+            if (!existingQuestionCache) {
+              console.log("📦 [useChallenge] Caching question for first time:", question.id);
+              queryClient.setQueryData(
+                questionKeys.detail(question.id),
+                question
+              );
+            } else {
+              console.log("⏭️ [useChallenge] Skipping cache update for question (already cached):", question.id);
+            }
           });
 
           // Cache questions by type
@@ -146,11 +155,13 @@ export function useQuestion(questionId: string | undefined) {
     queryKey: questionKeys.detail(questionId || ""),
     queryFn: async () => {
       if (!questionId) throw new Error("Question ID is required");
+      console.log("🔍 [useQuestion] Fetching question:", questionId);
       const response = await api.get<Question>(`/questions/${questionId}`);
+      console.log("✅ [useQuestion] Question fetched:", response.data);
       return response.data;
     },
     enabled: !!questionId,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 0, // Always consider data stale so it refetches when invalidated
   });
 }
 
