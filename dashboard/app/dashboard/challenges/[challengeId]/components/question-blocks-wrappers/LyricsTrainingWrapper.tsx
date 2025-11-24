@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import LyricsTraining from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/LyricsTraining";
@@ -31,7 +31,7 @@ export default function LyricsTrainingWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Use fresh data if available, otherwise use existing
   const lyricsTrainingQuestion = (freshQuestionData || existingQuestion) as
@@ -55,7 +55,7 @@ export default function LyricsTrainingWrapper({
   );
 
   const [questionText, setQuestionText] = useState(
-    lyricsTrainingQuestion?.question || ""
+    lyricsTrainingQuestion?.text || lyricsTrainingQuestion?.question || ""
   );
   const [instructions, setInstructions] = useState(
     initialInstructions.cleanInstructions
@@ -80,35 +80,48 @@ export default function LyricsTrainingWrapper({
     lyricsTrainingQuestion?.maxAttempts || 1
   );
 
-  const [prevQuestionId, setPrevQuestionId] = useState(existingQuestion?.id);
-
-  // Reset state during render when question changes
-  if (existingQuestion?.id !== prevQuestionId) {
-    setPrevQuestionId(existingQuestion?.id);
-    if (lyricsTrainingQuestion) {
-      setQuestionText(lyricsTrainingQuestion.text || lyricsTrainingQuestion.question || "");
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as LyricsTrainingQuestion;
+      setQuestionText(question.text || question.question || "");
       const extracted = extractHintFromInstructions(
-        lyricsTrainingQuestion.instructions || ""
+        question.instructions || ""
       );
       setInstructions(extracted.cleanInstructions);
       setHint(extracted.hint);
-
-      setOptions(lyricsTrainingQuestion.options || ["", "", ""]);
-      setCorrectAnswer(lyricsTrainingQuestion.answer || "");
-      setPoints(lyricsTrainingQuestion.points || 0);
-      const time = lyricsTrainingQuestion.timeLimit || 0;
+      setVideoUrl(question.video || question.audio || question.mediaUrl || null);
+      setOptions(question.options || ["", "", ""]);
+      setCorrectAnswer(question.answer || "");
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
       setTimeMinutes(Math.floor(time / 60));
       setTimeSeconds(time % 60);
-      setMaxAttempts(lyricsTrainingQuestion.maxAttempts || 1);
+      setMaxAttempts(question.maxAttempts || 1);
     }
-  }
+  }, [freshQuestionData]);
 
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch video: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'video/mp4' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -150,8 +163,31 @@ export default function LyricsTrainingWrapper({
 
     const formData = new FormData();
     formData.append("challengeId", challengeId);
-    if (videoFile) {
-      formData.append("media", videoFile);
+    
+    // Handle video file - for updates, preserve existing if no new file is provided
+    // Backend expects 'video' field, not 'media'
+    if (existingQuestion) {
+      if (videoFile) {
+        formData.append("video", videoFile);
+      } else if (videoUrl && videoUrl.trim() !== "") {
+        try {
+          const urlParts = videoUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'video.mp4';
+          const file = await urlToFile(videoUrl, filename);
+          formData.append("video", file);
+        } catch (error) {
+          console.error('Failed to convert video URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing video. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      if (videoFile) {
+        formData.append("video", videoFile);
+      }
     }
     formData.append("text", questionText);
     // Append hint to instructions if exists, as backend might not have hint field
@@ -182,7 +218,30 @@ export default function LyricsTrainingWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state from response
+            if (data) {
+              const question = data as LyricsTrainingQuestion;
+              setQuestionText(question.text || question.question || "");
+              const extracted = extractHintFromInstructions(
+                question.instructions || ""
+              );
+              setInstructions(extracted.cleanInstructions);
+              setHint(extracted.hint);
+              setVideoUrl(question.video || question.audio || question.mediaUrl || null);
+              setOptions(question.options || ["", "", ""]);
+              setCorrectAnswer(question.answer || "");
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              setVideoFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
