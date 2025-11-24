@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/src/config/axiosInstance";
+import { toast } from "sonner";
 
 // Types
 export interface Question {
@@ -252,6 +253,9 @@ export function useDeleteQuestion() {
       return response.data;
     },
     onSuccess: (_, variables) => {
+      // Show success toast
+      toast.success("Question deleted successfully");
+      
       // Remove the specific question from cache
       queryClient.removeQueries({ queryKey: questionKeys.detail(variables.questionId) });
       
@@ -300,6 +304,15 @@ export function useDeleteQuestion() {
         // Invalidate all challenge queries to ensure consistency
         queryClient.invalidateQueries({ queryKey: challengeKeys.all });
       }
+    },
+    onError: (error) => {
+      const errorMessage =
+        (error as any)?.response?.data?.message ||
+        (error as Error)?.message ||
+        "Failed to delete question";
+      
+      toast.error(`Error deleting question: ${errorMessage}`);
+      console.error("Delete question error:", error);
     },
   });
 }
