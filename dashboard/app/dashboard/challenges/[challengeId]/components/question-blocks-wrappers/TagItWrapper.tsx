@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import TagIt from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/TagIt";
@@ -31,7 +31,7 @@ export default function TagItWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to TagItQuestion for type safety
   const tagItQuestion = (freshQuestionData || existingQuestion) as
@@ -61,12 +61,45 @@ export default function TagItWrapper({
     tagItQuestion?.maxAttempts || 1
   );
 
+  // Sync state with fresh question data
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as TagItQuestion;
+      setQuestionText(question.text || question.question || "");
+      setInstructions(question.instructions || "");
+      setContent(question.content || []);
+      setAnswer(question.answer || [""]);
+      setImageUrl(question.image || question.mediaUrl || null);
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
+
   const createMutation = useCreateQuestion();
   const updateMutation = useUpdateQuestion();
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  // Helper function to convert image URL to File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'image/png' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -103,8 +136,33 @@ export default function TagItWrapper({
     content.forEach((part) => formData.append("content[]", part));
     validAnswers.forEach((ans) => formData.append("answer[]", ans));
 
-    if (imageFile) {
-      formData.append("media", imageFile);
+    // Handle image: use "image" field name (not "media") to match backend DTO
+    if (existingQuestion) {
+      // When updating, send new file if available, otherwise preserve existing image
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (imageUrl && imageUrl.trim() !== "") {
+        // Existing image that wasn't changed - convert URL to File to preserve it
+        try {
+          const urlParts = imageUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'image.png';
+          const file = await urlToFile(imageUrl, filename);
+          formData.append("image", file);
+        } catch (error) {
+          console.error('Failed to convert image URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing image. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+      // If neither file nor URL, don't send image (image will be removed)
+    } else {
+      // For creating, only send if there's a file
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
     }
 
     const totalSeconds = timeMinutes * 60 + timeSeconds;
@@ -124,7 +182,24 @@ export default function TagItWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            if (data) {
+              const question = data as TagItQuestion;
+              setQuestionText(question.text || question.question || "");
+              setInstructions(question.instructions || "");
+              setContent(question.content || []);
+              setAnswer(question.answer || [""]);
+              setImageUrl(question.image || question.mediaUrl || null);
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              setImageFile(null);
+            }
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
