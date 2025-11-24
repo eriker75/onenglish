@@ -47,8 +47,9 @@ export default function TopicBasedAudioWrapper({
     | undefined;
 
   // State
+  // Backend returns 'text' field, not 'content'
   const [questionText, setQuestionText] = useState(
-    topicBasedAudioQuestion?.content || ""
+    topicBasedAudioQuestion?.text || topicBasedAudioQuestion?.content || ""
   );
   const [instructions, setInstructions] = useState(
     topicBasedAudioQuestion?.instructions || ""
@@ -78,7 +79,8 @@ export default function TopicBasedAudioWrapper({
   useEffect(() => {
     if (freshQuestionData) {
       const question = freshQuestionData as TopicBasedAudioQuestion;
-      setQuestionText(question.content || "");
+      // Backend returns 'text' field, not 'content'
+      setQuestionText(question.text || question.content || "");
       setInstructions(question.instructions || "");
       setAudioUrl(question.audio || question.mediaUrl || null);
       setSubQuestions(
@@ -104,7 +106,22 @@ export default function TopicBasedAudioWrapper({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch audio: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'audio/mpeg' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -147,14 +164,36 @@ export default function TopicBasedAudioWrapper({
     const formData = new FormData();
     formData.append("challengeId", challengeId);
 
-    if (audioFile) {
-      formData.append("media", audioFile);
+    // Handle audio file - for updates, preserve existing if no new file is provided
+    if (existingQuestion) {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      } else if (audioUrl && audioUrl.trim() !== "") {
+        try {
+          const urlParts = audioUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'audio.mp3';
+          const file = await urlToFile(audioUrl, filename);
+          formData.append("audio", file);
+        } catch (error) {
+          console.error('Failed to convert audio URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing audio. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      }
     }
 
     // Format sub-questions for backend
+    // Backend expects 'content' field, not 'text'
     const formattedSubQuestions = subQuestions.map((q) => ({
       id: q.id, // Include ID for updates if it exists
-      text: q.text,
+      content: q.text, // Backend expects 'content' field
       points: q.points || 0,
       options: q.options,
       answer: q.correctAnswer,
@@ -162,7 +201,10 @@ export default function TopicBasedAudioWrapper({
 
     formData.append("subQuestions", JSON.stringify(formattedSubQuestions));
 
-    formData.append("content", questionText);
+    // Backend expects 'text' field for the main question text
+    if (questionText) {
+      formData.append("text", questionText);
+    }
     if (instructions) {
       formData.append("instructions", instructions);
     }
@@ -187,7 +229,8 @@ export default function TopicBasedAudioWrapper({
             // Update state immediately from response
             if (data) {
               const question = data as TopicBasedAudioQuestion;
-              setQuestionText(question.content || "");
+              // Backend returns 'text' field, not 'content'
+              setQuestionText(question.text || question.content || "");
               setInstructions(question.instructions || "");
               setAudioUrl(question.audio || question.mediaUrl || null);
               setSubQuestions(

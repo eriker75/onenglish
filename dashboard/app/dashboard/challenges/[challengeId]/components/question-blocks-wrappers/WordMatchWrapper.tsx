@@ -85,7 +85,22 @@ export default function WordMatchWrapper({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch audio: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'audio/mpeg' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -127,8 +142,30 @@ export default function WordMatchWrapper({
     formData.append("challengeId", challengeId);
     formData.append("text", questionText);
     formData.append("instructions", instructions);
-    if (audioFile) {
-      formData.append("media", audioFile);
+    
+    // Handle audio file - for updates, preserve existing if no new file is provided
+    if (existingQuestion) {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      } else if (audioUrl && audioUrl.trim() !== "") {
+        try {
+          const urlParts = audioUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'audio.mp3';
+          const file = await urlToFile(audioUrl, filename);
+          formData.append("audio", file);
+        } catch (error) {
+          console.error('Failed to convert audio URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing audio. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      }
     }
 
     // Check if backend expects comma-separated or array for options

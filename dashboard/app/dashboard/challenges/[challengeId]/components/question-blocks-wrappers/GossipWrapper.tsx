@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
 import { useQuestion } from "@/src/hooks/useChallenge";
@@ -26,21 +27,11 @@ export default function GossipWrapper({
   onCancel,
   onSuccess,
 }: GossipWrapperProps) {
-  const toast = (opts: {
-    title: string;
-    description?: string;
-    variant?: "default" | "destructive";
-  }) => {
-    if (opts.variant === "destructive") {
-      console.error(`[Toast error]: ${opts.title} - ${opts.description ?? ""}`);
-    } else {
-      console.log(`[Toast]: ${opts.title} - ${opts.description ?? ""}`);
-    }
-  };
+  const { toast } = useToast();
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Cast existingQuestion to GossipQuestion for type safety
   const gossipQuestion = (freshQuestionData || existingQuestion) as
@@ -57,9 +48,25 @@ export default function GossipWrapper({
     gossipQuestion?.answer || ""
   );
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [audioUrl] = useState<string | null>(
+  const [audioUrl, setAudioUrl] = useState<string | null>(
     gossipQuestion?.audio || gossipQuestion?.mediaUrl || null
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as GossipQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setCorrectTranscription(question.answer || "");
+      setAudioUrl(question.audio || question.mediaUrl || null);
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   const [points, setPoints] = useState(gossipQuestion?.points || 0);
 
@@ -75,7 +82,22 @@ export default function GossipWrapper({
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const handleSave = () => {
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const absoluteUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    try {
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch audio: ${response.statusText} for URL: ${absoluteUrl}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], filename, { type: blob.type || 'audio/mpeg' });
+    } catch (error) {
+      console.error(`Error converting URL to File for ${absoluteUrl}:`, error);
+      throw error;
+    }
+  };
+
+  const handleSave = async () => {
     if (!challengeId) {
       toast({
         title: "Error",
@@ -105,9 +127,32 @@ export default function GossipWrapper({
 
     const formData = new FormData();
     formData.append("challengeId", challengeId);
-    if (audioFile) {
-      formData.append("media", audioFile);
+    
+    // Handle audio file - for updates, preserve existing if no new file is provided
+    if (existingQuestion) {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      } else if (audioUrl && audioUrl.trim() !== "") {
+        try {
+          const urlParts = audioUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'audio.mp3';
+          const file = await urlToFile(audioUrl, filename);
+          formData.append("audio", file);
+        } catch (error) {
+          console.error('Failed to convert audio URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing audio. Please re-upload it if needed.",
+            variant: "destructive",
+          });
+        }
+      }
+    } else {
+      if (audioFile) {
+        formData.append("audio", audioFile);
+      }
     }
+    
     formData.append("answer", correctTranscription.trim());
 
     if (questionText.trim()) {
@@ -134,7 +179,25 @@ export default function GossipWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Update state from response
+            if (data) {
+              const question = data as GossipQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setCorrectTranscription(question.answer || "");
+              setAudioUrl(question.audio || question.mediaUrl || null);
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              setAudioFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
@@ -223,6 +286,7 @@ export default function GossipWrapper({
       <Gossip
         question={questionText}
         instructions={instructions}
+        audioUrl={audioUrl || undefined}
         correctTranscription={correctTranscription}
         points={points}
         timeMinutes={timeMinutes}
@@ -230,6 +294,7 @@ export default function GossipWrapper({
         maxAttempts={maxAttempts}
         onQuestionChange={setQuestionText}
         onInstructionsChange={setInstructions}
+        onAudioChange={setAudioUrl}
         onCorrectTranscriptionChange={setCorrectTranscription}
         onPointsChange={setPoints}
         onTimeMinutesChange={setTimeMinutes}

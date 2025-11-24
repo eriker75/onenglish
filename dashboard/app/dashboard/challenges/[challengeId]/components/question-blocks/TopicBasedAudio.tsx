@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -73,6 +73,41 @@ export default function TopicBasedAudio({
   const [timeMinutesValue, setTimeMinutesValue] = useState(initialTimeMinutes);
   const [timeSecondsValue, setTimeSecondsValue] = useState(initialTimeSeconds);
   const [maxAttemptsValue, setMaxAttemptsValue] = useState(initialMaxAttempts);
+
+  // Sync state with props when they change
+  useEffect(() => {
+    setQuestionText(question);
+  }, [question]);
+
+  useEffect(() => {
+    setInstructionsText(instructions);
+  }, [instructions]);
+
+  useEffect(() => {
+    setAudioUrl(initialAudioUrl || null);
+  }, [initialAudioUrl]);
+
+  useEffect(() => {
+    if (questions && questions.length > 0) {
+      setQuestionsList(questions);
+    }
+  }, [questions]);
+
+  useEffect(() => {
+    setPointsValue(initialPoints);
+  }, [initialPoints]);
+
+  useEffect(() => {
+    setTimeMinutesValue(initialTimeMinutes);
+  }, [initialTimeMinutes]);
+
+  useEffect(() => {
+    setTimeSecondsValue(initialTimeSeconds);
+  }, [initialTimeSeconds]);
+
+  useEffect(() => {
+    setMaxAttemptsValue(initialMaxAttempts);
+  }, [initialMaxAttempts]);
 
   const handleQuestionChange = (value: string) => {
     setQuestionText(value);
@@ -172,19 +207,19 @@ export default function TopicBasedAudio({
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Topic Description *
+            Question Text *
           </label>
           <input
             type="text"
             value={questionText}
             onChange={(e) => handleQuestionChange(e.target.value)}
-            placeholder="Enter the topic description..."
+            placeholder="Enter the question text..."
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#44b07f] focus:border-transparent"
           />
         </div>
         <div className="col-span-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Instructions
+            Question Instructions
           </label>
           <input
             type="text"

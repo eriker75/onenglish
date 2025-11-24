@@ -159,6 +159,9 @@ export interface ReadItSubQuestion {
   content?: string;
   text?: string;
   correct?: boolean;
+  answer?: boolean | string; // Backend returns boolean, but might be string in some cases
+  options?: boolean[];
+  points?: number;
 }
 
 export interface ReadItQuestion extends Question, BaseQuestionData {
