@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import WordAssociationsWithText from "@/app/dashboard/challenges/[challengeId]/components/question-blocks/WordAssociationsWithText";
@@ -31,7 +31,7 @@ export default function WordAssociationsWrapper({
   const challengeId = useChallengeUIStore((state) => state.currentChallengeId);
 
   // Fetch fresh data when editing
-  const { data: freshQuestionData } = useQuestion(existingQuestion?.id);
+  const { data: freshQuestionData, refetch: refetchQuestion } = useQuestion(existingQuestion?.id);
 
   // Use fresh data if available, otherwise use existing
   const wordAssociationsQuestion = (freshQuestionData || existingQuestion) as
@@ -46,12 +46,12 @@ export default function WordAssociationsWrapper({
     wordAssociationsQuestion?.instructions || ""
   );
   const [referenceWord, setReferenceWord] = useState(
-    wordAssociationsQuestion?.content || ""
+    wordAssociationsQuestion?.centralWord || wordAssociationsQuestion?.content || ""
   );
   const [maxAssociations, setMaxAssociations] = useState(
     wordAssociationsQuestion?.maxAssociations || 3
   );
-  const [imageUrl] = useState<string | null>(
+  const [imageUrl, setImageUrl] = useState<string | null>(
     wordAssociationsQuestion?.image || wordAssociationsQuestion?.mediaUrl || null
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -63,6 +63,23 @@ export default function WordAssociationsWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     wordAssociationsQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as WordAssociationsQuestion;
+      setQuestionText(question.text || "");
+      setInstructions(question.instructions || "");
+      setReferenceWord(question.centralWord || question.content || "");
+      setMaxAssociations(question.maxAssociations || 3);
+      setImageUrl(question.image || question.mediaUrl || null);
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   // Mutation
 
@@ -97,7 +114,7 @@ export default function WordAssociationsWrapper({
     formData.append("points", points.toString());
 
     if (imageFile) {
-      formData.append("media", imageFile);
+      formData.append("image", imageFile);
     }
 
     if (questionText) formData.append("text", questionText);
@@ -118,7 +135,27 @@ export default function WordAssociationsWrapper({
         challengeId,
       },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // Use the response data directly to update local state immediately
+            if (data) {
+              const question = data as WordAssociationsQuestion;
+              setQuestionText(question.text || "");
+              setInstructions(question.instructions || "");
+              setReferenceWord(question.centralWord || question.content || "");
+              setMaxAssociations(question.maxAssociations || 3);
+              setImageUrl(question.image || question.mediaUrl || null);
+              setPoints(question.points || 0);
+              const time = question.timeLimit || 0;
+              setTimeMinutes(Math.floor(time / 60));
+              setTimeSeconds(time % 60);
+              setMaxAttempts(question.maxAttempts || 1);
+              // Clear the image file since it's now saved
+              setImageFile(null);
+            }
+            // Also refetch to ensure cache is updated
+            if (existingQuestion?.id) {
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "Question updated successfully",
@@ -146,7 +183,12 @@ export default function WordAssociationsWrapper({
           challengeId,
         },
         {
-          onSuccess: () => {
+          onSuccess: async (data) => {
+            // If we get the created question back, update local state
+            if (data?.id && existingQuestion) {
+              // If editing a new question that was just created, refetch it
+              await refetchQuestion();
+            }
             toast({
               title: "Success",
               description: "WordAssociations question created successfully",

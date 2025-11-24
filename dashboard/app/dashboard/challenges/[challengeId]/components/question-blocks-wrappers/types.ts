@@ -57,7 +57,8 @@ export interface SpellingPayload {
 export interface WordAssociationsQuestion extends Question, BaseQuestionData {
   words?: string[];
   correctWord?: string;
-  content?: string;          // Add for compatibility
+  centralWord?: string;      // Backend returns 'centralWord'
+  content?: string;          // Legacy/alternative field name
   maxAssociations?: number;  // Add for compatibility
   mediaUrl?: string;          // Add for compatibility
 }
