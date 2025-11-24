@@ -389,10 +389,10 @@ export interface TellMeAboutItPayload {
 
 // Debate specific types
 export interface DebateQuestion extends Question, BaseQuestionData {
-  topic?: string;
+  topic?: string;    // Backend returns 'topic' instead of 'content'
   arguments?: string[];
-  content?: string; // debate topic/content
-  stance?: string; // random/for/against/support/oppose
+  content?: string;  // Add for compatibility
+  stance?: string;   // random/for/against/support/oppose
 }
 
 export interface DebatePayload {

@@ -518,6 +518,7 @@ let QuestionFormatterService = class QuestionFormatterService {
             topic: question.content,
             minDuration: parseInt(question.configurations?.minDuration || '90'),
             stance: question.answer,
+            image: this.getMediaUrl(question.media, 'image'),
             createdAt: question.createdAt,
             updatedAt: question.updatedAt,
         };

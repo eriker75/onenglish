@@ -43,7 +43,9 @@ export default function DebateWrapper({
   const [instructions, setInstructions] = useState(
     debateQuestion?.instructions || ""
   );
-  const [content, setContent] = useState(debateQuestion?.content || "");
+  const [content, setContent] = useState(
+    debateQuestion?.topic || debateQuestion?.content || ""
+  );
   const [stance, setStance] = useState<string>(() => {
     const s = debateQuestion?.stance || "random";
     if (s === "support") return "for";
@@ -68,7 +70,7 @@ export default function DebateWrapper({
       const question = freshQuestionData as DebateQuestion;
       setQuestionText(question.text || question.question || "");
       setInstructions(question.instructions || "");
-      setContent(question.content || "");
+      setContent(question.topic || question.content || "");
       const s = question.stance || "random";
       if (s === "support") setStance("for");
       else if (s === "oppose") setStance("against");
@@ -119,45 +121,42 @@ export default function DebateWrapper({
       random: "random",
     };
 
-    // Use FormData if there's an image, otherwise use JSON payload
-    const hasImage = imageFile || (imageUrl && imageUrl.trim() !== "");
+    // Always use FormData (even without image) since the DTO accepts optional image
+    const formData = new FormData();
+    formData.append("challengeId", challengeId);
+    formData.append("content", content);
+    formData.append("stance", stanceMap[stance] || stance);
+    formData.append("stage", "SPEAKING");
+    formData.append("text", questionText);
+    formData.append("instructions", instructions);
+    formData.append("points", points.toString());
+    formData.append("timeLimit", (timeMinutes * 60 + timeSeconds).toString());
+    formData.append("maxAttempts", maxAttempts.toString());
 
-    if (hasImage) {
-      const formData = new FormData();
-      formData.append("challengeId", challengeId);
-      formData.append("content", content);
-      formData.append("stance", stanceMap[stance] || stance);
-      formData.append("stage", "SPEAKING");
-      formData.append("text", questionText);
-      formData.append("instructions", instructions);
-      formData.append("points", points.toString());
-      formData.append("timeLimit", (timeMinutes * 60 + timeSeconds).toString());
-      formData.append("maxAttempts", maxAttempts.toString());
-
-      // Handle image file - for updates, preserve existing if no new file is provided
-      if (existingQuestion) {
-        if (imageFile) {
-          formData.append("image", imageFile);
-        } else if (imageUrl && imageUrl.trim() !== "") {
-          try {
-            const urlParts = imageUrl.split('/');
-            const filename = urlParts[urlParts.length - 1] || 'image.png';
-            const file = await urlToFile(imageUrl, filename);
-            formData.append("image", file);
-          } catch (error) {
-            console.error('Failed to convert image URL to file:', error);
-            toast({
-              title: "Warning",
-              description: "Failed to preserve existing image. Please re-upload it if needed.",
-              variant: "destructive",
-            });
-          }
-        }
-      } else {
-        if (imageFile) {
-          formData.append("image", imageFile);
+    // Handle image file - for updates, preserve existing if no new file is provided
+    if (existingQuestion) {
+      if (imageFile) {
+        formData.append("image", imageFile);
+      } else if (imageUrl && imageUrl.trim() !== "") {
+        try {
+          const urlParts = imageUrl.split('/');
+          const filename = urlParts[urlParts.length - 1] || 'image.png';
+          const file = await urlToFile(imageUrl, filename);
+          formData.append("image", file);
+        } catch (error) {
+          console.error('Failed to convert image URL to file:', error);
+          toast({
+            title: "Warning",
+            description: "Failed to preserve existing image. Please re-upload it if needed.",
+            variant: "destructive",
+          });
         }
       }
+    } else {
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+    }
 
       if (existingQuestion) {
         updateMutation.mutate(
@@ -174,7 +173,7 @@ export default function DebateWrapper({
                 const question = data as DebateQuestion;
                 setQuestionText(question.text || question.question || "");
                 setInstructions(question.instructions || "");
-                setContent(question.content || "");
+                setContent(question.topic || question.content || "");
                 const s = question.stance || "random";
                 if (s === "support") setStance("for");
                 else if (s === "oppose") setStance("against");
@@ -239,100 +238,6 @@ export default function DebateWrapper({
           }
         );
       }
-    } else {
-      // No image, use JSON payload
-      const payload: DebatePayload = {
-        challengeId,
-        content,
-        stance: stanceMap[stance] || stance,
-        stage: "SPEAKING",
-        text: questionText,
-        instructions,
-        points,
-        timeLimit: timeMinutes * 60 + timeSeconds,
-        maxAttempts,
-      };
-
-      if (existingQuestion) {
-        updateMutation.mutate(
-          {
-            endpoint: "/questions/debate",
-            questionId: existingQuestion.id,
-            data: payload,
-            challengeId,
-          },
-          {
-            onSuccess: async (data) => {
-              // Update state from response
-              if (data) {
-                const question = data as DebateQuestion;
-                setQuestionText(question.text || question.question || "");
-                setInstructions(question.instructions || "");
-                setContent(question.content || "");
-                const s = question.stance || "random";
-                if (s === "support") setStance("for");
-                else if (s === "oppose") setStance("against");
-                else setStance(s);
-                setImageUrl(question.image || question.mediaUrl || null);
-                setPoints(question.points || 0);
-                const time = question.timeLimit || 0;
-                setTimeMinutes(Math.floor(time / 60));
-                setTimeSeconds(time % 60);
-                setMaxAttempts(question.maxAttempts || 1);
-              }
-              // Also refetch to ensure cache is updated
-              if (existingQuestion?.id) {
-                await refetchQuestion();
-              }
-              toast({
-                title: "Success",
-                description: "Debate question updated successfully",
-                variant: "default",
-              });
-              if (onSuccess) onSuccess();
-            },
-            onError: (error) => {
-              if (isAxiosError(error)) {
-                toast({
-                  title: "Error",
-                  description:
-                    error.response?.data?.message || "Failed to update question",
-                  variant: "destructive",
-                });
-              }
-            },
-          }
-        );
-      } else {
-        createMutation.mutate(
-          {
-            endpoint: "/questions/create/debate",
-            data: payload,
-            challengeId,
-          },
-          {
-            onSuccess: () => {
-              toast({
-                title: "Success",
-                description: "Debate question created successfully",
-                variant: "default",
-              });
-              if (onSuccess) onSuccess();
-            },
-            onError: (error) => {
-              if (isAxiosError(error)) {
-                toast({
-                  title: "Error",
-                  description:
-                    error.response?.data?.message || "Failed to create question",
-                  variant: "destructive",
-                });
-              }
-            },
-          }
-        );
-      }
-    }
   };
 
   return (

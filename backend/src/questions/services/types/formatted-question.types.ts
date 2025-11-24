@@ -197,6 +197,7 @@ export interface FormattedDebateQuestion extends BaseQuestionFields {
   topic: string;
   minDuration: number;
   stance: string;
+  image: string | null;
 }
 
 // ==================== SPECIAL FORMATTED QUESTIONS ====================

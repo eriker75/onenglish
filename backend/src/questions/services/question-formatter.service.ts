@@ -721,6 +721,8 @@ export class QuestionFormatterService {
       minDuration: parseInt(question.configurations?.minDuration || '90'),
       // Stance - from answer field
       stance: question.answer,
+      // Media handling - image URL
+      image: this.getMediaUrl(question.media, 'image'),
       // Metadata
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,

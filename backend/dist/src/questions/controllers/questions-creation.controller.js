@@ -494,6 +494,8 @@ __decorate([
 ], QuestionsCreationController.prototype, "createTellMeAboutIt", null);
 __decorate([
     (0, common_1.Post)('debate'),
+    (0, nestjs_form_data_1.FormDataRequest)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a debate question',
         description: 'Creates a speaking question where students defend or oppose a provided statement with an audio argument. Default validation method: IA. The response includes the debate topic, minimum duration (90 seconds), and the assigned stance.',

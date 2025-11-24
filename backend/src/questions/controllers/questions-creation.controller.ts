@@ -389,6 +389,8 @@ export class QuestionsCreationController {
   }
 
   @Post('debate')
+  @FormDataRequest()
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Create a debate question',
     description:
