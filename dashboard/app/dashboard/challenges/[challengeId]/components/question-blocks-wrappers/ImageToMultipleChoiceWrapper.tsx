@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 import { useChallengeUIStore } from "@/src/stores/challenge-ui.store";
@@ -46,7 +46,7 @@ export default function ImageToMultipleChoiceWrapper({
     imageQuestion?.options || ["", "", "", ""]
   );
   const [correctAnswer, setCorrectAnswer] = useState(
-    imageQuestion?.correctAnswer || ""
+    imageQuestion?.answer || imageQuestion?.correctAnswer || ""
   );
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [points, setPoints] = useState(imageQuestion?.points || 0);
@@ -57,6 +57,21 @@ export default function ImageToMultipleChoiceWrapper({
   const [maxAttempts, setMaxAttempts] = useState(
     imageQuestion?.maxAttempts || 1
   );
+
+  // Update state when freshQuestionData arrives
+  useEffect(() => {
+    if (freshQuestionData) {
+      const question = freshQuestionData as ImageToMultipleChoiceQuestion;
+      setQuestionText(question.text || question.question || "");
+      setOptions(question.options || ["", "", "", ""]);
+      setCorrectAnswer(question.answer || question.correctAnswer || "");
+      setPoints(question.points || 0);
+      const time = question.timeLimit || 0;
+      setTimeMinutes(Math.floor(time / 60));
+      setTimeSeconds(time % 60);
+      setMaxAttempts(question.maxAttempts || 1);
+    }
+  }, [freshQuestionData]);
 
   // Mutation
 

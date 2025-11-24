@@ -403,7 +403,8 @@ export interface DebatePayload {
 export interface ImageToMultipleChoiceQuestion extends Question, BaseQuestionData {
   imageUrl?: string;
   options?: string[];
-  correctAnswer?: string;
+  answer?: string; // Backend returns 'answer'
+  correctAnswer?: string; // Legacy/alternative field name
 }
 
 export interface ImageToMultipleChoicePayload {
