@@ -10,8 +10,8 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Question } from "../types";
 import { GossipQuestion } from "./types";
+import type { Question } from "../types";
 import Gossip from "../question-blocks/Gossip";
 import { isAxiosError } from "axios";
 

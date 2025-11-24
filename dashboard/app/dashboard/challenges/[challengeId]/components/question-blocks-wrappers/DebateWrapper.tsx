@@ -11,8 +11,8 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Question } from "../types";
 import { DebateQuestion, DebatePayload } from "./types";
+import type { Question } from "../types";
 import Debate from "../question-blocks/Debate";
 import { isAxiosError } from "axios";
 

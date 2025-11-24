@@ -39,7 +39,7 @@ export default function UnscrambleWrapper({
     | undefined;
 
   const [questionText, setQuestionText] = useState(
-    unscrambleQuestion?.text || Question?.question || ""
+    unscrambleQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     unscrambleQuestion?.instructions || ""

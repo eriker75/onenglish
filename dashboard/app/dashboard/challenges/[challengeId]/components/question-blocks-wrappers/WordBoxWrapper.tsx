@@ -43,7 +43,7 @@ export default function WordBoxWrapper({
 
   // Initialize State with question data or defaults
   const [questionText, setQuestionText] = useState(
-    wordBoxQuestion?.text || Question?.question || ""
+    wordBoxQuestion?.text || ""
   );
   const [instructions, setInstructions] = useState(
     wordBoxQuestion?.instructions || ""

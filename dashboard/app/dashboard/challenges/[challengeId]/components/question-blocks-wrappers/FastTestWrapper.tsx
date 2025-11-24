@@ -11,8 +11,8 @@ import {
 } from "@/src/hooks/useQuestionMutations";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Question } from "../types";
 import { FastTestQuestion, FastTestPayload } from "./types";
+import type { Question } from "../types";
 import FastTest from "../question-blocks/FastTest";
 import { isAxiosError } from "axios";
 
