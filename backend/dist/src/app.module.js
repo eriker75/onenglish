@@ -51,21 +51,30 @@ exports.AppModule = AppModule = __decorate([
             }),
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(__dirname, '..', 'public'),
-                serveRoot: '/public',
+                serveRoot: '/',
                 serveStaticOptions: {
                     index: 'index.html',
+                },
+            }),
+            serve_static_1.ServeStaticModule.forRoot({
+                rootPath: (0, path_1.join)(__dirname, '..', 'public'),
+                serveRoot: '/public',
+                serveStaticOptions: {
+                    index: false,
                 },
             }),
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(process.cwd(), 'uploads'),
                 serveRoot: '/uploads',
                 serveStaticOptions: {
-                    setHeaders: (res, path, stat) => {
+                    setHeaders: (res, _path, _stat) => {
                         if (process.env.NODE_ENV === 'development') {
                             res.setHeader('Access-Control-Allow-Origin', '*');
                         }
                         else {
-                            const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [process.env.FRONTEND_URL];
+                            const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+                                process.env.FRONTEND_URL,
+                            ];
                             res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0] || '*');
                         }
                         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');

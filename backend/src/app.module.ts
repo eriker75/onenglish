@@ -37,28 +37,45 @@ import { join } from 'path';
       cleanupAfterSuccessHandle: true,
       cleanupAfterFailedHandle: true,
     }),
+    // Serve static files from public folder at root
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/',
+      serveStaticOptions: {
+        index: 'index.html',
+      },
+    }),
+    // Also serve public folder at /public for direct access
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveRoot: '/public',
       serveStaticOptions: {
-        index: 'index.html',
+        index: false, // Don't serve index.html here
       },
     }),
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
       serveStaticOptions: {
-        setHeaders: (res, path, stat) => {
+        setHeaders: (res, _path, _stat) => {
           // In development, allow all origins
           if (process.env.NODE_ENV === 'development') {
             res.setHeader('Access-Control-Allow-Origin', '*');
           } else {
             // In production, use FRONTEND_URL or CORS_ORIGINS
-            const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [process.env.FRONTEND_URL];
-            res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0] || '*');
+            const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
+              process.env.FRONTEND_URL,
+            ];
+            res.setHeader(
+              'Access-Control-Allow-Origin',
+              allowedOrigins[0] || '*',
+            );
           }
           res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+          res.setHeader(
+            'Access-Control-Allow-Headers',
+            'Content-Type, Authorization',
+          );
           res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         },
       },

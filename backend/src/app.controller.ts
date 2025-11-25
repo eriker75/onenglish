@@ -4,11 +4,11 @@ import { AppService } from './app.service';
 import { AiTestRequestDto, AiTestResponseDto } from './common/dtos/ai.dto';
 
 @ApiTags('App')
-@Controller()
+@Controller('api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('health')
   @ApiOperation({
     summary: 'Health check endpoint',
     description:

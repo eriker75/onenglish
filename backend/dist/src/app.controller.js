@@ -31,7 +31,7 @@ let AppController = class AppController {
 };
 exports.AppController = AppController;
 __decorate([
-    (0, common_1.Get)(),
+    (0, common_1.Get)('health'),
     (0, swagger_1.ApiOperation)({
         summary: 'Health check endpoint',
         description: 'Returns a simple greeting to verify that the service is running.',
@@ -64,7 +64,7 @@ __decorate([
 ], AppController.prototype, "testAiQuery", null);
 exports.AppController = AppController = __decorate([
     (0, swagger_1.ApiTags)('App'),
-    (0, common_1.Controller)(),
+    (0, common_1.Controller)('api'),
     __metadata("design:paramtypes", [app_service_1.AppService])
 ], AppController);
 //# sourceMappingURL=app.controller.js.map
