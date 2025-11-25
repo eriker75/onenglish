@@ -142,11 +142,19 @@ STORAGE_TYPE=local
 # Default: './uploads' (carpeta en la raíz del proyecto)
 UPLOAD_ROOT=./uploads
 
-# Para almacenamiento S3 (solo si STORAGE_TYPE=s3)
-# AWS_REGION=us-east-1
-# AWS_ACCESS_KEY_ID=your-access-key
-# AWS_SECRET_ACCESS_KEY=your-secret-key
-# AWS_S3_BUCKET=your-bucket-name
+# Para almacenamiento S3 de AWS (solo si STORAGE_TYPE=s3)
+# REQUERIDAS:
+# AWS_REGION=us-east-1                    # Región de AWS - DEBE coincidir con la región de tu bucket
+# AWS_ACCESS_KEY_ID=your-access-key       # Clave de acceso de AWS
+# AWS_SECRET_ACCESS_KEY=your-secret-key    # Clave secreta de AWS
+# AWS_S3_BUCKET_NAME=your-bucket-name     # Nombre del bucket S3 (también acepta AWS_S3_BUCKET)
+
+# OPCIONALES (solo para servicios compatibles con S3 que NO son AWS):
+# AWS_S3_ENDPOINT=https://nyc3.digitaloceanspaces.com  # Solo para DigitalOcean Spaces, MinIO, etc.
+# AWS_S3_FORCE_PATH_STYLE=true            # Solo si usas endpoint personalizado (default: true)
+
+# NOTA: Para S3 puro de AWS, NO configures AWS_S3_ENDPOINT.
+# El SDK de AWS resuelve automáticamente el endpoint correcto basándose en AWS_REGION.
 ```
 
 ### Configuración de Docker
@@ -222,6 +230,7 @@ const FILE_TYPE_MAPPINGS: Record<FileType, FileTypeMapping> = {
 | 401 | Unauthorized access | Proporciona un Bearer token válido |
 | 404 | File not found | Verifica que el ID del archivo sea correcto |
 | 500 | Internal server error | Revisa los logs del servidor |
+| 500 | The bucket must be addressed using the specified endpoint | **Solución**: Asegúrate de que `AWS_REGION` coincida con la región de tu bucket. Para verificar la región: 1) Consola AWS → S3 → Tu bucket → Properties → Bucket location, 2) O ejecuta: `aws s3api get-bucket-location --bucket TU_BUCKET`. Si el resultado es `null` o vacío, la región es `us-east-1`. |
 
 ### Logs
 
