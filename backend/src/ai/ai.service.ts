@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { initChatModel } from 'langchain/chat_models/universal';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ContentBlock } from '@langchain/core/messages';
 
 export interface AiServiceOptions {
   provider: string; // "google_genai", "openai", etc.
@@ -36,14 +37,22 @@ export class AiService {
     if (typeof content === 'string') {
       return content;
     }
-    //return content[0] || content[0].text || '';
 
     if (Array.isArray(content)) {
       return content
-        .map((item) =>
-          typeof item === 'string' ? item : (item as any).text || '',
-        )
-        .filter(Boolean)
+        .map((item: ContentBlock | ContentBlock.Text): string => {
+          if (typeof item === 'string') return item;
+          if (
+            item.type === 'text' &&
+            'text' in item &&
+            typeof item.text === 'string'
+          ) {
+            return item.text;
+          }
+
+          return '';
+        })
+        .filter((text) => text.length > 0)
         .join('\n');
     }
 
